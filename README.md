@@ -1,0 +1,497 @@
+# MarkNotes
+
+<p align="center">
+  <strong>A simple, local-first markdown editor for macOS</strong>
+</p>
+
+<p align="center">
+  Write, organize, and export your notes in a beautiful, distraction-free interface with WYSIWYG editing, advanced table support, and comprehensive formatting tools.
+</p>
+
+---
+
+## Overview
+
+MarkNotes is a native macOS Electron application designed for markdown enthusiasts who want the best of both worlds: the power of markdown syntax with the convenience of rich text editing. All your notes are stored as plain markdown files in `~/Documents/MarkNotes`, making them portable, version-controllable, and future-proof.
+
+## Features
+
+### 🎨 **Two Editing Modes**
+
+- **WYSIWYG Mode (Edit)** - Rich text editing powered by TipTap with instant markdown conversion
+- **Code Mode** - Side-by-side markdown source editor and live preview pane
+- Switch modes seamlessly with `Cmd + 1` (Edit) or `Cmd + 2` (Code)
+
+### 📝 **Rich Text Formatting**
+
+- **Headings** - H1 through H6 with customized font sizes (24pt to 14pt)
+- **Text Styles** - Bold, italic, strikethrough, inline code
+- **Lists** - Bulleted and numbered lists with proper nesting
+- **Blockquotes** - Stylized quote blocks with accent border
+- **Links** - Interactive hyperlinks with insert modal (`Cmd + K`)
+  - Internal navigation with anchor links (#heading-id)
+  - External links open in default browser
+  - Cmd+Click to follow links in edit mode
+- **Code Blocks** - Syntax-highlighted code with monospace font
+- **Horizontal Rules** - Visual section dividers
+
+### 📊 **Advanced Table Support**
+
+- **Table Insertion** - Create 3×3 tables instantly from the toolbar
+- **Right-Click Context Menu** - Full table manipulation:
+  - Add row above/below
+  - Add column left/right
+  - Delete row/column/table
+- **GFM Compatible** - Tables work across all modes and export formats
+- **Smart Rendering** - Tables display consistently in edit, preview, and export
+
+### 📁 **File Management**
+
+- **Sidebar Navigation** - Browse and organize notes in a collapsible file tree
+- **Folders** - Create nested folder structures
+- **Context Menus** - Right-click files/folders to rename or delete
+- **Quick Actions** - `Cmd + N` for new file, `Cmd + Shift + N` for new folder
+- **Persistent State** - Selected file and sidebar state saved between sessions
+
+### 💾 **Smart Auto-Save**
+
+- Changes automatically saved 5 seconds after typing stops
+- Visual feedback in status bar during save
+- No manual save needed (though `Cmd + S` works too)
+- Prevents data loss with robust debouncing
+
+### 📤 **Export Options**
+
+- **HTML Export** - Clean, styled HTML with embedded CSS (`Cmd + Shift + E`)
+- **PDF Export** - Production-ready PDF documents (`Cmd + Shift + P`)
+- Exports include all formatting, tables, and styles
+- Choose custom save location for each export
+
+### 🌓 **Native macOS Experience**
+
+- **System Appearance** - Automatic dark/light mode following macOS settings
+- **Native Menus** - Standard File, Edit, View, and Help menus
+- **Keyboard Shortcuts** - Full keyboard navigation and commands
+- **Window Management** - Native titlebar and traffic lights
+- **Custom Tooltips** - Fast-appearing tooltips (0.3s delay) on all interactive elements
+
+### 📊 **Live Statistics**
+
+- Real-time word and character count in status bar
+- Updates as you type without performance impact
+- Accurate markdown-based counting
+
+## Installation
+
+### Prerequisites
+
+- macOS 10.15 or later
+- Node.js 18+ (Node.js 25+ recommended)
+- npm or pnpm
+
+### Development Setup
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd makrdown-note-app
+
+# Install dependencies
+npm install
+
+# Start development server with hot reload
+npm run dev
+```
+
+### Building for Production
+
+```bash
+# Build the application
+npm run build
+
+# Package as macOS application (creates DMG and ZIP)
+npm run build:mac
+
+# Package for other platforms
+npm run build:win    # Windows
+npm run build:linux  # Linux
+```
+
+The built application will be in the `dist/` directory.
+
+## Usage
+
+### Getting Started
+
+1. Launch MarkNotes - a `~/Documents/MarkNotes` folder is created automatically
+2. Create your first note with `Cmd + N` or click the "New File" button
+3. Start writing in WYSIWYG mode or switch to Code mode with `Cmd + 2`
+4. Organize notes by creating folders with `Cmd + Shift + N`
+
+### Working with Tables
+
+1. Click the table icon in the formatting toolbar
+2. A 3×3 table with headers is inserted at your cursor
+3. Right-click any cell to access table operations
+4. Add/remove rows and columns as needed
+5. Tables work seamlessly across all modes and exports
+
+### Creating Links and Table of Contents
+
+1. Select text and press `Cmd + K` to insert a link
+2. For internal navigation, use `#heading-id` format (e.g., `#introduction`)
+3. Heading IDs are auto-generated from heading text in lowercase-hyphenated format
+4. Cmd+Click to follow links in edit mode
+5. External links (http/https) open in your default browser
+
+### Exporting Documents
+
+1. Use `Cmd + Shift + E` for HTML or `Cmd + Shift + P` for PDF
+2. Choose your save location in the file picker
+3. Exported files include all formatting and styles
+
+## Keyboard Shortcuts
+
+### File Operations
+| Action | Shortcut |
+|--------|----------|
+| New File | `Cmd + N` |
+| New Folder | `Cmd + Shift + N` |
+| Save (manual) | `Cmd + S` |
+| Toggle Sidebar | `Cmd + .` |
+| Close File | `Cmd + W` |
+
+### View Modes
+| Mode | Shortcut |
+|------|----------|
+| WYSIWYG Mode (Edit) | `Cmd + 1` |
+| Code Mode (Split View) | `Cmd + 2` |
+
+### Export
+| Action | Shortcut |
+|--------|----------|
+| Export as HTML | `Cmd + Shift + E` |
+| Export as PDF | `Cmd + Shift + P` |
+
+### Formatting (WYSIWYG Mode)
+| Action | Shortcut |
+|--------|----------|
+| Bold | `Cmd + B` |
+| Italic | `Cmd + I` |
+| Strikethrough | `Cmd + Shift + X` |
+| Inline Code | `Cmd + E` |
+| Insert Link | `Cmd + K` |
+| Heading 1-6 | `Cmd + Option + 1-6` |
+| Paragraph | `Cmd + Option + 0` |
+| Bullet List | `Cmd + Shift + 8` |
+| Numbered List | `Cmd + Shift + 7` |
+| Blockquote | `Cmd + Shift + B` |
+| Code Block | `Cmd + Option + C` |
+| Undo | `Cmd + Z` |
+| Redo | `Cmd + Shift + Z` |
+
+## Technical Stack
+
+### Core Technologies
+
+- **Electron** - Cross-platform desktop framework
+- **React 18** - UI framework with hooks and modern patterns
+- **TypeScript** - Type-safe development
+- **Vite** - Fast build tool and dev server via electron-vite
+- **TipTap** - Headless WYSIWYG editor built on ProseMirror
+
+### Key Libraries
+
+- **State Management**: Zustand (lightweight, no boilerplate)
+- **Markdown Parsing**: Marked.js with GFM support
+- **Markdown Generation**: Turndown with custom table rules
+- **Table Extensions**: @tiptap/extension-table suite
+- **PDF Generation**: Electron's built-in printToPDF API
+- **File System**: Node.js fs/promises with secure IPC
+- **File Watching**: Chokidar for detecting external changes
+
+## Architecture
+
+### Project Structure
+
+```
+src/
+├── main/                      # Electron Main Process (Node.js)
+│   ├── index.ts              # Application lifecycle, window management
+│   ├── fileSystem.ts         # File I/O operations, IPC handlers
+│   └── menu.ts               # Native menu bar configuration
+│
+├── preload/                   # Preload Scripts (Context Bridge)
+│   ├── index.ts              # Secure API exposure to renderer
+│   └── index.d.ts            # TypeScript type declarations
+│
+└── renderer/                  # Renderer Process (React)
+    └── src/
+        ├── components/        # React Components
+        │   ├── Editor.tsx    # Main editor with TipTap integration
+        │   ├── Editor.css    # Editor and formatting styles
+        │   ├── FileTree.tsx  # Sidebar file/folder browser
+        │   ├── FileTree.css  # File tree styles
+        │   ├── Toolbar.tsx   # Mode switcher and export controls
+        │   ├── Toolbar.css   # Toolbar and tooltip styles
+        │   ├── StatusBar.tsx # Word/character count display
+        │   ├── LinkModal.tsx # Link insertion modal
+        │   └── CreateModal.tsx # File/folder creation modal
+        │
+        ├── hooks/
+        │   └── useAutoSave.ts # Debounced auto-save logic
+        │
+        ├── store/
+        │   └── useDocumentStore.ts # Zustand state management
+        │
+        ├── App.tsx           # Root component and layout
+        ├── App.css           # Global styles and CSS variables
+        └── main.tsx          # React entry point
+```
+
+### Component Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                          App.tsx                            │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │                      Toolbar                          │  │
+│  │  [View Mode Selector] [Export HTML] [Export PDF]      │  │
+│  └───────────────────────────────────────────────────────┘  │
+│  ┌──────────┬────────────────────────────────────────────┐  │
+│  │          │                                            │  │
+│  │ FileTree │              Editor                        │  │
+│  │          │  ┌──────────────────────────────────────┐  │  │
+│  │ [Folders]│  │     FormattingToolbar                │  │  │
+│  │ [Files]  │  │  [H1-H6] [B] [I] [Link] [Table]...   │  │  │
+│  │          │  ├──────────────────────────────────────┤  │  │
+│  │          │  │                                      │  │  │
+│  │          │  │   WYSIWYG: TipTap Editor             │  │  │
+│  │          │  │   Code: Markdown + Preview Split     │  │  │
+│  │          │  │                                      │  │  │
+│  │          │  └──────────────────────────────────────┘  │  │
+│  └──────────┴────────────────────────────────────────────┘  │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │                    StatusBar                          │  │
+│  │  Words: 123 | Characters: 456 | Auto-saved ✓          │  │
+│  └───────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### IPC Communication Flow
+
+```
+┌──────────────────────┐                    ┌───────────────────────┐
+│   Renderer Process   │                    │    Main Process       │
+│     (React App)      │                    │     (Node.js)         │
+├──────────────────────┤                    ├───────────────────────┤
+│                      │                    │                       │
+│  window.api.file     │  ─── invoke ────►  │ ipcMain.handle()      │
+│   .list()            │                    │   'file:list'         │
+│   .read()            │                    │   'file:read'         │
+│   .write()           │                    │   'file:write'        │
+│   .create()          │                    │   'file:create'       │
+│   .delete()          │                    │   'file:delete'       │
+│   .rename()          │                    │   'file:rename'       │
+│   .move()            │                    │   'file:move'         │
+│                      │                    │                       │
+│  window.api.shell    │  ─── invoke ────►  │ ipcMain.handle()      │
+│   .openExternal()    │                    │   'shell:openExternal'│
+│                      │                    │                       │
+│  window.api.export   │  ─── invoke ────►  │ ipcMain.handle()      │
+│   .toHTML()          │                    │   'export:html'       │
+│   .toPDF()           │                    │   'export:pdf'        │
+│                      │                    │                       │
+│  window.api.menu     │  ◄─── send ──────  │ webContents.send()    │
+│   .onNewFile()       │                    │   'menu:new-file'     │
+│   .onNewFolder()     │                    │   'menu:new-folder'   │
+│   .onSave()          │                    │   'menu:save'         │
+│                      │                    │                       │
+└──────────────────────┘                    └───────────────────────┘
+           ▲                                          │
+           │                                          │
+           │         Preload Script                   │
+           │         (context bridge)                 │
+           └──────────────────────────────────────────┘
+                  Security boundary
+```
+
+### Data Flow
+
+1. **File Loading**: FileTree → window.api → IPC → Main Process → fs.readdir
+2. **File Reading**: User clicks file → IPC → fs.readFile → Store → Editor
+3. **Auto-Save**: Editor onChange → debounce → Store → IPC → fs.writeFile
+4. **Export**: Toolbar button → generate HTML/PDF → IPC → dialog + save
+
+## Development
+
+### Running the App
+
+```bash
+# Development mode with hot reload
+npm run dev
+
+# The app will open automatically
+# Changes to renderer code hot-reload instantly
+# Changes to main process require restart
+```
+
+### Type Checking
+
+```bash
+# Check all TypeScript types
+npm run typecheck
+
+# Check main process only
+npm run typecheck:node
+
+# Check renderer process only
+npm run typecheck:web
+```
+
+### Code Style
+
+The project uses ESLint and Prettier (configured via ESLint):
+
+```bash
+# Lint all files
+npm run lint
+
+# Auto-fix linting issues
+npm run lint -- --fix
+```
+
+### File Storage Details
+
+- **Root Directory**: `~/Documents/MarkNotes/`
+- **File Format**: Plain text `.md` files with UTF-8 encoding
+- **Folder Structure**: Nested folders supported, follows filesystem hierarchy
+- **Welcome Note**: Created on first launch with app instructions
+- **Metadata**: No database, all info derived from filesystem
+
+### Security Features
+
+- **Context Isolation**: Enabled to prevent renderer access to Node.js
+- **Node Integration**: Disabled in renderer for security
+- **IPC Whitelist**: Only explicitly exposed APIs available
+- **Path Validation**: All file paths validated to prevent traversal attacks
+- **Sandbox Mode**: Renderer process runs in sandboxed environment
+
+## Technical Decisions
+
+### Why TipTap?
+
+- **Rich Extension Ecosystem** - Official table, list, and formatting extensions
+- **ProseMirror Foundation** - Robust, battle-tested document model
+- **React-First API** - Hooks-based integration with React
+- **Markdown Support** - Built-in markdown shortcuts and conversion
+- **Active Development** - Regular updates and strong community
+
+### Why Zustand Over Redux?
+
+- **Minimal Boilerplate** - No actions, reducers, or complex setup
+- **Built-in TypeScript** - Excellent type inference out of the box
+- **No Context Providers** - Direct store access from any component
+- **Performance** - Automatic shallow comparison prevents re-renders
+- **Size** - Only 2KB, perfect for this application scale
+
+### Why Local-First Architecture?
+
+- **Privacy by Design** - No cloud, no accounts, no data collection
+- **Instant Startup** - No network requests or authentication
+- **Works Offline** - Full functionality without internet
+- **Git-Friendly** - Plain markdown files work with version control
+- **Data Ownership** - Users have complete control over their files
+- **Portability** - Easy to backup, sync, or migrate notes
+
+### Why Electron Over Other Options?
+
+- **Native APIs** - Full access to filesystem, menus, and system integration
+- **Cross-Platform** - Single codebase for macOS, Windows, and Linux
+- **Web Technologies** - Leverage React, TypeScript, and modern tooling
+- **Mature Ecosystem** - Extensive libraries and community support
+
+## Customization
+
+### Theming
+
+Colors are defined as CSS variables in `src/renderer/src/App.css`:
+
+```css
+/* Light mode variables */
+--bg-primary: #ffffff;
+--text-primary: #1a1a1a;
+--accent-color: #007aff;
+/* ... more variables */
+```
+
+Dark mode automatically switches based on system preferences using `prefers-color-scheme: dark`.
+
+### Default Fonts
+
+- **Body Text**: -apple-system, SF Pro, 12pt
+- **Headings**: SF Pro, 600 weight, 14-24pt
+  - H1: 24pt, H2: 22pt, H3: 20pt, H4: 18pt, H5: 16pt, H6: 14pt
+- **Code**: SF Mono, Monaco, Courier New
+
+### Storage Location
+
+To change the default storage location, modify `NOTES_DIR` in `src/main/fileSystem.ts`:
+
+```typescript
+const NOTES_DIR = join(homedir(), 'Documents', 'MarkNotes')
+```
+
+## Troubleshooting
+
+### App Won't Start
+
+- Verify Node.js version: `node --version` (should be 18+)
+- Clear dependencies: `rm -rf node_modules package-lock.json && npm install`
+- Check for port conflicts: default dev server uses port 5173
+
+### Files Not Saving
+
+- Check file permissions in `~/Documents/MarkNotes/`
+- Look for errors in console: open DevTools with `Cmd + Option + I`
+- Verify disk space availability
+
+### Tables Not Rendering
+
+- Ensure you're using GFM-compliant table syntax
+- Tables need header row with separator: `| --- | --- |`
+- Switch modes to refresh rendering: `Cmd + 2` then `Cmd + 1`
+
+### Export Issues
+
+- PDF export requires Chromium rendering engine (built into Electron)
+- HTML export includes inline CSS for portability
+- Check write permissions in target export directory
+
+## Roadmap
+
+Potential future features (contributions welcome):
+
+- [ ] Multiple windows/tabs support
+- [ ] Tag-based organization
+- [ ] Full-text search across all notes
+- [ ] Image paste and attachment support
+- [ ] Vim keybindings mode
+- [ ] Custom CSS themes
+- [ ] Cloud sync integration (optional)
+- [ ] Collaborative editing
+- [ ] Mobile companion app
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues or pull requests.
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+## License
+
+MIT License - see LICENSE file for details

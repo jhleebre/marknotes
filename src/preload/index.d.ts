@@ -1,0 +1,73 @@
+import { ElectronAPI } from '@electron-toolkit/preload'
+
+export interface FileEntry {
+  name: string
+  isDirectory: boolean
+  path: string
+  children?: FileEntry[]
+}
+
+export interface FileResult {
+  success: boolean
+  content?: string
+  files?: FileEntry[]
+  error?: string
+}
+
+export interface FileAPI {
+  getRootPath: () => Promise<string>
+  read: (path: string) => Promise<FileResult>
+  write: (path: string, content: string) => Promise<FileResult>
+  list: () => Promise<FileResult>
+  create: (fileName: string, dirPath?: string) => Promise<FileResult>
+  createFolder: (folderName: string, parentPath?: string) => Promise<FileResult>
+  delete: (path: string) => Promise<FileResult>
+  rename: (oldPath: string, newName: string) => Promise<FileResult>
+  exists: (path: string) => Promise<boolean>
+  move: (sourcePath: string, targetDir: string) => Promise<FileResult>
+  watch: () => Promise<FileResult>
+  unwatch: () => Promise<FileResult>
+  onChanged: (callback: () => void) => () => void
+  onExternalChange: (callback: (path: string) => void) => () => void
+}
+
+export interface ExportAPI {
+  html: (markdown: string, defaultName: string) => Promise<FileResult>
+  pdf: (markdown: string, defaultName: string) => Promise<FileResult>
+}
+
+export interface MenuAPI {
+  onNewFile: (callback: () => void) => () => void
+  onNewFolder: (callback: () => void) => () => void
+  onSave: (callback: () => void) => () => void
+  onExportHtml: (callback: () => void) => () => void
+  onExportPdf: (callback: () => void) => () => void
+  onSetMode: (callback: (mode: string) => void) => () => void
+  onToggleSidebar: (callback: () => void) => () => void
+  onCloseFile: (callback: () => void) => () => void
+  onAbout: (callback: () => void) => () => void
+  onShortcuts: (callback: () => void) => () => void
+}
+
+export interface ThemeAPI {
+  onChanged: (callback: (isDark: boolean) => void) => () => void
+}
+
+export interface ShellAPI {
+  openExternal: (url: string) => Promise<void>
+}
+
+export interface API {
+  file: FileAPI
+  export: ExportAPI
+  menu: MenuAPI
+  theme: ThemeAPI
+  shell: ShellAPI
+}
+
+declare global {
+  interface Window {
+    electron: ElectronAPI
+    api: API
+  }
+}
