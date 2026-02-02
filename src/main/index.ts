@@ -5,6 +5,9 @@ import icon from '../../resources/icon.png?asset'
 import { setupFileHandlers } from './fileSystem'
 import { setupMenu } from './menu'
 
+// Set app name early for macOS menu bar
+app.name = 'MarkNotes'
+
 let mainWindow: BrowserWindow | null = null
 
 function createWindow(): void {
@@ -74,13 +77,10 @@ app.whenReady().then(() => {
   })
 })
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
+// Quit when all windows are closed
+// Modified to quit on macOS as well for single-window app behavior
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
+  app.quit()
 })
 
 // Handle theme changes

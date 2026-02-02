@@ -72,8 +72,12 @@ export function setupMenu(mainWindow: BrowserWindow): void {
             mainWindow.webContents.send('menu:closeFile')
           }
         },
-        { type: 'separator' },
-        isMac ? { role: 'quit' as const } : { role: 'quit' as const }
+        ...(!isMac
+          ? [
+              { type: 'separator' as const },
+              { role: 'quit' as const }
+            ]
+          : [])
       ]
     },
     // Edit Menu
@@ -144,9 +148,7 @@ export function setupMenu(mainWindow: BrowserWindow): void {
               { type: 'separator' as const },
               { role: 'close' as const },
               { type: 'separator' as const },
-              { role: 'front' as const },
-              { type: 'separator' as const },
-              { role: 'window' as const }
+              { role: 'front' as const }
             ]
           : [{ role: 'close' as const }])
       ]

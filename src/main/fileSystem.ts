@@ -11,8 +11,7 @@ let watcher: ReturnType<typeof chokidar.watch> | null = null
 // Configure marked for GFM and heading IDs
 marked.setOptions({
   gfm: true,
-  breaks: false,
-  tables: true
+  breaks: false
 })
 
 // Add custom renderer for headings with IDs

@@ -22,8 +22,7 @@ const lowlight = createLowlight(common)
 // Configure marked for GFM table support and heading IDs
 marked.setOptions({
   gfm: true,
-  breaks: false,
-  tables: true
+  breaks: false
 })
 
 // Add custom renderer for headings with IDs using slugger
@@ -97,7 +96,7 @@ const HeadingWithId = Heading.extend({
             }
           }
         },
-        appendTransaction: (transactions, oldState, newState) => {
+        appendTransaction: (transactions, _oldState, newState) => {
           // Skip during composition to avoid breaking Korean/Chinese/Japanese input
           if (composing) {
             return null
@@ -164,7 +163,7 @@ turndownService.addRule('headingWithId', {
 // Add table to markdown conversion rules
 turndownService.addRule('table', {
   filter: 'table',
-  replacement: function (content, node) {
+  replacement: function (_content, node) {
     const table = node as HTMLTableElement
     const rows = Array.from(table.querySelectorAll('tr'))
 
@@ -263,10 +262,6 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
           class: 'editor-link',
           target: null, // Don't open in new tab
           rel: null // Remove rel attributes
-        },
-        // Disable default Cmd+K behavior, we'll handle it in editorProps
-        addKeyboardShortcuts() {
-          return {}
         }
       }),
       CodeBlockLowlight.configure({
@@ -291,7 +286,7 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
         class: 'editor-content'
       },
       handleDOMEvents: {
-        contextmenu: (view, event) => {
+        contextmenu: (_view, event) => {
           // Check if right-click is on a table cell
           const target = event.target as HTMLElement
           const cell = target.closest('td, th')
@@ -306,7 +301,7 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
           }
           return false
         },
-        click: (view, event) => {
+        click: (_view, event) => {
           // Handle link clicks when Cmd (Mac) or Ctrl (Windows/Linux) is pressed
           const target = event.target as HTMLElement
           const link = target.closest('a')
@@ -382,8 +377,11 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
     }
     if (contextMenu.show) {
       document.addEventListener('click', handleClick)
-      return () => document.removeEventListener('click', handleClick)
+      return (): void => {
+        document.removeEventListener('click', handleClick)
+      }
     }
+    return undefined
   }, [contextMenu.show])
 
   // Handle markdown mode changes
@@ -407,11 +405,12 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
 
   // Handle link clicks in preview mode
   useEffect(() => {
-    const handlePreviewLinkClick = (e: MouseEvent): void => {
-      const target = e.target as HTMLElement
+    const handlePreviewLinkClick = (e: Event): void => {
+      const mouseEvent = e as MouseEvent
+      const target = mouseEvent.target as HTMLElement
       const link = target.closest('a')
       if (link) {
-        e.preventDefault()
+        mouseEvent.preventDefault()
         const href = link.getAttribute('href')
         if (href) {
           if (href.startsWith('#')) {
@@ -422,8 +421,8 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
               if (targetElement) {
                 targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
               }
-            } catch (e) {
-              console.error('Failed to decode URI:', e)
+            } catch (err) {
+              console.error('Failed to decode URI:', err)
             }
           } else {
             // External link - open in browser
@@ -437,9 +436,12 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
 
     const previewContent = document.querySelector('.preview-content')
     if (previewContent) {
-      previewContent.addEventListener('click', handlePreviewLinkClick)
-      return () => previewContent.removeEventListener('click', handlePreviewLinkClick)
+      previewContent.addEventListener('click', handlePreviewLinkClick as EventListener)
+      return (): void => {
+        previewContent.removeEventListener('click', handlePreviewLinkClick as EventListener)
+      }
     }
+    return undefined
   }, [mode, content])
 
   if (isLoadingContent) {
