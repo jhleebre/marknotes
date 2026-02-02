@@ -163,7 +163,9 @@
   border-radius: 6px;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   z-index: 99999;
 }
 
@@ -177,7 +179,9 @@
   border-right-color: rgba(0, 0, 0, 0.9);
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   z-index: 99999;
 }
 
@@ -246,7 +250,9 @@
   border-radius: 6px;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   z-index: 99999;
 }
 
@@ -260,7 +266,9 @@
   border-right-color: rgba(0, 0, 0, 0.9);
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   z-index: 99999;
 }
 
@@ -336,7 +344,9 @@
   border-radius: 6px;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   z-index: 99999;
 }
 
@@ -350,7 +360,9 @@
   border-left-color: rgba(0, 0, 0, 0.9);
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   z-index: 99999;
 }
 
@@ -424,7 +436,9 @@
   border-radius: 6px;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   z-index: 99999;
 }
 
@@ -438,7 +452,9 @@
   border-left-color: rgba(0, 0, 0, 0.9);
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   z-index: 99999;
 }
 

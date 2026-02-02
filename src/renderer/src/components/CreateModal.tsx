@@ -105,9 +105,7 @@ export function CreateModal({
               <span className="folder-name">{entry.name}</span>
             </div>
             {isExpanded && entry.children && (
-              <div className="folder-children">
-                {renderFolderTree(entry.children, depth + 1)}
-              </div>
+              <div className="folder-children">{renderFolderTree(entry.children, depth + 1)}</div>
             )}
           </div>
         )
@@ -132,9 +130,7 @@ export function CreateModal({
         <form onSubmit={handleSubmit}>
           <div className="modal-body">
             <div className="form-group">
-              <label htmlFor="name-input">
-                {type === 'file' ? 'File Name' : 'Folder Name'}
-              </label>
+              <label htmlFor="name-input">{type === 'file' ? 'File Name' : 'Folder Name'}</label>
               <input
                 ref={inputRef}
                 id="name-input"
@@ -171,11 +167,7 @@ export function CreateModal({
             <button type="button" className="btn btn-cancel" onClick={onClose}>
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn btn-primary"
-              disabled={!name.trim()}
-            >
+            <button type="submit" className="btn btn-primary" disabled={!name.trim()}>
               {type === 'file' ? 'Create File' : 'Create Folder'}
             </button>
           </div>

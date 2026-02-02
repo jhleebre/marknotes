@@ -62,6 +62,12 @@ function FileTreeItem({
   const isEditing = editingPath === entry.path
   const isDropTarget = dragState.dropTarget === entry.path && entry.isDirectory
 
+  // Get display name without .md extension for files
+  const getDisplayName = (name: string, isDirectory: boolean): string => {
+    if (isDirectory) return name
+    return name.endsWith('.md') ? name.slice(0, -3) : name
+  }
+
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus()
@@ -176,11 +182,7 @@ function FileTreeItem({
           </span>
         )}
         <span className="file-icon">
-          {entry.isDirectory ? (
-            isExpanded ? <FolderOpenIcon /> : <FolderIcon />
-          ) : (
-            <FileIcon />
-          )}
+          {entry.isDirectory ? isExpanded ? <FolderOpenIcon /> : <FolderIcon /> : <FileIcon />}
         </span>
         {isEditing ? (
           <input
@@ -194,7 +196,7 @@ function FileTreeItem({
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
-          <span className="file-name">{entry.name}</span>
+          <span className="file-name">{getDisplayName(entry.name, entry.isDirectory)}</span>
         )}
       </div>
       {entry.isDirectory && isExpanded && entry.children && (
@@ -272,9 +274,7 @@ export function FileTree(): React.JSX.Element {
       if (listResult.success && listResult.files) {
         setFiles(listResult.files)
         // Auto-expand root level folders
-        const rootFolders = listResult.files
-          .filter((f) => f.isDirectory)
-          .map((f) => f.path)
+        const rootFolders = listResult.files.filter((f) => f.isDirectory).map((f) => f.path)
         setExpandedFolders((prev) => new Set([...prev, ...rootFolders]))
       }
     } catch (error) {
@@ -795,7 +795,14 @@ export function FileTree(): React.JSX.Element {
 function ChevronIcon(): React.JSX.Element {
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-      <path d="M4.5 2L8.5 6L4.5 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+      <path
+        d="M4.5 2L8.5 6L4.5 10"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
     </svg>
   )
 }
@@ -837,7 +844,11 @@ function FolderPlusIcon(): React.JSX.Element {
 function TrashIcon(): React.JSX.Element {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
-      <path d="M3 5h10M6 5V3.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V5M4 5v9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V5" strokeWidth="1.2" strokeLinecap="round" />
+      <path
+        d="M3 5h10M6 5V3.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V5M4 5v9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V5"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }

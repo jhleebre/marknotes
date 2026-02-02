@@ -71,7 +71,9 @@
   border-radius: 6px;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   z-index: 99999;
 }
 
@@ -85,7 +87,9 @@
   border-left-color: rgba(0, 0, 0, 0.9);
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
   z-index: 99999;
 }
 
@@ -133,13 +137,15 @@
 
 .file-tree-item {
   user-select: none;
+  margin: 0;
 }
 
 .file-tree-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 3px 12px;
+  margin: 0;
   cursor: pointer;
   transition: background 0.1s ease;
   position: relative;
@@ -171,6 +177,7 @@
   height: 16px;
   color: var(--text-secondary);
   flex-shrink: 0;
+  margin: 0;
 }
 
 .file-tree-row.selected .file-icon {
@@ -184,6 +191,20 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin: 0 !important;
+  line-height: 1.4;
+  background: transparent;
+  padding: 0;
+}
+
+.file-tree-row:hover .file-name {
+  color: var(--text-primary);
+  background: transparent;
+}
+
+.file-tree-row.selected .file-name {
+  color: var(--text-primary);
+  background: transparent;
 }
 
 .file-actions {
@@ -239,7 +260,9 @@
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.1);
   padding: 4px;
   z-index: 10000;
   animation: contextMenuSlideIn 0.15s ease-out;
@@ -257,7 +280,9 @@
 }
 
 .dark .context-menu {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .context-menu-item {

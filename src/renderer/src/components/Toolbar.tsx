@@ -261,7 +261,16 @@ function PdfIcon(): React.JSX.Element {
 function SavingIcon(): React.JSX.Element {
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" className="spinning">
-      <circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" strokeWidth="2" strokeDasharray="20" strokeDashoffset="5" />
+      <circle
+        cx="6"
+        cy="6"
+        r="5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeDasharray="20"
+        strokeDashoffset="5"
+      />
     </svg>
   )
 }

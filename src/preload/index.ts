@@ -102,6 +102,11 @@ const api = {
       const listener = (): void => callback()
       ipcRenderer.on('menu:shortcuts', listener)
       return () => ipcRenderer.removeListener('menu:shortcuts', listener)
+    },
+    onCleanupImages: (callback: () => void): (() => void) => {
+      const listener = (): void => callback()
+      ipcRenderer.on('menu:cleanupImages', listener)
+      return () => ipcRenderer.removeListener('menu:cleanupImages', listener)
     }
   },
   theme: {
@@ -113,6 +118,16 @@ const api = {
   },
   shell: {
     openExternal: (url: string): Promise<void> => ipcRenderer.invoke('shell:openExternal', url)
+  },
+  image: {
+    upload: (): Promise<FileResult> => ipcRenderer.invoke('image:upload'),
+    embedBase64: (imagePath: string): Promise<FileResult> =>
+      ipcRenderer.invoke('image:embedBase64', imagePath),
+    resolveAssetPath: (imagePath: string): Promise<FileResult> =>
+      ipcRenderer.invoke('image:resolveAssetPath', imagePath),
+    saveBase64: (filename: string, base64Data: string): Promise<FileResult> =>
+      ipcRenderer.invoke('image:saveBase64', filename, base64Data),
+    cleanup: (): Promise<FileResult> => ipcRenderer.invoke('image:cleanup')
   }
 }
 

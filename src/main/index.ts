@@ -1,7 +1,7 @@
-import { app, shell, BrowserWindow, nativeTheme } from 'electron'
+import { app, shell, BrowserWindow, nativeTheme, clipboard } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { setupFileHandlers } from './fileSystem'
+import { setupFileHandlers, cleanupOnQuit } from './fileSystem'
 import { setupMenu } from './menu'
 
 // Set app name early for macOS menu bar
@@ -79,6 +79,20 @@ app.whenReady().then(() => {
 // Modified to quit on macOS as well for single-window app behavior
 app.on('window-all-closed', () => {
   app.quit()
+})
+
+// Cleanup unreferenced images before quitting
+app.on('before-quit', async (event) => {
+  event.preventDefault()
+
+  // Clear clipboard to prevent pasting deleted images after app restart
+  clipboard.clear()
+  console.log('[Cleanup] Clipboard cleared')
+
+  // Cleanup unreferenced image files
+  await cleanupOnQuit()
+
+  app.exit(0)
 })
 
 // Handle theme changes

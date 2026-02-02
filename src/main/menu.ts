@@ -66,18 +66,20 @@ export function setupMenu(mainWindow: BrowserWindow): void {
         },
         { type: 'separator' },
         {
+          label: 'Clean Up Unused Images',
+          click: (): void => {
+            mainWindow.webContents.send('menu:cleanupImages')
+          }
+        },
+        { type: 'separator' },
+        {
           label: 'Close File',
           accelerator: 'CmdOrCtrl+W',
           click: (): void => {
             mainWindow.webContents.send('menu:closeFile')
           }
         },
-        ...(!isMac
-          ? [
-              { type: 'separator' as const },
-              { role: 'quit' as const }
-            ]
-          : [])
+        ...(!isMac ? [{ type: 'separator' as const }, { role: 'quit' as const }] : [])
       ]
     },
     // Edit Menu
@@ -96,7 +98,11 @@ export function setupMenu(mainWindow: BrowserWindow): void {
               { role: 'delete' as const },
               { role: 'selectAll' as const }
             ]
-          : [{ role: 'delete' as const }, { type: 'separator' as const }, { role: 'selectAll' as const }])
+          : [
+              { role: 'delete' as const },
+              { type: 'separator' as const },
+              { role: 'selectAll' as const }
+            ])
       ]
     },
     // View Menu

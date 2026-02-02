@@ -18,9 +18,7 @@ export function StatusBar(): React.JSX.Element {
   return (
     <div className="status-bar">
       <div className="status-left">
-        {currentFilePath && (
-          <span className="status-item mode">{getModeLabel()}</span>
-        )}
+        {currentFilePath && <span className="status-item mode">{getModeLabel()}</span>}
       </div>
       <div className="status-right">
         {currentFilePath && (

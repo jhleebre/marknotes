@@ -45,6 +45,25 @@ MarkNotes is a native macOS Electron application designed for markdown enthusias
 - **GFM Compatible** - Tables work across all modes and export formats
 - **Smart Rendering** - Tables display consistently in edit, preview, and export
 
+### 🖼️ **Image Management**
+
+- **File Upload** - Insert images with toolbar button
+  - Supported formats: JPG, PNG, GIF, SVG, WEBP
+  - Automatic storage in `.assets/` folder with unique filenames
+  - Alt text support for accessibility
+- **Image Resizing** - Right-click any image to resize:
+  - Small (300px), Medium (600px), Large (900px), or Original size
+  - Size preferences preserved in markdown
+- **Context Menu Actions**:
+  - Resize to predefined dimensions
+  - Edit alt text
+  - Embed as base64 (makes document fully portable)
+  - Copy image to clipboard
+  - Remove image
+- **Smart Storage** - Images stored as relative paths (`.assets/filename.png`)
+- **Automatic Cleanup** - Remove unused images from .assets folder via menu
+- **Export Compatible** - Images embedded in HTML/PDF exports automatically
+
 ### 📁 **File Management**
 
 - **Sidebar Navigation** - Browse and organize notes in a collapsible file tree
@@ -136,6 +155,16 @@ The built application will be in the `dist/` directory.
 4. Add/remove rows and columns as needed
 5. Tables work seamlessly across all modes and exports
 
+### Working with Images
+
+1. Click the image icon in the formatting toolbar
+2. Choose an image file from your computer (JPG, PNG, GIF, SVG, WEBP)
+3. Add optional alt text for accessibility
+4. The image is automatically copied to `.assets/` folder and inserted
+5. Right-click any image to resize, edit alt text, embed as base64, or remove
+6. Images are preserved in HTML/PDF exports automatically
+7. Use "Clean Up Unused Images" from the File menu to remove orphaned assets
+
 ### Creating Links and Table of Contents
 
 1. Select text and press `Cmd + K` to insert a link
@@ -153,42 +182,46 @@ The built application will be in the `dist/` directory.
 ## Keyboard Shortcuts
 
 ### File Operations
-| Action | Shortcut |
-|--------|----------|
-| New File | `Cmd + N` |
-| New Folder | `Cmd + Shift + N` |
-| Save (manual) | `Cmd + S` |
-| Toggle Sidebar | `Cmd + .` |
-| Close File | `Cmd + W` |
+
+| Action         | Shortcut          |
+| -------------- | ----------------- |
+| New File       | `Cmd + N`         |
+| New Folder     | `Cmd + Shift + N` |
+| Save (manual)  | `Cmd + S`         |
+| Toggle Sidebar | `Cmd + .`         |
+| Close File     | `Cmd + W`         |
 
 ### View Modes
-| Mode | Shortcut |
-|------|----------|
-| WYSIWYG Mode (Edit) | `Cmd + 1` |
+
+| Mode                   | Shortcut  |
+| ---------------------- | --------- |
+| WYSIWYG Mode (Edit)    | `Cmd + 1` |
 | Code Mode (Split View) | `Cmd + 2` |
 
 ### Export
-| Action | Shortcut |
-|--------|----------|
+
+| Action         | Shortcut          |
+| -------------- | ----------------- |
 | Export as HTML | `Cmd + Shift + E` |
-| Export as PDF | `Cmd + Shift + P` |
+| Export as PDF  | `Cmd + Shift + P` |
 
 ### Formatting (WYSIWYG Mode)
-| Action | Shortcut |
-|--------|----------|
-| Bold | `Cmd + B` |
-| Italic | `Cmd + I` |
-| Strikethrough | `Cmd + Shift + X` |
-| Inline Code | `Cmd + E` |
-| Insert Link | `Cmd + K` |
-| Heading 1-6 | `Cmd + Option + 1-6` |
-| Paragraph | `Cmd + Option + 0` |
-| Bullet List | `Cmd + Shift + 8` |
-| Numbered List | `Cmd + Shift + 7` |
-| Blockquote | `Cmd + Shift + B` |
-| Code Block | `Cmd + Option + C` |
-| Undo | `Cmd + Z` |
-| Redo | `Cmd + Shift + Z` |
+
+| Action        | Shortcut             |
+| ------------- | -------------------- |
+| Bold          | `Cmd + B`            |
+| Italic        | `Cmd + I`            |
+| Strikethrough | `Cmd + Shift + X`    |
+| Inline Code   | `Cmd + E`            |
+| Insert Link   | `Cmd + K`            |
+| Heading 1-6   | `Cmd + Option + 1-6` |
+| Paragraph     | `Cmd + Option + 0`   |
+| Bullet List   | `Cmd + Shift + 8`    |
+| Numbered List | `Cmd + Shift + 7`    |
+| Blockquote    | `Cmd + Shift + B`    |
+| Code Block    | `Cmd + Option + C`   |
+| Undo          | `Cmd + Z`            |
+| Redo          | `Cmd + Shift + Z`    |
 
 ## Technical Stack
 
@@ -236,6 +269,8 @@ src/
         │   ├── Toolbar.css   # Toolbar and tooltip styles
         │   ├── StatusBar.tsx # Word/character count display
         │   ├── LinkModal.tsx # Link insertion modal
+        │   ├── ImageModal.tsx # Image insertion modal
+        │   ├── ImageModal.css # Image modal styles
         │   └── CreateModal.tsx # File/folder creation modal
         │
         ├── hooks/
@@ -302,10 +337,16 @@ src/
 │   .toHTML()          │                    │   'export:html'       │
 │   .toPDF()           │                    │   'export:pdf'        │
 │                      │                    │                       │
+│  window.api.image    │  ─── invoke ────►  │ ipcMain.handle()      │
+│   .upload()          │                    │   'image:upload'      │
+│   .embedBase64()     │                    │   'image:embedBase64' │
+│   .cleanup()         │                    │   'image:cleanup'     │
+│                      │                    │                       │
 │  window.api.menu     │  ◄─── send ──────  │ webContents.send()    │
 │   .onNewFile()       │                    │   'menu:new-file'     │
 │   .onNewFolder()     │                    │   'menu:new-folder'   │
 │   .onSave()          │                    │   'menu:save'         │
+│   .onCleanupImages() │                    │   'menu:cleanupImages'│
 │                      │                    │                       │
 └──────────────────────┘                    └───────────────────────┘
            ▲                                          │
@@ -475,7 +516,6 @@ Potential future features (contributions welcome):
 - [ ] Multiple windows/tabs support
 - [ ] Tag-based organization
 - [ ] Full-text search across all notes
-- [ ] Image paste and attachment support
 - [ ] Vim keybindings mode
 - [ ] Custom CSS themes
 - [ ] Cloud sync integration (optional)

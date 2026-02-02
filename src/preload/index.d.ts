@@ -47,6 +47,7 @@ export interface MenuAPI {
   onCloseFile: (callback: () => void) => () => void
   onAbout: (callback: () => void) => () => void
   onShortcuts: (callback: () => void) => () => void
+  onCleanupImages: (callback: () => void) => () => void
 }
 
 export interface ThemeAPI {
@@ -57,12 +58,21 @@ export interface ShellAPI {
   openExternal: (url: string) => Promise<void>
 }
 
+export interface ImageAPI {
+  upload: () => Promise<FileResult>
+  embedBase64: (imagePath: string) => Promise<FileResult>
+  resolveAssetPath: (imagePath: string) => Promise<FileResult>
+  saveBase64: (filename: string, base64Data: string) => Promise<FileResult>
+  cleanup: () => Promise<FileResult>
+}
+
 export interface API {
   file: FileAPI
   export: ExportAPI
   menu: MenuAPI
   theme: ThemeAPI
   shell: ShellAPI
+  image: ImageAPI
 }
 
 declare global {

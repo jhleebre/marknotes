@@ -12,18 +12,25 @@ export function useAutoSave(): {
 
   const contentRef = useRef(content)
   const pathRef = useRef(currentFilePath)
+  const originalContentRef = useRef(originalContent)
 
   // Keep refs updated
   useEffect(() => {
     contentRef.current = content
     pathRef.current = currentFilePath
-  }, [content, currentFilePath])
+    originalContentRef.current = originalContent
+  }, [content, currentFilePath, originalContent])
 
   const performSave = useCallback(async (): Promise<void> => {
     const filePath = pathRef.current
     const fileContent = contentRef.current
 
-    if (!filePath || fileContent === originalContent) {
+    if (!filePath) {
+      return
+    }
+
+    // For auto-save, check if content changed
+    if (fileContent === originalContentRef.current) {
       return
     }
 
@@ -33,6 +40,7 @@ export function useAutoSave(): {
       const result = await window.api.file.write(filePath, fileContent)
       if (result.success) {
         setOriginalContent(fileContent)
+        originalContentRef.current = fileContent
         setSaveStatus('saved')
       } else {
         console.error('Save failed:', result.error)
@@ -42,7 +50,7 @@ export function useAutoSave(): {
       console.error('Save error:', error)
       setSaveStatus('error')
     }
-  }, [originalContent, setSaveStatus, setOriginalContent])
+  }, [setSaveStatus, setOriginalContent])
 
   // Debounced auto-save
   const debouncedSave = useCallback(
@@ -70,11 +78,34 @@ export function useAutoSave(): {
     }
   }, [debouncedSave])
 
-  // Manual save function
+  // Manual save function - force save without checking if content changed
   const saveNow = useCallback(async (): Promise<void> => {
     debouncedSave.cancel()
-    await performSave()
-  }, [debouncedSave, performSave])
+
+    const filePath = pathRef.current
+    const fileContent = contentRef.current
+
+    if (!filePath) {
+      return
+    }
+
+    setSaveStatus('saving')
+
+    try {
+      const result = await window.api.file.write(filePath, fileContent)
+      if (result.success) {
+        setOriginalContent(fileContent)
+        originalContentRef.current = fileContent
+        setSaveStatus('saved')
+      } else {
+        console.error('Save failed:', result.error)
+        setSaveStatus('error')
+      }
+    } catch (error) {
+      console.error('Save error:', error)
+      setSaveStatus('error')
+    }
+  }, [debouncedSave, setSaveStatus, setOriginalContent])
 
   return { saveNow }
 }
