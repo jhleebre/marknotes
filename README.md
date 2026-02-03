@@ -25,8 +25,10 @@ MarkNotes is a native macOS Electron application designed for markdown enthusias
 ### 📝 **Rich Text Formatting**
 
 - **Headings** - H1 through H6 with customized font sizes (24pt to 14pt)
-- **Text Styles** - Bold, italic, strikethrough, inline code
+- **Text Styles** - Bold, italic, strikethrough (`Cmd+Shift+X`), inline code
 - **Lists** - Bulleted and numbered lists with proper nesting
+  - **Indent/Outdent** - Tab/Shift+Tab for list nesting (context-aware)
+  - Smart indentation for regular text outside lists
 - **Blockquotes** - Stylized quote blocks with accent border
 - **Links** - Interactive hyperlinks with insert modal (`Cmd + K`)
   - Internal navigation with anchor links (#heading-id)
@@ -41,9 +43,11 @@ MarkNotes is a native macOS Electron application designed for markdown enthusias
 - **Right-Click Context Menu** - Full table manipulation:
   - Add row above/below
   - Add column left/right
+  - Column alignment (left, center, right)
   - Delete row/column/table
-- **GFM Compatible** - Tables work across all modes and export formats
+- **GFM-Compliant Alignment** - Standard markdown alignment syntax (`:---`, `:---:`, `---:`)
 - **Smart Rendering** - Tables display consistently in edit, preview, and export
+- **Tab Navigation** - Tab/Shift+Tab to navigate between cells (smart context-aware)
 
 ### 🖼️ **Image Management**
 
@@ -67,10 +71,13 @@ MarkNotes is a native macOS Electron application designed for markdown enthusias
 ### 📁 **File Management**
 
 - **Sidebar Navigation** - Browse and organize notes in a collapsible file tree
-- **Folders** - Create nested folder structures
+- **Folders** - Create nested folder structures with drag-and-drop support
 - **Context Menus** - Right-click files/folders to rename or delete
+  - Smart positioning (auto-adjusts to stay on screen)
+  - Auto-close on scroll for better UX
 - **Quick Actions** - `Cmd + N` for new file, `Cmd + Shift + N` for new folder
 - **Persistent State** - Selected file and sidebar state saved between sessions
+- **Clean UI** - `.md` extensions hidden throughout interface for cleaner look
 
 ### 💾 **Smart Auto-Save**
 
@@ -207,21 +214,23 @@ The built application will be in the `dist/` directory.
 
 ### Formatting (WYSIWYG Mode)
 
-| Action        | Shortcut             |
-| ------------- | -------------------- |
-| Bold          | `Cmd + B`            |
-| Italic        | `Cmd + I`            |
-| Strikethrough | `Cmd + Shift + X`    |
-| Inline Code   | `Cmd + E`            |
-| Insert Link   | `Cmd + K`            |
-| Heading 1-6   | `Cmd + Option + 1-6` |
-| Paragraph     | `Cmd + Option + 0`   |
-| Bullet List   | `Cmd + Shift + 8`    |
-| Numbered List | `Cmd + Shift + 7`    |
-| Blockquote    | `Cmd + Shift + B`    |
-| Code Block    | `Cmd + Option + C`   |
-| Undo          | `Cmd + Z`            |
-| Redo          | `Cmd + Shift + Z`    |
+| Action          | Shortcut             |
+| --------------- | -------------------- |
+| Bold            | `Cmd + B`            |
+| Italic          | `Cmd + I`            |
+| Strikethrough   | `Cmd + Shift + X`    |
+| Inline Code     | `Cmd + E`            |
+| Insert Link     | `Cmd + K`            |
+| Heading 1-6     | `Cmd + Option + 1-6` |
+| Paragraph       | `Cmd + Option + 0`   |
+| Numbered List   | `Cmd + Shift + 7`    |
+| Bullet List     | `Cmd + Shift + 8`    |
+| Increase Indent | `Tab`                |
+| Decrease Indent | `Shift + Tab`        |
+| Blockquote      | `Cmd + Shift + B`    |
+| Code Block      | `Cmd + Option + C`   |
+| Undo            | `Cmd + Z`            |
+| Redo            | `Cmd + Shift + Z`    |
 
 ## Technical Stack
 

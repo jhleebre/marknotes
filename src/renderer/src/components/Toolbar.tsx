@@ -86,11 +86,13 @@ export function Toolbar(): React.JSX.Element {
         <div className="file-info">
           {currentFileName ? (
             <>
-              <span className="file-name">{currentFileName}</span>
+              <span className="file-name">
+                {currentFileName.endsWith('.md') ? currentFileName.slice(0, -3) : currentFileName}
+              </span>
               <SaveStatusIndicator status={saveStatus} />
             </>
           ) : (
-            <span className="no-file">Select a file to edit</span>
+            <span className="no-file">Select a file to write</span>
           )}
         </div>
       </div>

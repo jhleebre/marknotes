@@ -55,7 +55,13 @@ function FileTreeItem({
   onDragOver,
   onDrop
 }: FileTreeItemProps): React.JSX.Element {
-  const [editName, setEditName] = useState(entry.name)
+  const [editName, setEditName] = useState(() => {
+    // Initialize without .md extension for files
+    if (!entry.isDirectory && entry.name.endsWith('.md')) {
+      return entry.name.slice(0, -3)
+    }
+    return entry.name
+  })
   const inputRef = useRef<HTMLInputElement>(null)
   const isExpanded = expandedFolders.has(entry.path)
   const isSelected = entry.path === selectedPath
@@ -71,18 +77,18 @@ function FileTreeItem({
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus()
-      // Select filename without extension for files
-      if (!entry.isDirectory && entry.name.endsWith('.md')) {
-        inputRef.current.setSelectionRange(0, entry.name.length - 3)
-      } else {
-        inputRef.current.select()
-      }
+      inputRef.current.select()
     }
-  }, [isEditing, entry.isDirectory, entry.name])
+  }, [isEditing])
 
   useEffect(() => {
-    setEditName(entry.name)
-  }, [entry.name])
+    // Update editName when entry changes, removing .md for files
+    if (!entry.isDirectory && entry.name.endsWith('.md')) {
+      setEditName(entry.name.slice(0, -3))
+    } else {
+      setEditName(entry.name)
+    }
+  }, [entry.name, entry.isDirectory])
 
   const handleClick = (e: React.MouseEvent): void => {
     e.stopPropagation()
@@ -107,23 +113,53 @@ function FileTreeItem({
   const handleRenameKeyDown = (e: React.KeyboardEvent): void => {
     if (e.key === 'Enter') {
       e.preventDefault()
-      if (editName.trim() && editName !== entry.name) {
-        onFinishRename(entry.path, editName.trim())
+      if (editName.trim()) {
+        // Add .md extension back for files
+        const finalName = !entry.isDirectory && !editName.endsWith('.md')
+          ? `${editName.trim()}.md`
+          : editName.trim()
+
+        // Only rename if name actually changed
+        if (finalName !== entry.name) {
+          onFinishRename(entry.path, finalName)
+        } else {
+          onCancelRename()
+        }
       } else {
         onCancelRename()
       }
     } else if (e.key === 'Escape') {
       e.preventDefault()
-      setEditName(entry.name)
+      // Reset to display name (without .md)
+      if (!entry.isDirectory && entry.name.endsWith('.md')) {
+        setEditName(entry.name.slice(0, -3))
+      } else {
+        setEditName(entry.name)
+      }
       onCancelRename()
     }
   }
 
   const handleRenameBlur = (): void => {
-    if (editName.trim() && editName !== entry.name) {
-      onFinishRename(entry.path, editName.trim())
+    if (editName.trim()) {
+      // Add .md extension back for files
+      const finalName = !entry.isDirectory && !editName.endsWith('.md')
+        ? `${editName.trim()}.md`
+        : editName.trim()
+
+      // Only rename if name actually changed
+      if (finalName !== entry.name) {
+        onFinishRename(entry.path, finalName)
+      } else {
+        onCancelRename()
+      }
     } else {
-      setEditName(entry.name)
+      // Reset to display name (without .md)
+      if (!entry.isDirectory && entry.name.endsWith('.md')) {
+        setEditName(entry.name.slice(0, -3))
+      } else {
+        setEditName(entry.name)
+      }
       onCancelRename()
     }
   }
@@ -551,12 +587,12 @@ export function FileTree(): React.JSX.Element {
 
       // Adjust horizontal position
       if (x + rect.width > viewportWidth) {
-        x = viewportWidth - rect.width - 8
+        x = Math.max(8, viewportWidth - rect.width - 8)
       }
 
-      // Adjust vertical position
+      // Adjust vertical position - show above if too close to bottom
       if (y + rect.height > viewportHeight) {
-        y = viewportHeight - rect.height - 8
+        y = Math.max(8, y - rect.height)
       }
 
       // Ensure minimum distance from edges
@@ -568,6 +604,22 @@ export function FileTree(): React.JSX.Element {
       }
     }
   }, [contextMenu.visible, contextMenu.x, contextMenu.y])
+
+  // Close context menu on scroll
+  useEffect(() => {
+    const handleScroll = (): void => {
+      if (contextMenu.visible) {
+        closeContextMenu()
+      }
+    }
+    if (contextMenu.visible) {
+      window.addEventListener('scroll', handleScroll, true)
+      return (): void => {
+        window.removeEventListener('scroll', handleScroll, true)
+      }
+    }
+    return undefined
+  }, [contextMenu.visible, closeContextMenu])
 
   // Close context menu on click outside
   useEffect(() => {

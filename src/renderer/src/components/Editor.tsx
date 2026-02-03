@@ -5,6 +5,7 @@ import Heading from '@tiptap/extension-heading'
 import Placeholder from '@tiptap/extension-placeholder'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import Link from '@tiptap/extension-link'
+import Strike from '@tiptap/extension-strike'
 import TipTapImage from '@tiptap/extension-image'
 import { Table } from '@tiptap/extension-table'
 import { TableRow } from '@tiptap/extension-table-row'
@@ -18,8 +19,78 @@ import { useDocumentStore } from '../store/useDocumentStore'
 import { LinkModal } from './LinkModal'
 import { ImageModal } from './ImageModal'
 import './Editor.css'
+import { Extension } from '@tiptap/core'
 
 const lowlight = createLowlight(common)
+
+// Custom extension for Tab/Shift+Tab handling
+const TabHandling = Extension.create({
+  name: 'tabHandling',
+
+  addKeyboardShortcuts() {
+    return {
+      Tab: () => {
+        const { state } = this.editor
+        const { selection } = state
+        const { $from } = selection
+
+        // Check if we're inside a table
+        const isInTable = $from.node(-1)?.type.name === 'tableCell' || $from.node(-1)?.type.name === 'tableHeader'
+        if (isInTable) {
+          // Let table extension handle it (go to next cell)
+          return false
+        }
+
+        // Check if we're in a list
+        const isInList = this.editor.isActive('bulletList') || this.editor.isActive('orderedList')
+        if (isInList) {
+          // Sink list item (increase indent)
+          return this.editor.commands.sinkListItem('listItem')
+        }
+
+        // For regular text, insert tab character
+        return this.editor.commands.insertContent('\t')
+      },
+      'Shift-Tab': () => {
+        const { state } = this.editor
+        const { selection } = state
+        const { $from } = selection
+
+        // Check if we're inside a table
+        const isInTable = $from.node(-1)?.type.name === 'tableCell' || $from.node(-1)?.type.name === 'tableHeader'
+        if (isInTable) {
+          // Let table extension handle it (go to previous cell)
+          return false
+        }
+
+        // Check if we're in a list
+        const isInList = this.editor.isActive('bulletList') || this.editor.isActive('orderedList')
+        if (isInList) {
+          // Lift list item (decrease indent)
+          return this.editor.commands.liftListItem('listItem')
+        }
+
+        // For regular text, try to remove leading tab/spaces
+        const { $anchor } = selection
+        const textBefore = $anchor.parent.textContent.slice(0, $anchor.parentOffset)
+
+        if (textBefore.match(/[\t ]$/)) {
+          // Remove one tab or up to 4 spaces before cursor
+          const match = textBefore.match(/([\t]| {1,4})$/)
+          if (match) {
+            const deleteCount = match[1].length
+            return this.editor.commands.deleteRange({
+              from: $anchor.pos - deleteCount,
+              to: $anchor.pos
+            })
+          }
+        }
+
+        return false
+      }
+    }
+  }
+})
 
 // Configure marked for GFM table support and heading IDs
 marked.setOptions({
@@ -27,7 +98,7 @@ marked.setOptions({
   breaks: false
 })
 
-// Add custom renderer for headings with IDs using slugger
+// Add custom renderer for headings with IDs and tables with alignment
 const renderer = new marked.Renderer()
 renderer.heading = function ({ text, depth, tokens }) {
   // Extract plain text from tokens for ID generation
@@ -43,6 +114,15 @@ renderer.heading = function ({ text, depth, tokens }) {
     .replace(/^-+|-+$/g, '')
 
   return `<h${depth} id="${id}">${text}</h${depth}>\n`
+}
+
+// Custom table cell renderer to apply alignment from markdown
+renderer.tablecell = function (token) {
+  const text = token.text
+  const type = token.header ? 'th' : 'td'
+  const align = token.align
+  const style = align ? ` style="text-align: ${align}"` : ''
+  return `<${type}${style}>${text}</${type}>\n`
 }
 
 // Custom image renderer to support size classes
@@ -283,10 +363,12 @@ const turndownService = new TurndownService({
 // Keep heading IDs when converting HTML to markdown
 turndownService.addRule('headingWithId', {
   filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-  replacement: function (content, node) {
+  replacement: function (_content, node) {
     const level = Number(node.nodeName.charAt(1))
     const hashes = '#'.repeat(level)
-    return '\n\n' + hashes + ' ' + content + '\n\n'
+    // Use textContent directly to avoid unwanted escaping (e.g., "1." -> "1\.")
+    const text = node.textContent || ''
+    return '\n\n' + hashes + ' ' + text + '\n\n'
   }
 })
 
@@ -310,9 +392,23 @@ turndownService.addRule('table', {
 
       markdownRows.push('| ' + cellContents.join(' | ') + ' |')
 
-      // Add separator after first row (header)
+      // Add separator after first row (header) with alignment info
       if (index === 0) {
-        const separator = '| ' + cells.map(() => '---').join(' | ') + ' |'
+        const separator =
+          '| ' +
+          cells
+            .map((cell) => {
+              const align = (cell as HTMLElement).style.textAlign || 'left'
+              if (align === 'center') {
+                return ':---:'
+              } else if (align === 'right') {
+                return '---:'
+              } else {
+                return ':---'
+              }
+            })
+            .join(' | ') +
+          ' |'
         markdownRows.push(separator)
       }
     })
@@ -420,7 +516,8 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
       StarterKit.configure({
         codeBlock: false,
         heading: false, // Disable default heading to use our extended version
-        link: false // Disable default link to use our custom one
+        link: false, // Disable default link to use our custom one
+        strike: false // Disable default strike to use custom keyboard shortcut
       }),
       HeadingWithId,
       Link.configure({
@@ -431,6 +528,14 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
           rel: null // Remove rel attributes
         }
       }),
+      Strike.extend({
+        addKeyboardShortcuts() {
+          return {
+            'Mod-Shift-x': () => this.editor.commands.toggleStrike()
+          }
+        }
+      }),
+      TabHandling,
       CustomImage.configure({
         inline: false,
         allowBase64: true
@@ -448,8 +553,44 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
         }
       }),
       TableRow,
-      TableHeader,
-      TableCell
+      TableHeader.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            textAlign: {
+              default: 'left',
+              parseHTML: (element) => element.style.textAlign || 'left',
+              renderHTML: (attributes) => {
+                if (!attributes.textAlign || attributes.textAlign === 'left') {
+                  return {}
+                }
+                return {
+                  style: `text-align: ${attributes.textAlign}`
+                }
+              }
+            }
+          }
+        }
+      }),
+      TableCell.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            textAlign: {
+              default: 'left',
+              parseHTML: (element) => element.style.textAlign || 'left',
+              renderHTML: (attributes) => {
+                if (!attributes.textAlign || attributes.textAlign === 'left') {
+                  return {}
+                }
+                return {
+                  style: `text-align: ${attributes.textAlign}`
+                }
+              }
+            }
+          }
+        }
+      })
     ],
     content: '',
     editorProps: {
@@ -577,6 +718,22 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
       document.addEventListener('click', handleClick)
       return (): void => {
         document.removeEventListener('click', handleClick)
+      }
+    }
+    return undefined
+  }, [contextMenu.show])
+
+  // Close context menu on scroll
+  useEffect(() => {
+    const handleScroll = (): void => {
+      if (contextMenu.show) {
+        setContextMenu((prev) => ({ ...prev, show: false }))
+      }
+    }
+    if (contextMenu.show) {
+      window.addEventListener('scroll', handleScroll, true)
+      return (): void => {
+        window.removeEventListener('scroll', handleScroll, true)
       }
     }
     return undefined
@@ -725,17 +882,137 @@ interface TableContextMenuProps {
 }
 
 function TableContextMenu({ x, y, editor, onClose }: TableContextMenuProps): React.JSX.Element {
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [position, setPosition] = useState({ x, y })
+
+  // Adjust position to stay within viewport
+  useEffect(() => {
+    if (menuRef.current) {
+      const menu = menuRef.current
+      const rect = menu.getBoundingClientRect()
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+
+      let adjustedX = x
+      let adjustedY = y
+
+      // Adjust horizontal position
+      if (x + rect.width > viewportWidth) {
+        adjustedX = Math.max(8, viewportWidth - rect.width - 8)
+      }
+
+      // Adjust vertical position - show above if too close to bottom
+      if (y + rect.height > viewportHeight) {
+        adjustedY = Math.max(8, y - rect.height)
+      }
+
+      // Ensure minimum distance from edges
+      adjustedX = Math.max(8, adjustedX)
+      adjustedY = Math.max(8, adjustedY)
+
+      setPosition({ x: adjustedX, y: adjustedY })
+    }
+  }, [x, y])
+
   const handleAction = (action: () => void): void => {
     action()
     onClose()
   }
 
+  const setCellAlignment = (alignment: 'left' | 'center' | 'right'): void => {
+    const { state, view } = editor
+    const { selection } = state
+
+    // Find the column index by checking the current cell position
+    let colIndex = -1
+    let tableStart = -1
+    let foundTable = false
+
+    // Walk up to find table and calculate column index
+    state.doc.descendants((node, pos) => {
+      if (foundTable) return false
+
+      if (node.type.name === 'table' && pos < selection.from && pos + node.nodeSize > selection.from) {
+        tableStart = pos
+        foundTable = true
+
+        // Find which column we're in
+        let currentPos = pos + 1
+        let foundRow = false
+
+        for (let i = 0; i < node.childCount; i++) {
+          const row = node.child(i)
+          if (currentPos < selection.from && currentPos + row.nodeSize > selection.from) {
+            // We're in this row
+            let cellIndex = 0
+            let cellPos = currentPos + 1
+
+            for (let j = 0; j < row.childCount; j++) {
+              const cell = row.child(j)
+              if (cellPos <= selection.from && cellPos + cell.nodeSize > selection.from) {
+                colIndex = cellIndex
+                foundRow = true
+                break
+              }
+              cellIndex++
+              cellPos += cell.nodeSize
+            }
+
+            if (foundRow) break
+          }
+          currentPos += row.nodeSize
+        }
+
+        return false
+      }
+      return true
+    })
+
+    if (colIndex === -1 || tableStart === -1) {
+      onClose()
+      return
+    }
+
+    const table = state.doc.nodeAt(tableStart)
+    if (!table) {
+      onClose()
+      return
+    }
+
+    const tr = state.tr
+
+    // Update all cells in the same column
+    let currentPos = tableStart + 1
+    for (let i = 0; i < table.childCount; i++) {
+      const row = table.child(i)
+      let cellIndex = 0
+      let cellPos = currentPos + 1
+
+      for (let j = 0; j < row.childCount; j++) {
+        const cell = row.child(j)
+        if (cellIndex === colIndex) {
+          tr.setNodeMarkup(cellPos, undefined, {
+            ...cell.attrs,
+            textAlign: alignment
+          })
+        }
+        cellIndex++
+        cellPos += cell.nodeSize
+      }
+      currentPos += row.nodeSize
+    }
+
+    view.dispatch(tr)
+    onClose()
+  }
+
   return (
     <div
+      ref={menuRef}
       className="table-context-menu"
       style={{
-        left: `${x}px`,
-        top: `${y}px`
+        left: `${position.x}px`,
+        top: `${position.y}px`
       }}
       onClick={(e) => e.stopPropagation()}
     >
@@ -763,6 +1040,20 @@ function TableContextMenu({ x, y, editor, onClose }: TableContextMenuProps): Rea
         onClick={() => handleAction(() => editor.chain().focus().addColumnAfter().run())}
       >
         Add Column Right
+      </button>
+      <div className="context-menu-divider" />
+      <div className="context-menu-section-label">Align Cell</div>
+      <button className="context-menu-item" onClick={() => setCellAlignment('left')}>
+        <AlignLeftIcon />
+        <span>Align Left</span>
+      </button>
+      <button className="context-menu-item" onClick={() => setCellAlignment('center')}>
+        <AlignCenterIcon />
+        <span>Align Center</span>
+      </button>
+      <button className="context-menu-item" onClick={() => setCellAlignment('right')}>
+        <AlignRightIcon />
+        <span>Align Right</span>
       </button>
       <div className="context-menu-divider" />
       <button
@@ -803,6 +1094,38 @@ function ImageContextMenu({
   onClose,
   canEmbed
 }: ImageContextMenuProps): React.JSX.Element {
+  const menuRef = useRef<HTMLDivElement>(null)
+  const [position, setPosition] = useState({ x, y })
+
+  // Adjust position to stay within viewport
+  useEffect(() => {
+    if (menuRef.current) {
+      const menu = menuRef.current
+      const rect = menu.getBoundingClientRect()
+      const viewportWidth = window.innerWidth
+      const viewportHeight = window.innerHeight
+
+      let adjustedX = x
+      let adjustedY = y
+
+      // Adjust horizontal position
+      if (x + rect.width > viewportWidth) {
+        adjustedX = Math.max(8, viewportWidth - rect.width - 8)
+      }
+
+      // Adjust vertical position - show above if too close to bottom
+      if (y + rect.height > viewportHeight) {
+        adjustedY = Math.max(8, y - rect.height)
+      }
+
+      // Ensure minimum distance from edges
+      adjustedX = Math.max(8, adjustedX)
+      adjustedY = Math.max(8, adjustedY)
+
+      setPosition({ x: adjustedX, y: adjustedY })
+    }
+  }, [x, y])
+
   const handleAction = (action: () => void): void => {
     action()
     onClose()
@@ -952,10 +1275,11 @@ function ImageContextMenu({
 
   return (
     <div
+      ref={menuRef}
       className="table-context-menu"
       style={{
-        left: `${x}px`,
-        top: `${y}px`
+        left: `${position.x}px`,
+        top: `${position.y}px`
       }}
       onClick={(e) => e.stopPropagation()}
     >
@@ -1232,6 +1556,13 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
 
       <div className="toolbar-group">
         <button
+          className={`format-btn ${editor.isActive('orderedList') ? 'active' : ''}`}
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          data-tooltip="Numbered List (Cmd+Shift+7)"
+        >
+          <OrderedListIcon />
+        </button>
+        <button
           className={`format-btn ${editor.isActive('bulletList') ? 'active' : ''}`}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           data-tooltip="Bullet List (Cmd+Shift+8)"
@@ -1239,11 +1570,30 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
           <BulletListIcon />
         </button>
         <button
-          className={`format-btn ${editor.isActive('orderedList') ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          data-tooltip="Numbered List (Cmd+Shift+7)"
+          className="format-btn"
+          onClick={() => {
+            const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
+            if (isInList) {
+              editor.chain().focus().sinkListItem('listItem').run()
+            } else {
+              editor.chain().focus().insertContent('\t').run()
+            }
+          }}
+          data-tooltip="Increase Indent (Tab)"
         >
-          <OrderedListIcon />
+          <IndentIcon />
+        </button>
+        <button
+          className="format-btn"
+          onClick={() => {
+            const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
+            if (isInList) {
+              editor.chain().focus().liftListItem('listItem').run()
+            }
+          }}
+          data-tooltip="Decrease Indent (Shift+Tab)"
+        >
+          <OutdentIcon />
         </button>
         <button
           className={`format-btn ${editor.isActive('blockquote') ? 'active' : ''}`}
@@ -1424,6 +1774,61 @@ function ImageIcon(): React.JSX.Element {
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
       <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z" />
       <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1h12z" />
+    </svg>
+  )
+}
+
+function IndentIcon(): React.JSX.Element {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path
+        fillRule="evenodd"
+        d="M3 2.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm6 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-6-6a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-3-8a.5.5 0 0 1 .854-.353l2 2a.5.5 0 0 1 0 .707l-2 2a.5.5 0 1 1-.708-.708L1.293 6.5.146 5.354A.5.5 0 0 1 0 5z"
+      />
+    </svg>
+  )
+}
+
+function OutdentIcon(): React.JSX.Element {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path
+        fillRule="evenodd"
+        d="M3 2.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm6 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-6-6a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2.354-7.146a.5.5 0 0 1 0 .707L.293 6.5l1.353 1.146a.5.5 0 1 1-.707.708l-2-2a.5.5 0 0 1 0-.708l2-2a.5.5 0 0 1 .707 0z"
+      />
+    </svg>
+  )
+}
+
+function AlignLeftIcon(): React.JSX.Element {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path
+        fillRule="evenodd"
+        d="M2 12.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm0-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"
+      />
+    </svg>
+  )
+}
+
+function AlignCenterIcon(): React.JSX.Element {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path
+        fillRule="evenodd"
+        d="M4 12.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"
+      />
+    </svg>
+  )
+}
+
+function AlignRightIcon(): React.JSX.Element {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+      <path
+        fillRule="evenodd"
+        d="M6 12.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-4-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5zm4-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-4-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"
+      />
     </svg>
   )
 }

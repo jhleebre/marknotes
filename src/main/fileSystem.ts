@@ -318,6 +318,15 @@ renderer.image = function ({ href, title, text }) {
   return `<img src="${src}" alt="${alt}"${titleAttr}>`
 }
 
+// Custom table cell renderer to apply alignment from markdown
+renderer.tablecell = function (token) {
+  const text = token.text
+  const type = token.header ? 'th' : 'td'
+  const align = token.align
+  const style = align ? ` style="text-align: ${align}"` : ''
+  return `<${type}${style}>${text}</${type}>\n`
+}
+
 marked.use({ renderer })
 
 export interface FileEntry {

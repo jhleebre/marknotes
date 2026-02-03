@@ -141,9 +141,6 @@ export function CreateModal({
                 placeholder={placeholder}
                 autoComplete="off"
               />
-              {type === 'file' && !name.endsWith('.md') && name.length > 0 && (
-                <span className="input-hint">.md extension will be added automatically</span>
-              )}
             </div>
 
             <div className="form-group">
