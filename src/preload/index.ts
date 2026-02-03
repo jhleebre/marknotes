@@ -33,6 +33,7 @@ const api = {
     exists: (path: string): Promise<boolean> => ipcRenderer.invoke('file:exists', path),
     move: (sourcePath: string, targetDir: string): Promise<FileResult> =>
       ipcRenderer.invoke('file:move', sourcePath, targetDir),
+    duplicate: (path: string): Promise<FileResult> => ipcRenderer.invoke('file:duplicate', path),
     watch: (): Promise<FileResult> => ipcRenderer.invoke('file:watch'),
     unwatch: (): Promise<FileResult> => ipcRenderer.invoke('file:unwatch'),
     onChanged: (callback: () => void): (() => void) => {
@@ -117,7 +118,10 @@ const api = {
     }
   },
   shell: {
-    openExternal: (url: string): Promise<void> => ipcRenderer.invoke('shell:openExternal', url)
+    openExternal: (url: string): Promise<void> => ipcRenderer.invoke('shell:openExternal', url),
+    showInFinder: (path: string): Promise<FileResult> =>
+      ipcRenderer.invoke('shell:showInFinder', path),
+    copyPath: (path: string): Promise<FileResult> => ipcRenderer.invoke('shell:copyPath', path)
   },
   image: {
     upload: (): Promise<FileResult> => ipcRenderer.invoke('image:upload'),
@@ -128,6 +132,16 @@ const api = {
     saveBase64: (filename: string, base64Data: string): Promise<FileResult> =>
       ipcRenderer.invoke('image:saveBase64', filename, base64Data),
     cleanup: (): Promise<FileResult> => ipcRenderer.invoke('image:cleanup')
+  },
+  app: {
+    onSaveBeforeQuit: (callback: () => void): (() => void) => {
+      const listener = (): void => callback()
+      ipcRenderer.on('app:save-before-quit', listener)
+      return () => ipcRenderer.removeListener('app:save-before-quit', listener)
+    },
+    saveComplete: (): void => {
+      ipcRenderer.send('app:save-complete')
+    }
   }
 }
 

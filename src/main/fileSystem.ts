@@ -1020,6 +1020,86 @@ ${html}
     }
   })
 
+  // Show in Finder (Reveal file/folder in file manager)
+  ipcMain.handle('shell:showInFinder', async (_, filePath: string): Promise<FileResult> => {
+    try {
+      const resolvedPath = path.resolve(filePath)
+      if (!resolvedPath.startsWith(ROOT_PATH)) {
+        return { success: false, error: 'Access denied: path outside root directory' }
+      }
+
+      shell.showItemInFolder(resolvedPath)
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  // Copy path to clipboard
+  ipcMain.handle('shell:copyPath', async (_, filePath: string): Promise<FileResult> => {
+    try {
+      const resolvedPath = path.resolve(filePath)
+      if (!resolvedPath.startsWith(ROOT_PATH)) {
+        return { success: false, error: 'Access denied: path outside root directory' }
+      }
+
+      const { clipboard } = await import('electron')
+      clipboard.writeText(resolvedPath)
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  // Duplicate file
+  ipcMain.handle('file:duplicate', async (_, filePath: string): Promise<FileResult> => {
+    try {
+      const resolvedPath = path.resolve(filePath)
+      if (!resolvedPath.startsWith(ROOT_PATH)) {
+        return { success: false, error: 'Access denied: path outside root directory' }
+      }
+
+      // Check if source file exists
+      try {
+        await fs.access(resolvedPath)
+      } catch {
+        return { success: false, error: 'Source file not found' }
+      }
+
+      // Generate new name
+      const dir = path.dirname(resolvedPath)
+      const ext = path.extname(resolvedPath)
+      const base = path.basename(resolvedPath, ext)
+
+      // Try name_copy first
+      let newPath = path.join(dir, `${base}_copy${ext}`)
+      let counter = 2
+
+      // If name_copy exists, try name_copy_2, name_copy_3, etc.
+      while (true) {
+        try {
+          await fs.access(newPath)
+          // File exists, try next number
+          newPath = path.join(dir, `${base}_copy_${counter}${ext}`)
+          counter++
+        } catch {
+          // File doesn't exist, we can use this name
+          break
+        }
+      }
+
+      // Copy file
+      await fs.copyFile(resolvedPath, newPath)
+
+      // If it's a markdown file, copy its content without image references
+      // (image references will remain as-is, pointing to the same images)
+
+      return { success: true, content: newPath }
+    } catch (error) {
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
   // Image: Upload file
   ipcMain.handle('image:upload', async (): Promise<FileResult> => {
     try {

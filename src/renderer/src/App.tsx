@@ -8,8 +8,15 @@ import { useAutoSave } from './hooks/useAutoSave'
 import './App.css'
 
 function App(): React.JSX.Element {
-  const { isSidebarVisible, toggleSidebar, isDarkMode, setIsDarkMode, currentFilePath } =
-    useDocumentStore()
+  const {
+    isSidebarVisible,
+    toggleSidebar,
+    isDarkMode,
+    setIsDarkMode,
+    currentFilePath,
+    content,
+    originalContent
+  } = useDocumentStore()
   const { saveNow } = useAutoSave()
 
   // Apply dark mode class to document
@@ -65,6 +72,27 @@ function App(): React.JSX.Element {
       unsubscribe()
     }
   }, [])
+
+  // Listen for app quit - save before quitting
+  useEffect(() => {
+    const unsubscribe = window.api.app.onSaveBeforeQuit(async () => {
+      // Save if there are unsaved changes
+      if (currentFilePath && content !== originalContent) {
+        try {
+          await window.api.file.write(currentFilePath, content)
+        } catch (error) {
+          console.error('Failed to save before quit:', error)
+        }
+      }
+
+      // Notify main process that save is complete
+      window.api.app.saveComplete()
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [currentFilePath, content, originalContent])
 
   return (
     <div className="app">

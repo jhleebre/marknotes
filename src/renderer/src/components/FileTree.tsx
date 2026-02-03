@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useDocumentStore } from '../store/useDocumentStore'
 import type { FileEntry } from '../../../preload/index.d'
 import { CreateModal } from './CreateModal'
+import { ContextMenu, type ContextMenuItem } from './ContextMenu'
+import { FileIcon, FolderPlusIcon, RenameIcon, TrashIcon, ShowInFinderIcon, CopyIcon, DuplicateIcon } from '../utils/icons'
 import './FileTree.css'
 
 interface ContextMenuState {
@@ -272,6 +274,8 @@ export function FileTree(): React.JSX.Element {
     setRootPath,
     currentFilePath,
     setCurrentFile,
+    content,
+    originalContent,
     setContent,
     setOriginalContent,
     setIsLoadingContent,
@@ -287,7 +291,6 @@ export function FileTree(): React.JSX.Element {
     entry: null,
     isRoot: false
   })
-  const contextMenuRef = useRef<HTMLDivElement>(null)
   const [dragState, setDragState] = useState<DragState>({
     isDragging: false,
     draggedEntry: null,
@@ -343,10 +346,20 @@ export function FileTree(): React.JSX.Element {
 
   // File operations
   const handleFileSelect = useCallback(
-    (path: string, name: string): void => {
+    async (path: string, name: string): Promise<void> => {
+      // Save current file if there are unsaved changes
+      if (currentFilePath && content !== originalContent) {
+        try {
+          await window.api.file.write(currentFilePath, content)
+        } catch (error) {
+          console.error('Failed to save before switching files:', error)
+        }
+      }
+
+      // Load the new file
       loadFileContent(path, name)
     },
-    [loadFileContent]
+    [loadFileContent, currentFilePath, content, originalContent]
   )
 
   const handleToggleExpand = useCallback((path: string): void => {
@@ -386,6 +399,49 @@ export function FileTree(): React.JSX.Element {
       }
     },
     [currentFilePath, setCurrentFile, setContent, setOriginalContent, loadFiles]
+  )
+
+  const handleShowInFinder = useCallback(async (entry: FileEntry): Promise<void> => {
+    try {
+      const result = await window.api.shell.showInFinder(entry.path)
+      if (!result.success) {
+        console.error('Failed to show in Finder:', result.error)
+      }
+    } catch (error) {
+      console.error('Failed to show in Finder:', error)
+    }
+  }, [])
+
+  const handleCopyPath = useCallback(async (entry: FileEntry): Promise<void> => {
+    try {
+      const result = await window.api.shell.copyPath(entry.path)
+      if (!result.success) {
+        alert(result.error || 'Failed to copy path')
+      }
+    } catch (error) {
+      console.error('Failed to copy path:', error)
+    }
+  }, [])
+
+  const handleDuplicate = useCallback(
+    async (entry: FileEntry): Promise<void> => {
+      try {
+        const result = await window.api.file.duplicate(entry.path)
+        if (result.success) {
+          loadFiles()
+          // Open the duplicated file if it's a file
+          if (!entry.isDirectory && result.content) {
+            const fileName = result.content.split('/').pop() || ''
+            loadFileContent(result.content, fileName)
+          }
+        } else {
+          alert(result.error || 'Failed to duplicate')
+        }
+      } catch (error) {
+        console.error('Failed to duplicate:', error)
+      }
+    },
+    [loadFiles, loadFileContent]
   )
 
   const handleCreateFile = useCallback(
@@ -575,36 +631,6 @@ export function FileTree(): React.JSX.Element {
     setContextMenu((prev) => ({ ...prev, visible: false }))
   }, [])
 
-  // Adjust context menu position to stay within viewport
-  useEffect(() => {
-    if (contextMenu.visible && contextMenuRef.current) {
-      const menu = contextMenuRef.current
-      const rect = menu.getBoundingClientRect()
-      const viewportWidth = window.innerWidth
-      const viewportHeight = window.innerHeight
-
-      let { x, y } = contextMenu
-
-      // Adjust horizontal position
-      if (x + rect.width > viewportWidth) {
-        x = Math.max(8, viewportWidth - rect.width - 8)
-      }
-
-      // Adjust vertical position - show above if too close to bottom
-      if (y + rect.height > viewportHeight) {
-        y = Math.max(8, y - rect.height)
-      }
-
-      // Ensure minimum distance from edges
-      x = Math.max(8, x)
-      y = Math.max(8, y)
-
-      if (x !== contextMenu.x || y !== contextMenu.y) {
-        setContextMenu((prev) => ({ ...prev, x, y }))
-      }
-    }
-  }, [contextMenu.visible, contextMenu.x, contextMenu.y])
-
   // Close context menu on scroll
   useEffect(() => {
     const handleScroll = (): void => {
@@ -686,6 +712,135 @@ export function FileTree(): React.JSX.Element {
     [createModalType, handleCreateFile, handleCreateFolder]
   )
 
+  const getContextMenuItems = useCallback((): ContextMenuItem[] => {
+    const items: ContextMenuItem[] = []
+
+    // Root context menu
+    if (contextMenu.isRoot) {
+      items.push(
+        {
+          type: 'item',
+          label: 'New File',
+          icon: <FileIcon />,
+          onClick: () => openCreateFileModal(null)
+        },
+        {
+          type: 'item',
+          label: 'New Folder',
+          icon: <FolderPlusIcon />,
+          onClick: () => openCreateFolderModal(null)
+        },
+        {
+          type: 'divider'
+        },
+        {
+          type: 'item',
+          label: 'Show in Finder',
+          icon: <ShowInFinderIcon />,
+          onClick: () => handleShowInFinder({ path: rootPath, name: 'MarkNotes', isDirectory: true })
+        }
+      )
+      return items
+    }
+
+    // File/Folder context menu
+    if (contextMenu.entry) {
+      const entry = contextMenu.entry
+
+      // Folder-specific items
+      if (entry.isDirectory) {
+        items.push(
+          {
+            type: 'item',
+            label: 'New File',
+            icon: <FileIcon />,
+            onClick: () => openCreateFileModal(entry.path)
+          },
+          {
+            type: 'item',
+            label: 'New Folder',
+            icon: <FolderPlusIcon />,
+            onClick: () => openCreateFolderModal(entry.path)
+          },
+          {
+            type: 'divider'
+          }
+        )
+      }
+
+      // File-specific "Open" item
+      if (!entry.isDirectory) {
+        items.push({
+          type: 'item',
+          label: 'Open',
+          icon: <FileIcon />,
+          onClick: () => handleFileSelect(entry.path, entry.name)
+        })
+      }
+
+      // Common items for files and folders
+      items.push(
+        {
+          type: 'item',
+          label: 'Show in Finder',
+          icon: <ShowInFinderIcon />,
+          onClick: () => handleShowInFinder(entry)
+        },
+        {
+          type: 'divider'
+        },
+        {
+          type: 'item',
+          label: 'Rename',
+          icon: <RenameIcon />,
+          onClick: () => handleStartRename(entry.path)
+        },
+        {
+          type: 'item',
+          label: entry.isDirectory ? 'Copy Folder Path' : 'Copy File Path',
+          icon: <CopyIcon />,
+          onClick: () => handleCopyPath(entry)
+        }
+      )
+
+      // File-specific duplicate
+      if (!entry.isDirectory) {
+        items.push({
+          type: 'item',
+          label: 'Duplicate',
+          icon: <DuplicateIcon />,
+          onClick: () => handleDuplicate(entry)
+        })
+      }
+
+      items.push(
+        {
+          type: 'divider'
+        },
+        {
+          type: 'item',
+          label: 'Delete',
+          icon: <TrashIcon />,
+          onClick: () => handleDelete(entry),
+          danger: true
+        }
+      )
+    }
+
+    return items
+  }, [
+    contextMenu,
+    rootPath,
+    openCreateFileModal,
+    openCreateFolderModal,
+    handleFileSelect,
+    handleShowInFinder,
+    handleStartRename,
+    handleCopyPath,
+    handleDuplicate,
+    handleDelete
+  ])
+
   return (
     <div className="file-tree">
       <div className="file-tree-header">
@@ -746,87 +901,13 @@ export function FileTree(): React.JSX.Element {
 
       {/* Context Menu */}
       {contextMenu.visible && (
-        <div
-          ref={contextMenuRef}
-          className="context-menu"
-          style={{ left: `${contextMenu.x}px`, top: `${contextMenu.y}px` }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {contextMenu.entry?.isDirectory && (
-            <>
-              <button
-                className="context-menu-item"
-                onClick={() => {
-                  openCreateFileModal(contextMenu.entry!.path)
-                  closeContextMenu()
-                }}
-              >
-                <FileIcon />
-                <span>New File</span>
-              </button>
-              <button
-                className="context-menu-item"
-                onClick={() => {
-                  openCreateFolderModal(contextMenu.entry!.path)
-                  closeContextMenu()
-                }}
-              >
-                <FolderPlusIcon />
-                <span>New Folder</span>
-              </button>
-              <div className="context-menu-divider" />
-            </>
-          )}
-          {contextMenu.isRoot && (
-            <>
-              <button
-                className="context-menu-item"
-                onClick={() => {
-                  openCreateFileModal(null)
-                  closeContextMenu()
-                }}
-              >
-                <FileIcon />
-                <span>New File</span>
-              </button>
-              <button
-                className="context-menu-item"
-                onClick={() => {
-                  openCreateFolderModal(null)
-                  closeContextMenu()
-                }}
-              >
-                <FolderPlusIcon />
-                <span>New Folder</span>
-              </button>
-            </>
-          )}
-          {contextMenu.entry && (
-            <>
-              <button
-                className="context-menu-item"
-                onClick={() => {
-                  handleStartRename(contextMenu.entry!.path)
-                  closeContextMenu()
-                }}
-              >
-                <RenameIcon />
-                <span>Rename</span>
-              </button>
-              <div className="context-menu-divider" />
-              <button
-                className="context-menu-item danger"
-                onClick={() => {
-                  handleDelete(contextMenu.entry!)
-                  closeContextMenu()
-                }}
-              >
-                <TrashIcon />
-                <span>Delete</span>
-              </button>
-            </>
-          )}
-        </div>
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={getContextMenuItems()}
+          onClose={closeContextMenu}
+          zIndex={10000}
+        />
       )}
 
       {/* Create Modal */}
@@ -843,7 +924,7 @@ export function FileTree(): React.JSX.Element {
   )
 }
 
-// Icons
+// Local icons not in utils/icons
 function ChevronIcon(): React.JSX.Element {
   return (
     <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
@@ -855,14 +936,6 @@ function ChevronIcon(): React.JSX.Element {
         strokeLinejoin="round"
         fill="none"
       />
-    </svg>
-  )
-}
-
-function FileIcon(): React.JSX.Element {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M4 1h5.586a1 1 0 0 1 .707.293l2.414 2.414a1 1 0 0 1 .293.707V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zm5 1v2.5a.5.5 0 0 0 .5.5H12l-3-3z" />
     </svg>
   )
 }
@@ -880,35 +953,6 @@ function FolderOpenIcon(): React.JSX.Element {
     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
       <path d="M1.5 4A1.5 1.5 0 0 1 3 2.5h2.672a1.5 1.5 0 0 1 1.06.44L8.207 4.5H13A1.5 1.5 0 0 1 14.5 6v.5h-13V4z" />
       <path d="M14.5 7h-13v5.5A1.5 1.5 0 0 0 3 14h10a1.5 1.5 0 0 0 1.5-1.5V7z" />
-    </svg>
-  )
-}
-
-function FolderPlusIcon(): React.JSX.Element {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M2 3a1 1 0 0 1 1-1h3.586a1 1 0 0 1 .707.293L8 3H13a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3z" />
-      <path d="M8 7v4M6 9h4" stroke="var(--bg-primary)" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  )
-}
-
-function TrashIcon(): React.JSX.Element {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor">
-      <path
-        d="M3 5h10M6 5V3.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V5M4 5v9a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V5"
-        strokeWidth="1.2"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-function RenameIcon(): React.JSX.Element {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M12.146 1.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1 0 .708l-9.5 9.5a.5.5 0 0 1-.168.11l-4 1.5a.5.5 0 0 1-.65-.65l1.5-4a.5.5 0 0 1 .11-.168l9.5-9.5zM11.207 4L12 4.793 13.793 3 13 2.207 11.207 4z" />
     </svg>
   )
 }

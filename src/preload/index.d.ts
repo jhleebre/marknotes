@@ -25,6 +25,7 @@ export interface FileAPI {
   rename: (oldPath: string, newName: string) => Promise<FileResult>
   exists: (path: string) => Promise<boolean>
   move: (sourcePath: string, targetDir: string) => Promise<FileResult>
+  duplicate: (path: string) => Promise<FileResult>
   watch: () => Promise<FileResult>
   unwatch: () => Promise<FileResult>
   onChanged: (callback: () => void) => () => void
@@ -56,6 +57,8 @@ export interface ThemeAPI {
 
 export interface ShellAPI {
   openExternal: (url: string) => Promise<void>
+  showInFinder: (path: string) => Promise<FileResult>
+  copyPath: (path: string) => Promise<FileResult>
 }
 
 export interface ImageAPI {
@@ -66,6 +69,11 @@ export interface ImageAPI {
   cleanup: () => Promise<FileResult>
 }
 
+export interface AppAPI {
+  onSaveBeforeQuit: (callback: () => void) => () => void
+  saveComplete: () => void
+}
+
 export interface API {
   file: FileAPI
   export: ExportAPI
@@ -73,6 +81,7 @@ export interface API {
   theme: ThemeAPI
   shell: ShellAPI
   image: ImageAPI
+  app: AppAPI
 }
 
 declare global {

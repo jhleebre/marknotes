@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, nativeTheme, clipboard } from 'electron'
+import { app, shell, BrowserWindow, nativeTheme, clipboard, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { setupFileHandlers, cleanupOnQuit } from './fileSystem'
@@ -8,6 +8,7 @@ import { setupMenu } from './menu'
 app.name = 'MarkNotes'
 
 let mainWindow: BrowserWindow | null = null
+let isQuitting = false
 
 function createWindow(): void {
   // Create the browser window.
@@ -81,9 +82,11 @@ app.on('window-all-closed', () => {
   app.quit()
 })
 
-// Cleanup unreferenced images before quitting
-app.on('before-quit', async (event) => {
-  event.preventDefault()
+// Handle save-complete message from renderer
+ipcMain.on('app:save-complete', async () => {
+  if (!isQuitting) return
+
+  console.log('[Quit] Received save-complete from renderer')
 
   // Clear clipboard to prevent pasting deleted images after app restart
   clipboard.clear()
@@ -92,7 +95,32 @@ app.on('before-quit', async (event) => {
   // Cleanup unreferenced image files
   await cleanupOnQuit()
 
-  app.exit(0)
+  console.log('[Quit] Cleanup complete, quitting app')
+
+  // Quit the app (will trigger before-quit again but isQuitting is true so it will proceed)
+  app.quit()
+})
+
+// Save before quitting and cleanup
+app.on('before-quit', (event) => {
+  if (isQuitting) {
+    // Already in quitting process, allow it to proceed
+    return
+  }
+
+  // First quit attempt - prevent and save first
+  event.preventDefault()
+  isQuitting = true
+
+  console.log('[Quit] Requesting renderer to save before quit')
+
+  // Ask renderer to save any unsaved changes
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('app:save-before-quit')
+  } else {
+    // No window or window destroyed, proceed with quit
+    app.quit()
+  }
 })
 
 // Handle theme changes

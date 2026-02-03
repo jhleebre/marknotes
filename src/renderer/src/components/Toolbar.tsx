@@ -10,6 +10,7 @@ export function Toolbar(): React.JSX.Element {
     currentFilePath,
     currentFileName,
     content,
+    originalContent,
     saveStatus,
     isSidebarVisible,
     toggleSidebar,
@@ -44,11 +45,21 @@ export function Toolbar(): React.JSX.Element {
     }
   }, [content, currentFileName])
 
-  const handleCloseFile = useCallback((): void => {
+  const handleCloseFile = useCallback(async (): Promise<void> => {
+    // Save current file if there are unsaved changes
+    if (currentFilePath && content !== originalContent) {
+      try {
+        await window.api.file.write(currentFilePath, content)
+      } catch (error) {
+        console.error('Failed to save before closing file:', error)
+      }
+    }
+
+    // Close the file
     setCurrentFile(null, null)
     setContent('')
     setOriginalContent('')
-  }, [setCurrentFile, setContent, setOriginalContent])
+  }, [currentFilePath, content, originalContent, setCurrentFile, setContent, setOriginalContent])
 
   // Listen for menu commands
   useEffect(() => {

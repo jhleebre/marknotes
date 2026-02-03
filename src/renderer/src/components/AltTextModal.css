@@ -1,0 +1,9 @@
+/* Alt Text Modal Styles - inherits from LinkModal styling */
+/* See LinkModal.css for base modal styles */
+
+.modal-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}

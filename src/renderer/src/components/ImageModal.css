@@ -59,10 +59,10 @@
   cursor: not-allowed;
 }
 
-.file-name {
+.image-modal .file-name {
   display: block;
   font-size: 12px;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   padding: 4px 8px;
   background: var(--bg-secondary);
   border-radius: 4px;
