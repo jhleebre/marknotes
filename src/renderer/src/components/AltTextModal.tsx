@@ -8,20 +8,29 @@ interface AltTextModalProps {
   onSave: (alt: string) => void
 }
 
-export function AltTextModal({ isOpen, initialAlt, onClose, onSave }: AltTextModalProps): React.JSX.Element | null {
+export function AltTextModal({
+  isOpen,
+  initialAlt,
+  onClose,
+  onSave
+}: AltTextModalProps): React.JSX.Element | null {
   const [alt, setAlt] = useState(initialAlt)
   const inputRef = useRef<HTMLInputElement>(null)
+  const prevIsOpenRef = useRef(false)
 
   useEffect(() => {
-    setAlt(initialAlt)
-  }, [initialAlt, isOpen])
+    // Only update when modal opens (transition from closed to open)
+    if (isOpen && !prevIsOpenRef.current) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setAlt(initialAlt)
+    }
+    prevIsOpenRef.current = isOpen
 
-  useEffect(() => {
     if (isOpen && inputRef.current) {
       inputRef.current.focus()
       inputRef.current.select()
     }
-  }, [isOpen])
+  }, [isOpen, initialAlt])
 
   const handleSave = (): void => {
     onSave(alt)
@@ -56,7 +65,8 @@ export function AltTextModal({ isOpen, initialAlt, onClose, onSave }: AltTextMod
             placeholder="Describe this image..."
           />
           <p className="modal-hint">
-            Provide a brief description of the image for accessibility and when the image can't be displayed.
+            Provide a brief description of the image for accessibility and when the image can&apos;t
+            be displayed.
           </p>
         </div>
         <div className="modal-actions">

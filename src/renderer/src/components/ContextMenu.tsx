@@ -18,7 +18,13 @@ interface ContextMenuProps {
   zIndex?: number
 }
 
-export function ContextMenu({ x, y, items, onClose, zIndex = 1000 }: ContextMenuProps): React.JSX.Element {
+export function ContextMenu({
+  x,
+  y,
+  items,
+  onClose,
+  zIndex = 1000
+}: ContextMenuProps): React.JSX.Element {
   const menuRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState({ x, y })
   const [focusedIndex, setFocusedIndex] = useState<number>(-1)
@@ -48,6 +54,7 @@ export function ContextMenu({ x, y, items, onClose, zIndex = 1000 }: ContextMenu
       adjustedX = Math.max(8, adjustedX)
       adjustedY = Math.max(8, adjustedY)
 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPosition({ x: adjustedX, y: adjustedY })
     }
   }, [x, y])

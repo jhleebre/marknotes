@@ -3,7 +3,15 @@ import { useDocumentStore } from '../store/useDocumentStore'
 import type { FileEntry } from '../../../preload/index.d'
 import { CreateModal } from './CreateModal'
 import { ContextMenu, type ContextMenuItem } from './ContextMenu'
-import { FileIcon, FolderPlusIcon, RenameIcon, TrashIcon, ShowInFinderIcon, CopyIcon, DuplicateIcon } from '../utils/icons'
+import {
+  FileIcon,
+  FolderPlusIcon,
+  RenameIcon,
+  TrashIcon,
+  ShowInFinderIcon,
+  CopyIcon,
+  DuplicateIcon
+} from '../utils/icons'
 import './FileTree.css'
 
 interface ContextMenuState {
@@ -86,6 +94,7 @@ function FileTreeItem({
   useEffect(() => {
     // Update editName when entry changes, removing .md for files
     if (!entry.isDirectory && entry.name.endsWith('.md')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditName(entry.name.slice(0, -3))
     } else {
       setEditName(entry.name)
@@ -117,9 +126,10 @@ function FileTreeItem({
       e.preventDefault()
       if (editName.trim()) {
         // Add .md extension back for files
-        const finalName = !entry.isDirectory && !editName.endsWith('.md')
-          ? `${editName.trim()}.md`
-          : editName.trim()
+        const finalName =
+          !entry.isDirectory && !editName.endsWith('.md')
+            ? `${editName.trim()}.md`
+            : editName.trim()
 
         // Only rename if name actually changed
         if (finalName !== entry.name) {
@@ -145,9 +155,8 @@ function FileTreeItem({
   const handleRenameBlur = (): void => {
     if (editName.trim()) {
       // Add .md extension back for files
-      const finalName = !entry.isDirectory && !editName.endsWith('.md')
-        ? `${editName.trim()}.md`
-        : editName.trim()
+      const finalName =
+        !entry.isDirectory && !editName.endsWith('.md') ? `${editName.trim()}.md` : editName.trim()
 
       // Only rename if name actually changed
       if (finalName !== entry.name) {
@@ -737,7 +746,8 @@ export function FileTree(): React.JSX.Element {
           type: 'item',
           label: 'Show in Finder',
           icon: <ShowInFinderIcon />,
-          onClick: () => handleShowInFinder({ path: rootPath, name: 'MarkNotes', isDirectory: true })
+          onClick: () =>
+            handleShowInFinder({ path: rootPath, name: 'MarkNotes', isDirectory: true })
         }
       )
       return items

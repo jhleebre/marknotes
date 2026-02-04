@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useCallback, useRef, useMemo } from 'react'
 import debounce from 'lodash.debounce'
 import { useDocumentStore } from '../store/useDocumentStore'
 
@@ -53,10 +53,12 @@ export function useAutoSave(): {
   }, [setSaveStatus, setOriginalContent])
 
   // Debounced auto-save
-  const debouncedSave = useCallback(
-    debounce(() => {
-      performSave()
-    }, AUTO_SAVE_DELAY),
+  const debouncedSave = useMemo(
+    () =>
+      // eslint-disable-next-line react-hooks/refs
+      debounce(() => {
+        performSave()
+      }, AUTO_SAVE_DELAY),
     [performSave]
   )
 

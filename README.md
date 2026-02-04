@@ -8,6 +8,10 @@
   Write, organize, and export your notes in a beautiful, distraction-free interface with WYSIWYG editing, advanced table support, and comprehensive formatting tools.
 </p>
 
+<p align="center">
+  <strong>Version 1.2.1</strong>
+</p>
+
 ---
 
 ## Overview

@@ -63,7 +63,8 @@ const TabHandling = Extension.create({
         const { $from } = selection
 
         // Check if we're inside a table
-        const isInTable = $from.node(-1)?.type.name === 'tableCell' || $from.node(-1)?.type.name === 'tableHeader'
+        const isInTable =
+          $from.node(-1)?.type.name === 'tableCell' || $from.node(-1)?.type.name === 'tableHeader'
         if (isInTable) {
           // Let table extension handle it (go to next cell)
           return false
@@ -85,7 +86,8 @@ const TabHandling = Extension.create({
         const { $from } = selection
 
         // Check if we're inside a table
-        const isInTable = $from.node(-1)?.type.name === 'tableCell' || $from.node(-1)?.type.name === 'tableHeader'
+        const isInTable =
+          $from.node(-1)?.type.name === 'tableCell' || $from.node(-1)?.type.name === 'tableHeader'
         if (isInTable) {
           // Let table extension handle it (go to previous cell)
           return false
@@ -390,7 +392,9 @@ const turndownService = new TurndownService({
 
 // Add strikethrough conversion rule
 turndownService.addRule('strikethrough', {
-  filter: ['s', 'strike', 'del'],
+  filter: function (node) {
+    return node.nodeName === 'S' || node.nodeName === 'STRIKE' || node.nodeName === 'DEL'
+  },
   replacement: function (content) {
     return '~~' + content + '~~'
   }
@@ -1107,7 +1111,8 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       type: 'item',
       label: 'Insert Table',
       icon: <TableIcon />,
-      onClick: () => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+      onClick: () =>
+        editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
     },
     {
       type: 'item',
@@ -1343,7 +1348,11 @@ function getTableMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     state.doc.descendants((node, pos) => {
       if (foundTable) return false
 
-      if (node.type.name === 'table' && pos < selection.from && pos + node.nodeSize > selection.from) {
+      if (
+        node.type.name === 'table' &&
+        pos < selection.from &&
+        pos + node.nodeSize > selection.from
+      ) {
         tableStart = pos
         foundTable = true
 

@@ -23,7 +23,9 @@ export function LinkModal({
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setText(initialText)
+
       setUrl(initialUrl)
       // Focus appropriate input based on whether text is already provided
       setTimeout(() => {

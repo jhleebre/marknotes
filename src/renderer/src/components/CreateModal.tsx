@@ -28,10 +28,13 @@ export function CreateModal({
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setName('')
+
       setSelectedParent(defaultParentPath ?? null)
       // Auto-expand root level folders
       const rootFolders = files.filter((f) => f.isDirectory).map((f) => f.path)
+
       setExpandedFolders(new Set(rootFolders))
       // Focus input after modal opens
       setTimeout(() => inputRef.current?.focus(), 100)
