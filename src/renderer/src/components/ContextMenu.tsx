@@ -8,6 +8,7 @@ export interface ContextMenuItem {
   onClick?: () => void
   danger?: boolean
   disabled?: boolean
+  submenu?: ContextMenuItem[]
 }
 
 interface ContextMenuProps {
@@ -28,6 +29,7 @@ export function ContextMenu({
   const menuRef = useRef<HTMLDivElement>(null)
   const [position, setPosition] = useState({ x, y })
   const [focusedIndex, setFocusedIndex] = useState<number>(-1)
+  const [openSubmenuIndex, setOpenSubmenuIndex] = useState<number>(-1)
 
   // Adjust position to stay within viewport
   useEffect(() => {
@@ -115,10 +117,14 @@ export function ContextMenu({
     }
   }, [focusedIndex])
 
-  const handleItemClick = (item: ContextMenuItem): void => {
+  const handleItemClick = (item: ContextMenuItem, itemIndex: number): void => {
     if (item.type === 'item' && !item.disabled) {
-      item.onClick?.()
-      onClose()
+      if (item.submenu) {
+        setOpenSubmenuIndex(openSubmenuIndex === itemIndex ? -1 : itemIndex)
+      } else {
+        item.onClick?.()
+        onClose()
+      }
     }
   }
 
@@ -149,20 +155,79 @@ export function ContextMenu({
         }
 
         return (
-          <button
-            key={index}
-            className={`context-menu-item ${item.danger ? 'context-menu-item-danger' : ''} ${
-              focusedIndex === index ? 'focused' : ''
-            }`}
-            onClick={() => handleItemClick(item)}
-            onMouseEnter={() => setFocusedIndex(index)}
-            disabled={item.disabled}
-            role="menuitem"
-            aria-disabled={item.disabled}
-          >
-            {item.icon && <span className="context-menu-icon">{item.icon}</span>}
-            <span>{item.label}</span>
-          </button>
+          <div key={index} style={{ position: 'relative' }}>
+            <button
+              className={`context-menu-item ${item.danger ? 'context-menu-item-danger' : ''} ${
+                focusedIndex === index ? 'focused' : ''
+              }`}
+              onClick={() => handleItemClick(item, index)}
+              onMouseEnter={() => {
+                setFocusedIndex(index)
+                if (item.submenu) {
+                  setOpenSubmenuIndex(index)
+                } else {
+                  setOpenSubmenuIndex(-1)
+                }
+              }}
+              disabled={item.disabled}
+              role="menuitem"
+              aria-disabled={item.disabled}
+              aria-haspopup={item.submenu ? 'menu' : undefined}
+            >
+              {item.icon && <span className="context-menu-icon">{item.icon}</span>}
+              <span>{item.label}</span>
+              {item.submenu && (
+                <span className="context-menu-arrow" style={{ marginLeft: 'auto', paddingLeft: '16px' }}>
+                  ▸
+                </span>
+              )}
+            </button>
+            {item.submenu && openSubmenuIndex === index && (
+              <div
+                className="context-menu context-submenu"
+                style={{
+                  position: 'absolute',
+                  left: '100%',
+                  top: '0',
+                  zIndex: zIndex + 1
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {item.submenu.map((subitem, subindex) => {
+                  if (subitem.type === 'divider') {
+                    return <div key={subindex} className="context-menu-divider" role="separator" />
+                  }
+
+                  if (subitem.type === 'section-label') {
+                    return (
+                      <div key={subindex} className="context-menu-section-label" role="presentation">
+                        {subitem.label}
+                      </div>
+                    )
+                  }
+
+                  return (
+                    <button
+                      key={subindex}
+                      className={`context-menu-item ${subitem.danger ? 'context-menu-item-danger' : ''}`}
+                      onClick={() => {
+                        if (!subitem.disabled) {
+                          subitem.onClick?.()
+                          onClose()
+                        }
+                      }}
+                      disabled={subitem.disabled}
+                      role="menuitem"
+                      aria-disabled={subitem.disabled}
+                    >
+                      {subitem.icon && <span className="context-menu-icon">{subitem.icon}</span>}
+                      <span>{subitem.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         )
       })}
     </div>

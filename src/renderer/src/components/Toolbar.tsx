@@ -256,17 +256,23 @@ function CloseIcon(): React.JSX.Element {
 
 function HtmlIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M3 2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H3zm2.5 5.5a.5.5 0 0 1 0-1h1a.5.5 0 0 1 0 1h-1zm0 2a.5.5 0 0 1 0-1h3a.5.5 0 0 1 0 1h-3zm0 2a.5.5 0 0 1 0-1h3a.5.5 0 0 1 0 1h-3z" />
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+      {/* Export arrow */}
+      <path d="M8 12V4M8 4L5 7M8 4L11 7" strokeLinecap="round" strokeLinejoin="round" />
+      {/* HTML brackets */}
+      <path d="M2 9L4 11L2 13M14 9L12 11L14 13" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
 
 function PdfIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M4 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5L9.5 0H4zM9 1v3.5A1.5 1.5 0 0 0 10.5 6H14v8a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h6z" />
-      <path d="M4.5 8a.5.5 0 0 1 .5.5v.634l.549-.317a.5.5 0 1 1 .5.866L5.5 10l.549.317a.5.5 0 1 1-.5.866L5 10.866V11.5a.5.5 0 0 1-1 0v-.634l-.549.317a.5.5 0 1 1-.5-.866L3.5 10l-.549-.317a.5.5 0 0 1 .5-.866l.549.317V8.5a.5.5 0 0 1 .5-.5z" />
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+      {/* Export arrow */}
+      <path d="M8 12V4M8 4L5 7M8 4L11 7" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Document icon */}
+      <rect x="2" y="10" width="4" height="5" rx="0.5" strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="10" y="10" width="4" height="5" rx="0.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }

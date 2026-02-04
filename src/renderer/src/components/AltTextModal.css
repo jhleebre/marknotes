@@ -1,9 +1,102 @@
-/* Alt Text Modal Styles - inherits from LinkModal styling */
-/* See LinkModal.css for base modal styles */
+/* Alt Text Modal Styles */
+
+.modal-title {
+  margin: 0;
+  padding: 20px 24px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.modal-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: all 0.15s;
+  box-sizing: border-box;
+}
+
+.modal-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--selected-bg);
+}
+
+.modal-input::placeholder {
+  color: var(--text-tertiary);
+}
 
 .modal-hint {
   margin-top: 8px;
   font-size: 12px;
   color: var(--text-secondary);
   line-height: 1.4;
+}
+
+.modal-actions {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.modal-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.modal-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.modal-btn-secondary:hover:not(:disabled) {
+  background: var(--hover-bg);
+}
+
+.modal-btn-primary {
+  background: var(--accent-color);
+  color: white;
+}
+
+.modal-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px var(--selected-bg);
+}
+
+.modal-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
 }

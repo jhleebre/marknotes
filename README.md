@@ -9,8 +9,39 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.2.1</strong>
+  <strong>Version 1.3.0</strong>
 </p>
+
+---
+
+## Changelog
+
+### Version 1.3.0 (2026-02-04)
+
+**Formatting Improvements**
+- Added heading formatting restrictions: headings now prevent conflicting inline/block formatting
+- Fixed nested ordered list indentation (4 spaces for proper markdown parsing)
+- Added 5-level nested unordered list styling (disc → circle → square → ▫ → ⁃)
+- Blocked backtick auto-conversion to inline code within headings
+
+**UI/UX Enhancements**
+- Simplified indent/outdent icons with cleaner arrow design
+- Simplified HTML/PDF export icons focusing on export action
+- Added arrow icons to table context menu for better clarity
+- Fixed AltTextModal styling to match CreateModal appearance
+- Updated indent/outdent tooltips to simpler labels
+- Removed section labels from context menus for cleaner UI
+- Reordered context menu items to match toolbar layout
+
+**Context Menu Improvements**
+- Added Cut Image option to image context menu
+- Renamed "Embed Image (Base64)" to "Embed in Document"
+- Enhanced empty area context menu with all formatting options
+- Fixed paste functionality to properly handle cut/copied images
+
+**Bug Fixes**
+- Fixed Tab key behavior in lists (no longer indents first item incorrectly)
+- Improved clipboard handling for images in context menu paste
 
 ---
 

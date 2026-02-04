@@ -313,6 +313,31 @@
   list-style-type: disc;
 }
 
+/* Nested unordered lists with different markers for each level */
+.wysiwyg-editor .ProseMirror ul ul {
+  list-style-type: circle;
+}
+
+.wysiwyg-editor .ProseMirror ul ul ul {
+  list-style-type: square;
+}
+
+.wysiwyg-editor .ProseMirror ul ul ul ul {
+  list-style-type: none;
+}
+
+.wysiwyg-editor .ProseMirror ul ul ul ul > li::marker {
+  content: '▫ ';
+}
+
+.wysiwyg-editor .ProseMirror ul ul ul ul ul {
+  list-style-type: none;
+}
+
+.wysiwyg-editor .ProseMirror ul ul ul ul ul > li::marker {
+  content: '⁃ ';
+}
+
 .wysiwyg-editor .ProseMirror ol {
   list-style-type: decimal;
 }
@@ -595,6 +620,35 @@
 
 .preview-content li {
   margin: 0.25em 0;
+}
+
+/* Nested unordered lists with different markers for each level */
+.preview-content ul {
+  list-style-type: disc;
+}
+
+.preview-content ul ul {
+  list-style-type: circle;
+}
+
+.preview-content ul ul ul {
+  list-style-type: square;
+}
+
+.preview-content ul ul ul ul {
+  list-style-type: none;
+}
+
+.preview-content ul ul ul ul > li::marker {
+  content: '▫ ';
+}
+
+.preview-content ul ul ul ul ul {
+  list-style-type: none;
+}
+
+.preview-content ul ul ul ul ul > li::marker {
+  content: '⁃ ';
 }
 
 .preview-content blockquote {

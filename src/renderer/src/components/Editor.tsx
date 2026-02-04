@@ -6,12 +6,20 @@ import Placeholder from '@tiptap/extension-placeholder'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import Link from '@tiptap/extension-link'
 import Strike from '@tiptap/extension-strike'
+import Bold from '@tiptap/extension-bold'
+import Italic from '@tiptap/extension-italic'
+import Code from '@tiptap/extension-code'
+import Blockquote from '@tiptap/extension-blockquote'
+import BulletList from '@tiptap/extension-bullet-list'
+import OrderedList from '@tiptap/extension-ordered-list'
+import ListItem from '@tiptap/extension-list-item'
 import TipTapImage from '@tiptap/extension-image'
 import { Table } from '@tiptap/extension-table'
 import { TableRow } from '@tiptap/extension-table-row'
 import { TableCell } from '@tiptap/extension-table-cell'
 import { TableHeader } from '@tiptap/extension-table-header'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { InputRule } from '@tiptap/core'
 import { common, createLowlight } from 'lowlight'
 import { marked } from 'marked'
 import TurndownService from 'turndown'
@@ -44,7 +52,11 @@ import {
   AlignRightIcon,
   EditIcon,
   ResizeIcon,
-  TrashIcon
+  TrashIcon,
+  ArrowUpIcon,
+  ArrowDownIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon
 } from '../utils/icons'
 import './Editor.css'
 import { Extension } from '@tiptap/core'
@@ -73,8 +85,11 @@ const TabHandling = Extension.create({
         // Check if we're in a list
         const isInList = this.editor.isActive('bulletList') || this.editor.isActive('orderedList')
         if (isInList) {
-          // Sink list item (increase indent)
-          return this.editor.commands.sinkListItem('listItem')
+          // Sink list item only if possible (not first item)
+          if (this.editor.can().sinkListItem('listItem')) {
+            return this.editor.commands.sinkListItem('listItem')
+          }
+          return false // First item - do nothing
         }
 
         // For regular text, insert tab character
@@ -116,7 +131,8 @@ const TabHandling = Extension.create({
           }
         }
 
-        return false
+        // Important: always return true to prevent browser default focus behavior
+        return true
       }
     }
   }
@@ -294,6 +310,140 @@ const HeadingWithId = Heading.extend({
         }
       })
     ]
+  }
+})
+
+// Extend formatting extensions to block when heading is active
+const BoldExtended = Bold.extend({
+  addKeyboardShortcuts() {
+    return {
+      'Mod-b': () => {
+        if (this.editor.isActive('heading')) {
+          return true // Block the command
+        }
+        return this.editor.commands.toggleBold()
+      }
+    }
+  }
+})
+
+const ItalicExtended = Italic.extend({
+  addKeyboardShortcuts() {
+    return {
+      'Mod-i': () => {
+        if (this.editor.isActive('heading')) {
+          return true // Block the command
+        }
+        return this.editor.commands.toggleItalic()
+      }
+    }
+  }
+})
+
+const CodeExtended = Code.extend({
+  addKeyboardShortcuts() {
+    return {
+      'Mod-e': () => {
+        if (this.editor.isActive('heading')) {
+          return true // Block the command
+        }
+        return this.editor.commands.toggleCode()
+      }
+    }
+  },
+
+  addInputRules() {
+    return [
+      new InputRule({
+        find: /(?:^|\s)(`([^`]+)`)$/,
+        handler: ({ state, range, match }) => {
+          const { $from } = state.selection
+
+          // Block if we're in a heading
+          if ($from.parent.type.name === 'heading') {
+            return
+          }
+
+          // Apply the code mark (default behavior)
+          const attributes = {}
+          const { tr } = state
+          const captureGroup = match[2] // The content inside backticks
+          const fullMatch = match[0]
+
+          if (captureGroup) {
+            const startSpaces = fullMatch.search(/\S/)
+            const textStart = range.from + fullMatch.indexOf(captureGroup)
+            const textEnd = textStart + captureGroup.length
+
+            // Delete the backticks
+            if (textEnd < range.to) {
+              tr.delete(textEnd, range.to)
+            }
+            if (textStart > range.from) {
+              tr.delete(range.from + startSpaces, textStart)
+            }
+
+            const markStart = range.from + startSpaces
+            const markEnd = markStart + captureGroup.length
+
+            tr.addMark(markStart, markEnd, this.type.create(attributes))
+            tr.removeStoredMark(this.type)
+          }
+        }
+      })
+    ]
+  }
+})
+
+const BlockquoteExtended = Blockquote.extend({
+  addKeyboardShortcuts() {
+    return {
+      'Mod-Shift-b': () => {
+        if (this.editor.isActive('heading')) {
+          return true // Block the command
+        }
+        return this.editor.commands.toggleBlockquote()
+      }
+    }
+  }
+})
+
+const BulletListExtended = BulletList.extend({
+  addKeyboardShortcuts() {
+    return {
+      'Mod-Shift-8': () => {
+        if (this.editor.isActive('heading')) {
+          return true // Block the command
+        }
+        return this.editor.commands.toggleBulletList()
+      }
+    }
+  }
+})
+
+const OrderedListExtended = OrderedList.extend({
+  addKeyboardShortcuts() {
+    return {
+      'Mod-Shift-7': () => {
+        if (this.editor.isActive('heading')) {
+          return true // Block the command
+        }
+        return this.editor.commands.toggleOrderedList()
+      }
+    }
+  }
+})
+
+const CodeBlockLowlightExtended = CodeBlockLowlight.extend({
+  addKeyboardShortcuts() {
+    return {
+      'Mod-Alt-c': () => {
+        if (this.editor.isActive('heading')) {
+          return true // Block the command
+        }
+        return this.editor.commands.toggleCodeBlock()
+      }
+    }
   }
 })
 
@@ -482,7 +632,7 @@ turndownService.addRule('tableCell', {
 turndownService.addRule('listItem', {
   filter: 'li',
   replacement: function (content, node) {
-    content = content.replace(/^\n+/, '').replace(/\n+$/, '\n').replace(/\n/gm, '\n  ')
+    content = content.replace(/^\n+/, '').replace(/\n+$/, '\n').replace(/\n/gm, '\n    ')
 
     let prefix = '- '
     const parent = node.parentNode
@@ -562,7 +712,14 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
         codeBlock: false,
         heading: false, // Disable default heading to use our extended version
         link: false, // Disable default link to use our custom one
-        strike: false // Disable default strike to use custom keyboard shortcut
+        strike: false, // Disable default strike to use custom keyboard shortcut
+        bold: false, // Disable to extend with heading check
+        italic: false, // Disable to extend with heading check
+        code: false, // Disable to extend with heading check (inline code)
+        blockquote: false, // Disable to extend with heading check
+        bulletList: false, // Disable to extend with heading check
+        orderedList: false, // Disable to extend with heading check
+        listItem: false // Disable to extend with heading check
       }),
       HeadingWithId,
       Link.configure({
@@ -576,16 +733,28 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
       Strike.extend({
         addKeyboardShortcuts() {
           return {
-            'Mod-Shift-x': () => this.editor.commands.toggleStrike()
+            'Mod-Shift-x': () => {
+              if (this.editor.isActive('heading')) {
+                return true // Block the command
+              }
+              return this.editor.commands.toggleStrike()
+            }
           }
         }
       }),
+      BoldExtended,
+      ItalicExtended,
+      CodeExtended,
+      BlockquoteExtended,
+      BulletListExtended,
+      OrderedListExtended,
+      ListItem,
       TabHandling,
       CustomImage.configure({
         inline: false,
         allowBase64: true
       }),
-      CodeBlockLowlight.configure({
+      CodeBlockLowlightExtended.configure({
         lowlight
       }),
       Placeholder.configure({
@@ -986,93 +1155,100 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       onClick: () => document.execCommand('copy')
     },
     { type: 'divider' },
-    { type: 'section-label', label: 'FORMATTING' },
-    { type: 'divider' },
     {
       type: 'item',
       label: 'Bold',
       icon: <BoldIcon />,
-      onClick: () => editor.chain().focus().toggleBold().run()
+      onClick: () => editor.chain().focus().toggleBold().run(),
+      disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Italic',
       icon: <ItalicIcon />,
-      onClick: () => editor.chain().focus().toggleItalic().run()
+      onClick: () => editor.chain().focus().toggleItalic().run(),
+      disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Strikethrough',
       icon: <StrikeIcon />,
-      onClick: () => editor.chain().focus().toggleStrike().run()
+      onClick: () => editor.chain().focus().toggleStrike().run(),
+      disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Inline Code',
       icon: <CodeIcon />,
-      onClick: () => editor.chain().focus().toggleCode().run()
+      onClick: () => editor.chain().focus().toggleCode().run(),
+      disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Add Link',
       icon: <LinkIcon />,
       onClick: () => {
-        // Trigger link modal - this would need to be wired to the toolbar's link handler
         const event = new CustomEvent('open-link-modal')
         document.dispatchEvent(event)
-      }
+      },
+      disabled: editor.isActive('heading')
     },
     { type: 'divider' },
-    { type: 'section-label', label: 'CONVERT TO' },
-    { type: 'divider' },
-    {
-      type: 'item',
-      label: 'Bullet List',
-      icon: <BulletListIcon />,
-      onClick: () => editor.chain().focus().toggleBulletList().run()
-    },
     {
       type: 'item',
       label: 'Numbered List',
       icon: <OrderedListIcon />,
-      onClick: () => editor.chain().focus().toggleOrderedList().run()
+      onClick: () => editor.chain().focus().toggleOrderedList().run(),
+      disabled: editor.isActive('heading')
     },
     {
       type: 'item',
-      label: 'Blockquote',
-      icon: <QuoteIcon />,
-      onClick: () => editor.chain().focus().toggleBlockquote().run()
+      label: 'Bullet List',
+      icon: <BulletListIcon />,
+      onClick: () => editor.chain().focus().toggleBulletList().run(),
+      disabled: editor.isActive('heading')
     },
-    {
-      type: 'item',
-      label: 'Code Block',
-      icon: <CodeBlockIcon />,
-      onClick: () => editor.chain().focus().toggleCodeBlock().run()
-    },
-    { type: 'divider' },
     {
       type: 'item',
       label: 'Indent',
       icon: <IndentIcon />,
       onClick: () => {
-        const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
-        if (isInList) {
-          editor.chain().focus().sinkListItem('listItem').run()
-        }
+        editor.chain().focus().sinkListItem('listItem').run()
       },
-      disabled: !editor.isActive('bulletList') && !editor.isActive('orderedList')
+      disabled: (() => {
+        if (editor.isActive('heading')) return true
+        const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
+        if (!isInList) return true // Disable if not in a list
+        return !editor.can().sinkListItem('listItem') // Disable if first item
+      })()
     },
     {
       type: 'item',
       label: 'Outdent',
       icon: <OutdentIcon />,
       onClick: () => {
-        const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
-        if (isInList) {
-          editor.chain().focus().liftListItem('listItem').run()
-        }
+        editor.chain().focus().liftListItem('listItem').run()
       },
-      disabled: !editor.isActive('bulletList') && !editor.isActive('orderedList')
+      disabled: (() => {
+        if (editor.isActive('heading')) return true
+        const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
+        if (!isInList) return true // Disable if not in a list
+        return !editor.can().liftListItem('listItem') // Disable if lift not possible
+      })()
+    },
+    {
+      type: 'item',
+      label: 'Blockquote',
+      icon: <QuoteIcon />,
+      onClick: () => editor.chain().focus().toggleBlockquote().run(),
+      disabled: editor.isActive('heading')
+    },
+    {
+      type: 'item',
+      label: 'Code Block',
+      icon: <CodeBlockIcon />,
+      onClick: () => editor.chain().focus().toggleCodeBlock().run(),
+      disabled: editor.isActive('heading')
     }
   ]
 }
@@ -1085,8 +1261,39 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       icon: <PasteIcon />,
       onClick: async () => {
         try {
-          const text = await navigator.clipboard.readText()
-          editor.chain().focus().insertContent(text).run()
+          // Read all clipboard items (text, images, etc.)
+          const clipboardItems = await navigator.clipboard.read()
+
+          for (const item of clipboardItems) {
+            // Check for image types
+            const imageType = item.types.find(type => type.startsWith('image/'))
+            if (imageType) {
+              const blob = await item.getType(imageType)
+              const reader = new FileReader()
+              reader.onload = (e) => {
+                const dataUrl = e.target?.result as string
+                editor.chain().focus().setImage({ src: dataUrl }).run()
+              }
+              reader.readAsDataURL(blob)
+              return
+            }
+
+            // Check for HTML
+            if (item.types.includes('text/html')) {
+              const blob = await item.getType('text/html')
+              const html = await blob.text()
+              editor.chain().focus().insertContent(html).run()
+              return
+            }
+
+            // Fallback to plain text
+            if (item.types.includes('text/plain')) {
+              const blob = await item.getType('text/plain')
+              const text = await blob.text()
+              editor.chain().focus().insertContent(text).run()
+              return
+            }
+          }
         } catch (err) {
           console.error('Failed to paste:', err)
         }
@@ -1099,30 +1306,126 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       onClick: () => editor.chain().focus().selectAll().run()
     },
     { type: 'divider' },
-    { type: 'section-label', label: 'INSERT' },
+    {
+      type: 'item',
+      label: 'Bold',
+      icon: <BoldIcon />,
+      onClick: () => editor.chain().focus().toggleBold().run(),
+      disabled: editor.isActive('heading')
+    },
+    {
+      type: 'item',
+      label: 'Italic',
+      icon: <ItalicIcon />,
+      onClick: () => editor.chain().focus().toggleItalic().run(),
+      disabled: editor.isActive('heading')
+    },
+    {
+      type: 'item',
+      label: 'Strikethrough',
+      icon: <StrikeIcon />,
+      onClick: () => editor.chain().focus().toggleStrike().run(),
+      disabled: editor.isActive('heading')
+    },
+    {
+      type: 'item',
+      label: 'Inline Code',
+      icon: <CodeIcon />,
+      onClick: () => editor.chain().focus().toggleCode().run(),
+      disabled: editor.isActive('heading')
+    },
+    {
+      type: 'item',
+      label: 'Add Link',
+      icon: <LinkIcon />,
+      onClick: () => {
+        const event = new CustomEvent('open-link-modal')
+        document.dispatchEvent(event)
+      },
+      disabled: editor.isActive('heading')
+    },
+    { type: 'divider' },
+    {
+      type: 'item',
+      label: 'Numbered List',
+      icon: <OrderedListIcon />,
+      onClick: () => editor.chain().focus().toggleOrderedList().run(),
+      disabled: editor.isActive('heading')
+    },
+    {
+      type: 'item',
+      label: 'Bullet List',
+      icon: <BulletListIcon />,
+      onClick: () => editor.chain().focus().toggleBulletList().run(),
+      disabled: editor.isActive('heading')
+    },
+    {
+      type: 'item',
+      label: 'Indent',
+      icon: <IndentIcon />,
+      onClick: () => {
+        editor.chain().focus().sinkListItem('listItem').run()
+      },
+      disabled: (() => {
+        if (editor.isActive('heading')) return true
+        const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
+        if (!isInList) return true
+        return !editor.can().sinkListItem('listItem')
+      })()
+    },
+    {
+      type: 'item',
+      label: 'Outdent',
+      icon: <OutdentIcon />,
+      onClick: () => {
+        editor.chain().focus().liftListItem('listItem').run()
+      },
+      disabled: (() => {
+        if (editor.isActive('heading')) return true
+        const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
+        if (!isInList) return true
+        return !editor.can().liftListItem('listItem')
+      })()
+    },
+    {
+      type: 'item',
+      label: 'Blockquote',
+      icon: <QuoteIcon />,
+      onClick: () => editor.chain().focus().toggleBlockquote().run(),
+      disabled: editor.isActive('heading')
+    },
+    {
+      type: 'item',
+      label: 'Code Block',
+      icon: <CodeBlockIcon />,
+      onClick: () => editor.chain().focus().toggleCodeBlock().run(),
+      disabled: editor.isActive('heading')
+    },
     { type: 'divider' },
     {
       type: 'item',
       label: 'Horizontal Rule',
       icon: <HRIcon />,
-      onClick: () => editor.chain().focus().setHorizontalRule().run()
+      onClick: () => editor.chain().focus().setHorizontalRule().run(),
+      disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Insert Table',
       icon: <TableIcon />,
       onClick: () =>
-        editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+        editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+      disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Insert Image',
       icon: <ImageIcon />,
       onClick: () => {
-        // Trigger image modal - this would need to be wired to the toolbar's image handler
         const event = new CustomEvent('open-image-modal')
         document.dispatchEvent(event)
-      }
+      },
+      disabled: editor.isActive('heading')
     }
   ]
 }
@@ -1279,7 +1582,18 @@ function getImageMenuItems(
   }
 
   return [
-    { type: 'section-label', label: 'RESIZE' },
+    {
+      type: 'item',
+      label: 'Cut Image',
+      icon: <CutIcon />,
+      onClick: () => document.execCommand('cut')
+    },
+    {
+      type: 'item',
+      label: 'Copy Image',
+      icon: <CopyIcon />,
+      onClick: () => document.execCommand('copy')
+    },
     { type: 'divider' },
     {
       type: 'item',
@@ -1314,13 +1628,7 @@ function getImageMenuItems(
     },
     {
       type: 'item',
-      label: 'Copy Image',
-      icon: <CopyIcon />,
-      onClick: () => document.execCommand('copy')
-    },
-    {
-      type: 'item',
-      label: 'Embed Image (Base64)',
+      label: 'Embed in Document',
       icon: <CodeIcon />,
       onClick: handleEmbedImage,
       disabled: !canEmbed
@@ -1420,26 +1728,28 @@ function getTableMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Add Row Above',
+      icon: <ArrowUpIcon />,
       onClick: () => editor.chain().focus().addRowBefore().run()
     },
     {
       type: 'item',
       label: 'Add Row Below',
+      icon: <ArrowDownIcon />,
       onClick: () => editor.chain().focus().addRowAfter().run()
     },
     { type: 'divider' },
     {
       type: 'item',
       label: 'Add Column Left',
+      icon: <ArrowLeftIcon />,
       onClick: () => editor.chain().focus().addColumnBefore().run()
     },
     {
       type: 'item',
       label: 'Add Column Right',
+      icon: <ArrowRightIcon />,
       onClick: () => editor.chain().focus().addColumnAfter().run()
     },
-    { type: 'divider' },
-    { type: 'section-label', label: 'ALIGN CELL' },
     { type: 'divider' },
     {
       type: 'item',
@@ -1542,13 +1852,17 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
     const handleKeyDown = (e: KeyboardEvent): void => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
+        // Block if heading is active
+        if (editor?.isActive('heading')) {
+          return
+        }
         handleLinkButtonClick()
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [handleLinkButtonClick])
+  }, [handleLinkButtonClick, editor])
 
   // Listen for custom events from context menus
   useEffect(() => {
@@ -1700,6 +2014,7 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         <button
           className={`format-btn ${editor.isActive('bold') ? 'active' : ''}`}
           onClick={() => editor.chain().focus().toggleBold().run()}
+          disabled={editor.isActive('heading')}
           data-tooltip="Bold (Cmd+B)"
         >
           <BoldIcon />
@@ -1707,6 +2022,7 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         <button
           className={`format-btn ${editor.isActive('italic') ? 'active' : ''}`}
           onClick={() => editor.chain().focus().toggleItalic().run()}
+          disabled={editor.isActive('heading')}
           data-tooltip="Italic (Cmd+I)"
         >
           <ItalicIcon />
@@ -1714,6 +2030,7 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         <button
           className={`format-btn ${editor.isActive('strike') ? 'active' : ''}`}
           onClick={() => editor.chain().focus().toggleStrike().run()}
+          disabled={editor.isActive('heading')}
           data-tooltip="Strikethrough (Cmd+Shift+X)"
         >
           <StrikeIcon />
@@ -1721,6 +2038,7 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         <button
           className={`format-btn ${editor.isActive('code') ? 'active' : ''}`}
           onClick={() => editor.chain().focus().toggleCode().run()}
+          disabled={editor.isActive('heading')}
           data-tooltip="Inline Code (Cmd+E)"
         >
           <CodeIcon />
@@ -1728,6 +2046,7 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         <button
           className={`format-btn ${editor.isActive('link') ? 'active' : ''}`}
           onClick={handleLinkButtonClick}
+          disabled={editor.isActive('heading')}
           data-tooltip="Insert Link (Cmd+K)"
         >
           <LinkIcon />
@@ -1740,6 +2059,7 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         <button
           className={`format-btn ${editor.isActive('orderedList') ? 'active' : ''}`}
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          disabled={editor.isActive('heading')}
           data-tooltip="Numbered List (Cmd+Shift+7)"
         >
           <OrderedListIcon />
@@ -1747,6 +2067,7 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         <button
           className={`format-btn ${editor.isActive('bulletList') ? 'active' : ''}`}
           onClick={() => editor.chain().focus().toggleBulletList().run()}
+          disabled={editor.isActive('heading')}
           data-tooltip="Bullet List (Cmd+Shift+8)"
         >
           <BulletListIcon />
@@ -1754,32 +2075,37 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         <button
           className="format-btn"
           onClick={() => {
-            const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
-            if (isInList) {
-              editor.chain().focus().sinkListItem('listItem').run()
-            } else {
-              editor.chain().focus().insertContent('\t').run()
-            }
+            editor.chain().focus().sinkListItem('listItem').run()
           }}
-          data-tooltip="Increase Indent (Tab)"
+          disabled={(() => {
+            if (editor.isActive('heading')) return true
+            const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
+            if (!isInList) return true // Disable if not in a list
+            return !editor.can().sinkListItem('listItem') // Disable if first item
+          })()}
+          data-tooltip="Indent (Tab)"
         >
           <IndentIcon />
         </button>
         <button
           className="format-btn"
           onClick={() => {
-            const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
-            if (isInList) {
-              editor.chain().focus().liftListItem('listItem').run()
-            }
+            editor.chain().focus().liftListItem('listItem').run()
           }}
-          data-tooltip="Decrease Indent (Shift+Tab)"
+          disabled={(() => {
+            if (editor.isActive('heading')) return true
+            const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
+            if (!isInList) return true // Disable if not in a list
+            return !editor.can().liftListItem('listItem') // Disable if lift not possible
+          })()}
+          data-tooltip="Outdent (Shift+Tab)"
         >
           <OutdentIcon />
         </button>
         <button
           className={`format-btn ${editor.isActive('blockquote') ? 'active' : ''}`}
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          disabled={editor.isActive('heading')}
           data-tooltip="Blockquote (Cmd+Shift+B)"
         >
           <QuoteIcon />
@@ -1787,6 +2113,7 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         <button
           className={`format-btn ${editor.isActive('codeBlock') ? 'active' : ''}`}
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          disabled={editor.isActive('heading')}
           data-tooltip="Code Block (Cmd+Option+C)"
         >
           <CodeBlockIcon />
@@ -1799,14 +2126,25 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         <button
           className="format-btn"
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          disabled={editor.isActive('heading')}
           data-tooltip="Horizontal Rule"
         >
           <HRIcon />
         </button>
-        <button className="format-btn" onClick={insertTable} data-tooltip="Insert Table">
+        <button
+          className="format-btn"
+          onClick={insertTable}
+          disabled={editor.isActive('heading')}
+          data-tooltip="Insert Table"
+        >
           <TableIcon />
         </button>
-        <button className="format-btn" onClick={handleImageButtonClick} data-tooltip="Insert Image">
+        <button
+          className="format-btn"
+          onClick={handleImageButtonClick}
+          disabled={editor.isActive('heading')}
+          data-tooltip="Insert Image"
+        >
           <ImageIcon />
         </button>
       </div>
