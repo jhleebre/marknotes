@@ -99,6 +99,41 @@
   cursor: not-allowed;
 }
 
+.format-select {
+  height: 32px;
+  padding: 0 32px 0 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  min-width: 140px;
+}
+
+.format-select:hover {
+  background-color: var(--hover-bg);
+  border-color: var(--accent-color);
+}
+
+.format-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.format-select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 8px;
+}
+
 .format-btn svg {
   width: 16px;
   height: 16px;
@@ -836,4 +871,53 @@
   .image-wrapper img:hover {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
+}
+
+/* Task List Styles */
+ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+ul[data-type='taskList'] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+ul[data-type='taskList'] li > label {
+  display: flex;
+  align-items: center;
+  user-select: none;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+ul[data-type='taskList'] li > label input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+ul[data-type='taskList'] li > div {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.5;
+  padding-top: 1px;
+}
+
+ul[data-type='taskList'] li[data-checked='true'] > div {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Nested task lists */
+ul[data-type='taskList'] ul[data-type='taskList'] {
+  margin-left: 20px;
+  margin-top: 4px;
 }

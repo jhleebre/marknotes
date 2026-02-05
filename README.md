@@ -9,12 +9,24 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.3.0</strong>
+  <strong>Version 1.4.0</strong>
 </p>
 
 ---
 
 ## Changelog
+
+### Version 1.4.0 (2026-02-05)
+
+**Table Enhancements**
+- Added support for block-level markdown in table cells (lists, code blocks, blockquotes, headings)
+- Preserve line breaks and complex formatting in table cells when saving/loading
+- Fixed Tab/Shift-Tab behavior in lists within tables to properly indent/outdent instead of navigating cells
+- Maintain proper HTML entity encoding to prevent table structure breaking
+
+**UI/UX Improvements**
+- Replaced individual H1-H6, P buttons with single dropdown selector for cleaner formatting toolbar
+- Redesigned bullet list and ordered list icons for better visibility
 
 ### Version 1.3.0 (2026-02-04)
 
@@ -60,6 +72,7 @@ MarkNotes is a native macOS Electron application designed for markdown enthusias
 ### 📝 **Rich Text Formatting**
 
 - **Headings** - H1 through H6 with customized font sizes (24pt to 14pt)
+  - Convenient dropdown selector in toolbar for quick access
 - **Text Styles** - Bold, italic, strikethrough (`Cmd+Shift+X`), inline code
 - **Lists** - Bulleted and numbered lists with proper nesting
   - **Indent/Outdent** - Tab/Shift+Tab for list nesting (context-aware)
@@ -75,6 +88,12 @@ MarkNotes is a native macOS Electron application designed for markdown enthusias
 ### 📊 **Advanced Table Support**
 
 - **Table Insertion** - Create 3×3 tables instantly from the toolbar
+- **Block-Level Content** - Full support for complex markdown in table cells:
+  - Bulleted and numbered lists (with proper nesting)
+  - Code blocks with syntax highlighting
+  - Blockquotes and headings
+  - Line breaks and multi-paragraph text
+  - All inline formatting (bold, italic, links, images, code)
 - **Right-Click Context Menu** - Full table manipulation:
   - Add row above/below
   - Add column left/right
@@ -82,7 +101,9 @@ MarkNotes is a native macOS Electron application designed for markdown enthusias
   - Delete row/column/table
 - **GFM-Compliant Alignment** - Standard markdown alignment syntax (`:---`, `:---:`, `---:`)
 - **Smart Rendering** - Tables display consistently in edit, preview, and export
-- **Tab Navigation** - Tab/Shift+Tab to navigate between cells (smart context-aware)
+- **Context-Aware Tab Behavior**:
+  - Inside lists: Tab/Shift+Tab for indent/outdent
+  - Outside lists: Tab/Shift+Tab for cell navigation
 
 ### 🖼️ **Image Management**
 

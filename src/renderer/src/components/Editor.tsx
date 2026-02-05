@@ -74,22 +74,23 @@ const TabHandling = Extension.create({
         const { selection } = state
         const { $from } = selection
 
+        // Check if we're in a list FIRST (higher priority than table navigation)
+        const isInList =
+          this.editor.isActive('bulletList') ||
+          this.editor.isActive('orderedList')
+        if (isInList) {
+          // Try to sink list item (indent)
+          this.editor.commands.sinkListItem('listItem')
+          // Always return true to prevent table navigation
+          return true
+        }
+
         // Check if we're inside a table
         const isInTable =
           $from.node(-1)?.type.name === 'tableCell' || $from.node(-1)?.type.name === 'tableHeader'
         if (isInTable) {
           // Let table extension handle it (go to next cell)
           return false
-        }
-
-        // Check if we're in a list
-        const isInList = this.editor.isActive('bulletList') || this.editor.isActive('orderedList')
-        if (isInList) {
-          // Sink list item only if possible (not first item)
-          if (this.editor.can().sinkListItem('listItem')) {
-            return this.editor.commands.sinkListItem('listItem')
-          }
-          return false // First item - do nothing
         }
 
         // For regular text, insert tab character
@@ -100,19 +101,23 @@ const TabHandling = Extension.create({
         const { selection } = state
         const { $from } = selection
 
+        // Check if we're in a list FIRST (higher priority than table navigation)
+        const isInList =
+          this.editor.isActive('bulletList') ||
+          this.editor.isActive('orderedList')
+        if (isInList) {
+          // Try to lift list item (outdent)
+          this.editor.commands.liftListItem('listItem')
+          // Always return true to prevent table navigation
+          return true
+        }
+
         // Check if we're inside a table
         const isInTable =
           $from.node(-1)?.type.name === 'tableCell' || $from.node(-1)?.type.name === 'tableHeader'
         if (isInTable) {
           // Let table extension handle it (go to previous cell)
           return false
-        }
-
-        // Check if we're in a list
-        const isInList = this.editor.isActive('bulletList') || this.editor.isActive('orderedList')
-        if (isInList) {
-          // Lift list item (decrease indent)
-          return this.editor.commands.liftListItem('listItem')
         }
 
         // For regular text, try to remove leading tab/spaces
@@ -138,7 +143,7 @@ const TabHandling = Extension.create({
   }
 })
 
-// Configure marked for GFM table support and heading IDs
+// Configure marked for GFM table support, heading IDs, and task lists
 marked.setOptions({
   gfm: true,
   breaks: false
@@ -162,13 +167,25 @@ renderer.heading = function ({ text, depth, tokens }) {
   return `<h${depth} id="${id}">${text}</h${depth}>\n`
 }
 
-// Custom table cell renderer to apply alignment from markdown
+// Custom table cell renderer to apply alignment from markdown and parse both inline and block markdown
 renderer.tablecell = function (token) {
   const text = token.text
+  // Parse both inline and block-level markdown (lists, blockquotes, code blocks, etc.)
+  let parsedText = marked.parse(text) as string
+
+  // Remove ALL <p> tags (not just outer ones) to prevent extra spacing
+  parsedText = parsedText.replace(/<\/?p>/g, '')
+
+  // Remove excessive whitespace between HTML tags
+  parsedText = parsedText.replace(/>\s+</g, '><')
+
+  // Clean up and trim
+  parsedText = parsedText.trim()
+
   const type = token.header ? 'th' : 'td'
   const align = token.align
   const style = align ? ` style="text-align: ${align}"` : ''
-  return `<${type}${style}>${text}</${type}>\n`
+  return `<${type}${style}>${parsedText}</${type}>\n`
 }
 
 // Custom image renderer to support size classes
@@ -576,8 +593,44 @@ turndownService.addRule('table', {
     rows.forEach((row, index) => {
       const cells = Array.from(row.querySelectorAll('th, td'))
       const cellContents = cells.map((cell) => {
-        const text = cell.textContent?.trim() || ''
-        return text.replace(/\|/g, '\\|').replace(/\n/g, ' ')
+        const cellHtml = (cell as HTMLElement).innerHTML
+
+        // Check if cell contains block-level elements (lists, code blocks, blockquotes, etc.)
+        // Note: <p> tags are NOT considered block elements here, they're used for normal line breaks
+        const hasBlockElements = /<(ul|ol|pre|blockquote|h[1-6]|div)[\s>]/i.test(cellHtml)
+
+        let cellContent: string
+
+        if (hasBlockElements) {
+          // Keep as HTML if block elements are present
+          // Convert newlines to HTML entities to prevent breaking table structure
+          cellContent = cellHtml
+            .trim()
+            .replace(/\n/g, '&#10;') // Convert newlines to HTML entity
+            .replace(/\r/g, '') // Remove carriage returns
+        } else {
+          // Process HTML before converting to markdown
+          let processedHtml = cellHtml
+
+          // Replace paragraph breaks with <br> tags to preserve line breaks
+          // </p><p> becomes <br> (paragraph break)
+          processedHtml = processedHtml.replace(/<\/p>\s*<p>/gi, '<br>')
+          // Remove opening and closing <p> tags
+          processedHtml = processedHtml.replace(/<\/?p>/gi, '')
+
+          // Convert to markdown for inline elements only (bold, italic, code, links, images)
+          cellContent = turndownService.turndown(processedHtml).trim()
+
+          // Replace remaining newlines with <br> tags
+          cellContent = cellContent.replace(/\n/g, '<br>')
+        }
+
+        // Escape pipe characters
+        cellContent = cellContent.split('\\|').join('<!ESCAPED_PIPE!>')
+        cellContent = cellContent.split('|').join('\\|')
+        cellContent = cellContent.split('<!ESCAPED_PIPE!>').join('\\|')
+
+        return cellContent
       })
 
       markdownRows.push('| ' + cellContents.join(' | ') + ' |')
@@ -749,7 +802,6 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
       BulletListExtended,
       OrderedListExtended,
       ListItem,
-      TabHandling,
       CustomImage.configure({
         inline: false,
         allowBase64: true
@@ -760,7 +812,39 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
       Placeholder.configure({
         placeholder: 'Start writing...'
       }),
-      Table.configure({
+      Table.extend({
+        addKeyboardShortcuts() {
+          return {
+            ...this.parent?.(),
+            Tab: () => {
+              // Check if we're in a list FIRST
+              const isInList =
+                this.editor.isActive('bulletList') ||
+                this.editor.isActive('orderedList')
+              if (isInList) {
+                // Handle list indentation
+                this.editor.commands.sinkListItem('listItem')
+                return true
+              }
+              // Default table behavior: go to next cell
+              return this.editor.commands.goToNextCell()
+            },
+            'Shift-Tab': () => {
+              // Check if we're in a list FIRST
+              const isInList =
+                this.editor.isActive('bulletList') ||
+                this.editor.isActive('orderedList')
+              if (isInList) {
+                // Handle list outdentation
+                this.editor.commands.liftListItem('listItem')
+                return true
+              }
+              // Default table behavior: go to previous cell
+              return this.editor.commands.goToPreviousCell()
+            }
+          }
+        }
+      }).configure({
         resizable: false,
         HTMLAttributes: {
           class: 'editor-table'
@@ -804,7 +888,8 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
             }
           }
         }
-      })
+      }),
+      TabHandling
     ],
     content: '',
     editorProps: {
@@ -1217,7 +1302,9 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       },
       disabled: (() => {
         if (editor.isActive('heading')) return true
-        const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
+        const isInList =
+          editor.isActive('bulletList') ||
+          editor.isActive('orderedList')
         if (!isInList) return true // Disable if not in a list
         return !editor.can().sinkListItem('listItem') // Disable if first item
       })()
@@ -1231,7 +1318,9 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       },
       disabled: (() => {
         if (editor.isActive('heading')) return true
-        const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
+        const isInList =
+          editor.isActive('bulletList') ||
+          editor.isActive('orderedList')
         if (!isInList) return true // Disable if not in a list
         return !editor.can().liftListItem('listItem') // Disable if lift not possible
       })()
@@ -1957,55 +2046,42 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
       <div className="toolbar-divider" />
 
       <div className="toolbar-group">
-        <button
-          className={`format-btn ${editor.isActive('heading', { level: 1 }) ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          data-tooltip="Heading 1 (Cmd+Option+1)"
+        <select
+          className="format-select"
+          value={
+            editor.isActive('heading', { level: 1 })
+              ? 'h1'
+              : editor.isActive('heading', { level: 2 })
+                ? 'h2'
+                : editor.isActive('heading', { level: 3 })
+                  ? 'h3'
+                  : editor.isActive('heading', { level: 4 })
+                    ? 'h4'
+                    : editor.isActive('heading', { level: 5 })
+                      ? 'h5'
+                      : editor.isActive('heading', { level: 6 })
+                        ? 'h6'
+                        : 'p'
+          }
+          onChange={(e) => {
+            const value = e.target.value
+            if (value === 'p') {
+              editor.chain().focus().setParagraph().run()
+            } else {
+              const level = parseInt(value.replace('h', '')) as 1 | 2 | 3 | 4 | 5 | 6
+              editor.chain().focus().toggleHeading({ level }).run()
+            }
+          }}
+          data-tooltip="Text style"
         >
-          H1
-        </button>
-        <button
-          className={`format-btn ${editor.isActive('heading', { level: 2 }) ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          data-tooltip="Heading 2 (Cmd+Option+2)"
-        >
-          H2
-        </button>
-        <button
-          className={`format-btn ${editor.isActive('heading', { level: 3 }) ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          data-tooltip="Heading 3 (Cmd+Option+3)"
-        >
-          H3
-        </button>
-        <button
-          className={`format-btn ${editor.isActive('heading', { level: 4 }) ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 4 }).run()}
-          data-tooltip="Heading 4 (Cmd+Option+4)"
-        >
-          H4
-        </button>
-        <button
-          className={`format-btn ${editor.isActive('heading', { level: 5 }) ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 5 }).run()}
-          data-tooltip="Heading 5 (Cmd+Option+5)"
-        >
-          H5
-        </button>
-        <button
-          className={`format-btn ${editor.isActive('heading', { level: 6 }) ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 6 }).run()}
-          data-tooltip="Heading 6 (Cmd+Option+6)"
-        >
-          H6
-        </button>
-        <button
-          className={`format-btn ${editor.isActive('paragraph') ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().setParagraph().run()}
-          data-tooltip="Paragraph (Cmd+Option+0)"
-        >
-          P
-        </button>
+          <option value="p">Normal Text</option>
+          <option value="h1">Heading 1</option>
+          <option value="h2">Heading 2</option>
+          <option value="h3">Heading 3</option>
+          <option value="h4">Heading 4</option>
+          <option value="h5">Heading 5</option>
+          <option value="h6">Heading 6</option>
+        </select>
       </div>
 
       <div className="toolbar-divider" />
@@ -2079,7 +2155,9 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
           }}
           disabled={(() => {
             if (editor.isActive('heading')) return true
-            const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
+            const isInList =
+              editor.isActive('bulletList') ||
+              editor.isActive('orderedList')
             if (!isInList) return true // Disable if not in a list
             return !editor.can().sinkListItem('listItem') // Disable if first item
           })()}
@@ -2094,7 +2172,9 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
           }}
           disabled={(() => {
             if (editor.isActive('heading')) return true
-            const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
+            const isInList =
+              editor.isActive('bulletList') ||
+              editor.isActive('orderedList')
             if (!isInList) return true // Disable if not in a list
             return !editor.can().liftListItem('listItem') // Disable if lift not possible
           })()}
