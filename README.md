@@ -9,12 +9,22 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.4.0</strong>
+  <strong>Version 1.4.1</strong>
 </p>
 
 ---
 
 ## Changelog
+
+### Version 1.4.1 (2026-02-06)
+
+**Link Editing Improvements**
+- Context menu now displays "Edit Link" when clicking on existing links (previously showed "Add Link")
+- Fixed link editing when right-clicking on a link without text selection
+  - Modal now correctly shows existing link text and URL
+  - Editing link text now replaces the entire link text instead of inserting at cursor position
+  - Link text field is now editable when modifying existing links
+- Enhanced link editing workflow with proper detection of edit vs. insert mode
 
 ### Version 1.4.0 (2026-02-05)
 

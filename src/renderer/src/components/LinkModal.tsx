@@ -5,6 +5,7 @@ interface LinkModalProps {
   isOpen: boolean
   initialText?: string
   initialUrl?: string
+  isEditing?: boolean
   onClose: () => void
   onInsert: (text: string, url: string) => void
 }
@@ -13,6 +14,7 @@ export function LinkModal({
   isOpen,
   initialText = '',
   initialUrl = '',
+  isEditing = false,
   onClose,
   onInsert
 }: LinkModalProps): React.JSX.Element | null {
@@ -66,7 +68,7 @@ export function LinkModal({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content link-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>Insert Link</h2>
+          <h2>{isEditing ? 'Edit Link' : 'Insert Link'}</h2>
           <button className="modal-close" onClick={onClose} aria-label="Close">
             <CloseIcon />
           </button>
@@ -85,7 +87,7 @@ export function LinkModal({
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Enter text to display"
                 autoComplete="off"
-                disabled={!!initialText}
+                disabled={!!initialText && !isEditing}
               />
             </div>
 
@@ -116,7 +118,7 @@ export function LinkModal({
               className="btn btn-primary"
               disabled={!text.trim() || !url.trim()}
             >
-              Insert Link
+              {isEditing ? 'Update Link' : 'Insert Link'}
             </button>
           </div>
         </form>

@@ -1270,7 +1270,7 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     },
     {
       type: 'item',
-      label: 'Add Link',
+      label: editor.isActive('link') ? 'Edit Link' : 'Add Link',
       icon: <LinkIcon />,
       onClick: () => {
         const event = new CustomEvent('open-link-modal')
@@ -1425,7 +1425,7 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     },
     {
       type: 'item',
-      label: 'Add Link',
+      label: editor.isActive('link') ? 'Edit Link' : 'Add Link',
       icon: <LinkIcon />,
       onClick: () => {
         const event = new CustomEvent('open-link-modal')
@@ -1890,9 +1890,10 @@ interface FormattingToolbarProps {
 
 function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Element | null {
   const [linkModalOpen, setLinkModalOpen] = useState(false)
-  const [linkModalData, setLinkModalData] = useState<{ text: string; url: string }>({
+  const [linkModalData, setLinkModalData] = useState<{ text: string; url: string; isEditing: boolean }>({
     text: '',
-    url: ''
+    url: '',
+    isEditing: false
   })
   const [imageModalOpen, setImageModalOpen] = useState(false)
   const [imageModalData, setImageModalData] = useState<{ alt: string }>({
@@ -1901,24 +1902,125 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
 
   const handleLinkButtonClick = useCallback((): void => {
     if (!editor) return
-    const { from, to } = editor.state.selection
-    const selectedText = editor.state.doc.textBetween(from, to, '')
+    const { state } = editor
+    const { from, to, $from } = state.selection
+    let selectedText = state.doc.textBetween(from, to, '')
 
     // Get existing link URL if selection is within a link
     const linkAttrs = editor.getAttributes('link')
     const existingUrl = linkAttrs.href || ''
 
+    // If cursor is inside a link (not just a selection), extract the full link text
+    if (!selectedText && editor.isActive('link')) {
+      // Find the link mark at cursor position
+      const marks = $from.marks()
+      const linkMark = marks.find(mark => mark.type.name === 'link')
+
+      if (linkMark) {
+        // Find the range of the link mark
+        let linkStart = from
+        let linkEnd = from
+
+        // Scan backward to find link start
+        let pos = from - 1
+        while (pos >= 0) {
+          const resolvedPos = state.doc.resolve(pos)
+          const marksAtPos = resolvedPos.marks()
+          if (!marksAtPos.some(m => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)) {
+            linkStart = pos + 1
+            break
+          }
+          pos--
+        }
+        if (pos < 0) linkStart = 0
+
+        // Scan forward to find link end
+        pos = from
+        const docSize = state.doc.content.size
+        while (pos < docSize) {
+          const resolvedPos = state.doc.resolve(pos)
+          const marksAtPos = resolvedPos.marks()
+          if (!marksAtPos.some(m => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)) {
+            linkEnd = pos
+            break
+          }
+          pos++
+        }
+        if (pos >= docSize) linkEnd = docSize
+
+        // Extract text from the link range
+        selectedText = state.doc.textBetween(linkStart, linkEnd, '')
+      }
+    }
+
     setLinkModalData({
       text: selectedText,
-      url: existingUrl
+      url: existingUrl,
+      isEditing: editor.isActive('link')
     })
     setLinkModalOpen(true)
   }, [editor])
 
   const handleLinkInsert = (text: string, url: string): void => {
     if (!editor) return
-    const { from, to } = editor.state.selection
+    const { state } = editor
+    const { from, to, $from } = state.selection
     const hasSelection = from !== to
+
+    // Check if we're editing an existing link
+    const isEditingLink = editor.isActive('link')
+
+    if (isEditingLink && !hasSelection) {
+      // Editing an existing link (cursor is inside link, no selection)
+      // Find the link mark at cursor position
+      const marks = $from.marks()
+      const linkMark = marks.find(mark => mark.type.name === 'link')
+
+      if (linkMark) {
+        // Find the range of the link mark
+        let linkStart = from
+        let linkEnd = from
+
+        // Scan backward to find link start
+        let pos = from - 1
+        while (pos >= 0) {
+          const resolvedPos = state.doc.resolve(pos)
+          const marksAtPos = resolvedPos.marks()
+          if (!marksAtPos.some(m => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)) {
+            linkStart = pos + 1
+            break
+          }
+          pos--
+        }
+        if (pos < 0) linkStart = 0
+
+        // Scan forward to find link end
+        pos = from
+        const docSize = state.doc.content.size
+        while (pos < docSize) {
+          const resolvedPos = state.doc.resolve(pos)
+          const marksAtPos = resolvedPos.marks()
+          if (!marksAtPos.some(m => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)) {
+            linkEnd = pos
+            break
+          }
+          pos++
+        }
+        if (pos >= docSize) linkEnd = docSize
+
+        // Replace the link's text and URL
+        const tr = state.tr
+        tr.removeMark(linkStart, linkEnd, editor.schema.marks.link)
+        tr.insertText(text, linkStart, linkEnd)
+        tr.addMark(linkStart, linkStart + text.length, editor.schema.marks.link.create({ href: url }))
+        editor.view.dispatch(tr)
+
+        // Move cursor to end of link
+        editor.commands.focus()
+        editor.commands.setTextSelection(linkStart + text.length)
+        return
+      }
+    }
 
     if (hasSelection) {
       // Update existing selection with link
@@ -2233,6 +2335,7 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         isOpen={linkModalOpen}
         initialText={linkModalData.text}
         initialUrl={linkModalData.url}
+        isEditing={linkModalData.isEditing}
         onClose={() => setLinkModalOpen(false)}
         onInsert={handleLinkInsert}
       />
