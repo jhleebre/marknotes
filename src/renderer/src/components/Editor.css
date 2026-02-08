@@ -873,29 +873,30 @@
   }
 }
 
-/* Task List Styles */
-ul[data-type='taskList'] {
+/* Task List Styles - Edit Mode */
+.wysiwyg-editor .ProseMirror ul[data-type='taskList'] {
   list-style: none;
   padding-left: 0;
-  margin-left: 0;
+  margin: 0.5em 0 1em 0;
 }
 
-ul[data-type='taskList'] li {
+.wysiwyg-editor .ProseMirror ul[data-type='taskList'] li {
   display: flex;
   align-items: flex-start;
   gap: 8px;
   margin: 4px 0;
 }
 
-ul[data-type='taskList'] li > label {
+.wysiwyg-editor .ProseMirror ul[data-type='taskList'] li > label {
   display: flex;
   align-items: center;
   user-select: none;
   flex-shrink: 0;
   line-height: 1.5;
+  margin-top: 4px;
 }
 
-ul[data-type='taskList'] li > label input[type='checkbox'] {
+.wysiwyg-editor .ProseMirror ul[data-type='taskList'] li > label input[type='checkbox'] {
   width: 16px;
   height: 16px;
   margin: 0;
@@ -904,20 +905,62 @@ ul[data-type='taskList'] li > label input[type='checkbox'] {
   flex-shrink: 0;
 }
 
-ul[data-type='taskList'] li > div {
+.wysiwyg-editor .ProseMirror ul[data-type='taskList'] li > div {
   flex: 1;
   min-width: 0;
   line-height: 1.5;
-  padding-top: 1px;
 }
 
-ul[data-type='taskList'] li[data-checked='true'] > div {
+.wysiwyg-editor .ProseMirror ul[data-type='taskList'] li[data-checked='true'] > div {
   text-decoration: line-through;
   opacity: 0.6;
 }
 
-/* Nested task lists */
-ul[data-type='taskList'] ul[data-type='taskList'] {
-  margin-left: 20px;
+/* Nested task lists - Edit Mode */
+.wysiwyg-editor .ProseMirror ul[data-type='taskList'] ul[data-type='taskList'] {
+  padding-left: 1.5em;
   margin-top: 4px;
+  margin-bottom: 0;
+}
+
+/* Task List Styles - Preview Mode */
+.preview-content ul[data-type='taskList'] {
+  list-style: none;
+  padding-left: 0;
+  margin: 0.5em 0 1em 0;
+}
+
+.preview-content ul[data-type='taskList'] li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.preview-content ul[data-type='taskList'] li input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  margin-top: 4px;
+  cursor: pointer;
+  accent-color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+.preview-content ul[data-type='taskList'] li > div {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.5;
+}
+
+.preview-content ul[data-type='taskList'] li[data-checked='true'] > div {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* Nested task lists - Preview Mode */
+.preview-content ul[data-type='taskList'] ul[data-type='taskList'] {
+  padding-left: 1.5em;
+  margin-top: 4px;
+  margin-bottom: 0;
 }

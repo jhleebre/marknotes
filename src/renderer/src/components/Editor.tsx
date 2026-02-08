@@ -18,6 +18,8 @@ import { Table } from '@tiptap/extension-table'
 import { TableRow } from '@tiptap/extension-table-row'
 import { TableCell } from '@tiptap/extension-table-cell'
 import { TableHeader } from '@tiptap/extension-table-header'
+import TaskList from '@tiptap/extension-task-list'
+import TaskItem from '@tiptap/extension-task-item'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { DOMSerializer } from '@tiptap/pm/model'
 import { InputRule } from '@tiptap/core'
@@ -57,7 +59,8 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
   ArrowLeftIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
+  TaskListIcon
 } from '../utils/icons'
 import './Editor.css'
 import { Extension } from '@tiptap/core'
@@ -78,10 +81,15 @@ const TabHandling = Extension.create({
         // Check if we're in a list FIRST (higher priority than table navigation)
         const isInList =
           this.editor.isActive('bulletList') ||
-          this.editor.isActive('orderedList')
+          this.editor.isActive('orderedList') ||
+          this.editor.isActive('taskList')
         if (isInList) {
           // Try to sink list item (indent)
-          this.editor.commands.sinkListItem('listItem')
+          if (this.editor.isActive('taskList')) {
+            this.editor.commands.sinkListItem('taskItem')
+          } else {
+            this.editor.commands.sinkListItem('listItem')
+          }
           // Always return true to prevent table navigation
           return true
         }
@@ -105,10 +113,15 @@ const TabHandling = Extension.create({
         // Check if we're in a list FIRST (higher priority than table navigation)
         const isInList =
           this.editor.isActive('bulletList') ||
-          this.editor.isActive('orderedList')
+          this.editor.isActive('orderedList') ||
+          this.editor.isActive('taskList')
         if (isInList) {
           // Try to lift list item (outdent)
-          this.editor.commands.liftListItem('listItem')
+          if (this.editor.isActive('taskList')) {
+            this.editor.commands.liftListItem('taskItem')
+          } else {
+            this.editor.commands.liftListItem('listItem')
+          }
           // Always return true to prevent table navigation
           return true
         }
@@ -173,6 +186,7 @@ renderer.tablecell = function (token) {
   const text = token.text
   // Parse both inline and block-level markdown (lists, blockquotes, code blocks, etc.)
   let parsedText = marked.parse(text) as string
+  parsedText = processTaskListsForEditor(parsedText)
 
   // Remove ALL <p> tags (not just outer ones) to prevent extra spacing
   parsedText = parsedText.replace(/<\/?p>/g, '')
@@ -234,6 +248,89 @@ async function resolveAssetImages(html: string): Promise<string> {
   }
 
   return result
+}
+
+// Post-process HTML to convert marked checkboxes to TipTap task lists (for editor)
+function processTaskListsForEditor(html: string): string {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(html, 'text/html')
+
+  doc.querySelectorAll('ul').forEach((ul) => {
+    const firstLi = ul.querySelector('li')
+    if (firstLi && firstLi.querySelector('input[type="checkbox"]')) {
+      ul.setAttribute('data-type', 'taskList')
+
+      ul.querySelectorAll('li').forEach((li) => {
+        const checkbox = li.querySelector('input[type="checkbox"]') as HTMLInputElement | null
+        if (checkbox) {
+          li.setAttribute('data-type', 'taskItem')
+          li.setAttribute('data-checked', checkbox.checked ? 'true' : 'false')
+          checkbox.removeAttribute('disabled')
+        }
+      })
+    }
+  })
+
+  return doc.body.innerHTML
+}
+
+// Post-process HTML to convert marked checkboxes for preview mode (wraps content in div)
+function processTaskListsForPreview(html: string): string {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(html, 'text/html')
+
+  // Process from innermost to outermost to handle nested lists correctly
+  const processTaskList = (ul: Element): void => {
+    const firstLi = ul.querySelector('li')
+    if (!firstLi || !firstLi.querySelector('input[type="checkbox"]')) {
+      return
+    }
+
+    ul.setAttribute('data-type', 'taskList')
+
+    // Only process direct children li elements
+    Array.from(ul.children).forEach((child) => {
+      if (child.nodeName !== 'LI') return
+      const li = child as HTMLElement
+
+      const checkbox = li.querySelector('input[type="checkbox"]') as HTMLInputElement | null
+      if (!checkbox) return
+
+      li.setAttribute('data-type', 'taskItem')
+      li.setAttribute('data-checked', checkbox.checked ? 'true' : 'false')
+      checkbox.removeAttribute('disabled')
+
+      // First, recursively process any nested task lists
+      const nestedUls = Array.from(li.children).filter((el) => el.nodeName === 'UL')
+      nestedUls.forEach((nestedUl) => processTaskList(nestedUl))
+
+      // Wrap text content and nested lists in a div for proper flex layout
+      const contentWrapper = doc.createElement('div')
+      const nodes = Array.from(li.childNodes)
+
+      nodes.forEach((node) => {
+        // Skip the checkbox - it stays as direct child
+        if (node === checkbox) return
+
+        // Move all other content to the wrapper
+        contentWrapper.appendChild(node)
+      })
+
+      // Clear li and rebuild structure: checkbox first, then wrapped content
+      li.innerHTML = ''
+      li.appendChild(checkbox)
+      if (contentWrapper.childNodes.length > 0) {
+        li.appendChild(contentWrapper)
+      }
+    })
+  }
+
+  // Find all top-level ul elements and process them
+  doc.querySelectorAll('ul').forEach((ul) => {
+    processTaskList(ul)
+  })
+
+  return doc.body.innerHTML
 }
 
 // Function to generate ID from text content
@@ -447,6 +544,19 @@ const OrderedListExtended = OrderedList.extend({
           return true // Block the command
         }
         return this.editor.commands.toggleOrderedList()
+      }
+    }
+  }
+})
+
+const TaskListExtended = TaskList.extend({
+  addKeyboardShortcuts() {
+    return {
+      'Mod-Shift-9': () => {
+        if (this.editor.isActive('heading')) {
+          return true // Block the command
+        }
+        return this.editor.commands.toggleTaskList()
       }
     }
   }
@@ -700,6 +810,31 @@ turndownService.addRule('listItem', {
   }
 })
 
+// Task list conversion rules
+turndownService.addRule('taskList', {
+  filter: function (node) {
+    return node.nodeName === 'UL' && node.getAttribute('data-type') === 'taskList'
+  },
+  replacement: function (content) {
+    return content
+  }
+})
+
+turndownService.addRule('taskItem', {
+  filter: function (node) {
+    return node.nodeName === 'LI' && node.getAttribute('data-type') === 'taskItem'
+  },
+  replacement: function (content, node) {
+    content = content.replace(/^\n+/, '').replace(/\n+$/, '\n').replace(/\n/gm, '\n    ')
+
+    const checkbox = node.querySelector('input[type="checkbox"]') as HTMLInputElement | null
+    const checked = checkbox ? checkbox.checked : false
+    const prefix = checked ? '- [x] ' : '- [ ] '
+
+    return prefix + content + (node.nextSibling ? '\n' : '')
+  }
+})
+
 // Add rule for images with size classes
 turndownService.addRule('imageWithSize', {
   filter: 'img',
@@ -802,6 +937,13 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
       BlockquoteExtended,
       BulletListExtended,
       OrderedListExtended,
+      TaskListExtended,
+      TaskItem.configure({
+        nested: true,
+        HTMLAttributes: {
+          class: 'task-list-item'
+        }
+      }),
       ListItem,
       CustomImage.configure({
         inline: false,
@@ -821,10 +963,15 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
               // Check if we're in a list FIRST
               const isInList =
                 this.editor.isActive('bulletList') ||
-                this.editor.isActive('orderedList')
+                this.editor.isActive('orderedList') ||
+                this.editor.isActive('taskList')
               if (isInList) {
                 // Handle list indentation
-                this.editor.commands.sinkListItem('listItem')
+                if (this.editor.isActive('taskList')) {
+                  this.editor.commands.sinkListItem('taskItem')
+                } else {
+                  this.editor.commands.sinkListItem('listItem')
+                }
                 return true
               }
               // Try to go to next cell
@@ -842,10 +989,15 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
               // Check if we're in a list FIRST
               const isInList =
                 this.editor.isActive('bulletList') ||
-                this.editor.isActive('orderedList')
+                this.editor.isActive('orderedList') ||
+                this.editor.isActive('taskList')
               if (isInList) {
                 // Handle list outdentation
-                this.editor.commands.liftListItem('listItem')
+                if (this.editor.isActive('taskList')) {
+                  this.editor.commands.liftListItem('taskItem')
+                } else {
+                  this.editor.commands.liftListItem('listItem')
+                }
                 return true
               }
               // Default table behavior: go to previous cell
@@ -1024,6 +1176,7 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
       const loadContent = async (): Promise<void> => {
         let html = marked.parse(content) as string
         html = postProcessImageSizes(html)
+        html = processTaskListsForEditor(html)
         html = await resolveAssetImages(html)
         editor.commands.setContent(html, { emitUpdate: false })
         lastMarkdownContent.current = content
@@ -1084,6 +1237,7 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
         const loadContent = async (): Promise<void> => {
           let html = marked.parse(newContent) as string
           html = postProcessImageSizes(html)
+          html = processTaskListsForEditor(html)
           html = await resolveAssetImages(html)
           editor.commands.setContent(html, { emitUpdate: false })
           isUpdatingFromMarkdown.current = false
@@ -1099,6 +1253,7 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
     const updatePreview = async (): Promise<void> => {
       let html = marked.parse(content) as string
       html = postProcessImageSizes(html)
+      html = processTaskListsForPreview(html)
       html = await resolveAssetImages(html)
       setPreviewHtml(html)
     }
@@ -1331,17 +1486,32 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     },
     {
       type: 'item',
+      label: 'Task List',
+      icon: <TaskListIcon />,
+      onClick: () => editor.chain().focus().toggleTaskList().run(),
+      disabled: editor.isActive('heading')
+    },
+    {
+      type: 'item',
       label: 'Indent',
       icon: <IndentIcon />,
       onClick: () => {
-        editor.chain().focus().sinkListItem('listItem').run()
+        if (editor.isActive('taskList')) {
+          editor.chain().focus().sinkListItem('taskItem').run()
+        } else {
+          editor.chain().focus().sinkListItem('listItem').run()
+        }
       },
       disabled: (() => {
         if (editor.isActive('heading')) return true
         const isInList =
           editor.isActive('bulletList') ||
-          editor.isActive('orderedList')
+          editor.isActive('orderedList') ||
+          editor.isActive('taskList')
         if (!isInList) return true // Disable if not in a list
+        if (editor.isActive('taskList')) {
+          return !editor.can().sinkListItem('taskItem') // Disable if first item
+        }
         return !editor.can().sinkListItem('listItem') // Disable if first item
       })()
     },
@@ -1350,14 +1520,22 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       label: 'Outdent',
       icon: <OutdentIcon />,
       onClick: () => {
-        editor.chain().focus().liftListItem('listItem').run()
+        if (editor.isActive('taskList')) {
+          editor.chain().focus().liftListItem('taskItem').run()
+        } else {
+          editor.chain().focus().liftListItem('listItem').run()
+        }
       },
       disabled: (() => {
         if (editor.isActive('heading')) return true
         const isInList =
           editor.isActive('bulletList') ||
-          editor.isActive('orderedList')
+          editor.isActive('orderedList') ||
+          editor.isActive('taskList')
         if (!isInList) return true // Disable if not in a list
+        if (editor.isActive('taskList')) {
+          return !editor.can().liftListItem('taskItem') // Disable if lift not possible
+        }
         return !editor.can().liftListItem('listItem') // Disable if lift not possible
       })()
     },
@@ -1369,7 +1547,8 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       disabled:
         editor.isActive('heading') ||
         editor.isActive('bulletList') ||
-        editor.isActive('orderedList')
+        editor.isActive('orderedList') ||
+        editor.isActive('taskList')
     },
     {
       type: 'item',
@@ -1394,7 +1573,7 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
 
           for (const item of clipboardItems) {
             // Check for image types
-            const imageType = item.types.find(type => type.startsWith('image/'))
+            const imageType = item.types.find((type) => type.startsWith('image/'))
             if (imageType) {
               const blob = await item.getType(imageType)
               const reader = new FileReader()
@@ -1531,15 +1710,32 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     },
     {
       type: 'item',
+      label: 'Task List',
+      icon: <TaskListIcon />,
+      onClick: () => editor.chain().focus().toggleTaskList().run(),
+      disabled: editor.isActive('heading')
+    },
+    {
+      type: 'item',
       label: 'Indent',
       icon: <IndentIcon />,
       onClick: () => {
-        editor.chain().focus().sinkListItem('listItem').run()
+        if (editor.isActive('taskList')) {
+          editor.chain().focus().sinkListItem('taskItem').run()
+        } else {
+          editor.chain().focus().sinkListItem('listItem').run()
+        }
       },
       disabled: (() => {
         if (editor.isActive('heading')) return true
-        const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
+        const isInList =
+          editor.isActive('bulletList') ||
+          editor.isActive('orderedList') ||
+          editor.isActive('taskList')
         if (!isInList) return true
+        if (editor.isActive('taskList')) {
+          return !editor.can().sinkListItem('taskItem')
+        }
         return !editor.can().sinkListItem('listItem')
       })()
     },
@@ -1548,12 +1744,22 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       label: 'Outdent',
       icon: <OutdentIcon />,
       onClick: () => {
-        editor.chain().focus().liftListItem('listItem').run()
+        if (editor.isActive('taskList')) {
+          editor.chain().focus().liftListItem('taskItem').run()
+        } else {
+          editor.chain().focus().liftListItem('listItem').run()
+        }
       },
       disabled: (() => {
         if (editor.isActive('heading')) return true
-        const isInList = editor.isActive('bulletList') || editor.isActive('orderedList')
+        const isInList =
+          editor.isActive('bulletList') ||
+          editor.isActive('orderedList') ||
+          editor.isActive('taskList')
         if (!isInList) return true
+        if (editor.isActive('taskList')) {
+          return !editor.can().liftListItem('taskItem')
+        }
         return !editor.can().liftListItem('listItem')
       })()
     },
@@ -1565,7 +1771,8 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       disabled:
         editor.isActive('heading') ||
         editor.isActive('bulletList') ||
-        editor.isActive('orderedList')
+        editor.isActive('orderedList') ||
+        editor.isActive('taskList')
     },
     {
       type: 'item',
@@ -1974,7 +2181,11 @@ interface FormattingToolbarProps {
 
 function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Element | null {
   const [linkModalOpen, setLinkModalOpen] = useState(false)
-  const [linkModalData, setLinkModalData] = useState<{ text: string; url: string; isEditing: boolean }>({
+  const [linkModalData, setLinkModalData] = useState<{
+    text: string
+    url: string
+    isEditing: boolean
+  }>({
     text: '',
     url: '',
     isEditing: false
@@ -1998,7 +2209,7 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
     if (!selectedText && editor.isActive('link')) {
       // Find the link mark at cursor position
       const marks = $from.marks()
-      const linkMark = marks.find(mark => mark.type.name === 'link')
+      const linkMark = marks.find((mark) => mark.type.name === 'link')
 
       if (linkMark) {
         // Find the range of the link mark
@@ -2010,7 +2221,9 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         while (pos >= 0) {
           const resolvedPos = state.doc.resolve(pos)
           const marksAtPos = resolvedPos.marks()
-          if (!marksAtPos.some(m => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)) {
+          if (
+            !marksAtPos.some((m) => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)
+          ) {
             linkStart = pos + 1
             break
           }
@@ -2024,7 +2237,9 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         while (pos < docSize) {
           const resolvedPos = state.doc.resolve(pos)
           const marksAtPos = resolvedPos.marks()
-          if (!marksAtPos.some(m => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)) {
+          if (
+            !marksAtPos.some((m) => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)
+          ) {
             linkEnd = pos
             break
           }
@@ -2058,7 +2273,7 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
       // Editing an existing link (cursor is inside link, no selection)
       // Find the link mark at cursor position
       const marks = $from.marks()
-      const linkMark = marks.find(mark => mark.type.name === 'link')
+      const linkMark = marks.find((mark) => mark.type.name === 'link')
 
       if (linkMark) {
         // Find the range of the link mark
@@ -2070,7 +2285,9 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         while (pos >= 0) {
           const resolvedPos = state.doc.resolve(pos)
           const marksAtPos = resolvedPos.marks()
-          if (!marksAtPos.some(m => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)) {
+          if (
+            !marksAtPos.some((m) => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)
+          ) {
             linkStart = pos + 1
             break
           }
@@ -2084,7 +2301,9 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         while (pos < docSize) {
           const resolvedPos = state.doc.resolve(pos)
           const marksAtPos = resolvedPos.marks()
-          if (!marksAtPos.some(m => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)) {
+          if (
+            !marksAtPos.some((m) => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)
+          ) {
             linkEnd = pos
             break
           }
@@ -2096,7 +2315,11 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         const tr = state.tr
         tr.removeMark(linkStart, linkEnd, editor.schema.marks.link)
         tr.insertText(text, linkStart, linkEnd)
-        tr.addMark(linkStart, linkStart + text.length, editor.schema.marks.link.create({ href: url }))
+        tr.addMark(
+          linkStart,
+          linkStart + text.length,
+          editor.schema.marks.link.create({ href: url })
+        )
         editor.view.dispatch(tr)
 
         // Move cursor to end of link
@@ -2335,16 +2558,32 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
           <BulletListIcon />
         </button>
         <button
+          className={`format-btn ${editor.isActive('taskList') ? 'active' : ''}`}
+          onClick={() => editor.chain().focus().toggleTaskList().run()}
+          disabled={editor.isActive('heading')}
+          data-tooltip="Task List (Cmd+Shift+9)"
+        >
+          <TaskListIcon />
+        </button>
+        <button
           className="format-btn"
           onClick={() => {
-            editor.chain().focus().sinkListItem('listItem').run()
+            if (editor.isActive('taskList')) {
+              editor.chain().focus().sinkListItem('taskItem').run()
+            } else {
+              editor.chain().focus().sinkListItem('listItem').run()
+            }
           }}
           disabled={(() => {
             if (editor.isActive('heading')) return true
             const isInList =
               editor.isActive('bulletList') ||
-              editor.isActive('orderedList')
+              editor.isActive('orderedList') ||
+              editor.isActive('taskList')
             if (!isInList) return true // Disable if not in a list
+            if (editor.isActive('taskList')) {
+              return !editor.can().sinkListItem('taskItem') // Disable if first item
+            }
             return !editor.can().sinkListItem('listItem') // Disable if first item
           })()}
           data-tooltip="Indent (Tab)"
@@ -2354,14 +2593,22 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         <button
           className="format-btn"
           onClick={() => {
-            editor.chain().focus().liftListItem('listItem').run()
+            if (editor.isActive('taskList')) {
+              editor.chain().focus().liftListItem('taskItem').run()
+            } else {
+              editor.chain().focus().liftListItem('listItem').run()
+            }
           }}
           disabled={(() => {
             if (editor.isActive('heading')) return true
             const isInList =
               editor.isActive('bulletList') ||
-              editor.isActive('orderedList')
+              editor.isActive('orderedList') ||
+              editor.isActive('taskList')
             if (!isInList) return true // Disable if not in a list
+            if (editor.isActive('taskList')) {
+              return !editor.can().liftListItem('taskItem') // Disable if lift not possible
+            }
             return !editor.can().liftListItem('listItem') // Disable if lift not possible
           })()}
           data-tooltip="Outdent (Shift+Tab)"
@@ -2374,7 +2621,8 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
           disabled={
             editor.isActive('heading') ||
             editor.isActive('bulletList') ||
-            editor.isActive('orderedList')
+            editor.isActive('orderedList') ||
+            editor.isActive('taskList')
           }
           data-tooltip="Blockquote (Cmd+Shift+B)"
         >

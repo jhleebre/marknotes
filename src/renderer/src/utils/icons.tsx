@@ -44,12 +44,26 @@ export function LinkIcon(): React.JSX.Element {
 export function BulletListIcon(): React.JSX.Element {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <circle cx="3" cy="4" r="1.5" fill="currentColor" />
-      <circle cx="3" cy="8" r="1.5" fill="currentColor" />
-      <circle cx="3" cy="12" r="1.5" fill="currentColor" />
-      <line x1="6.5" y1="4" x2="14" y2="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="6.5" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="6.5" y1="12" x2="14" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="3" cy="5" r="1.5" fill="currentColor" />
+      <circle cx="3" cy="11" r="1.5" fill="currentColor" />
+      <line
+        x1="6.5"
+        y1="5"
+        x2="14"
+        y2="5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <line
+        x1="6.5"
+        y1="11"
+        x2="14"
+        y2="11"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }
@@ -57,12 +71,44 @@ export function BulletListIcon(): React.JSX.Element {
 export function OrderedListIcon(): React.JSX.Element {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <text x="1" y="5.5" fontFamily="system-ui, -apple-system" fontSize="6" fontWeight="600" fill="currentColor">1.</text>
-      <text x="1" y="9.5" fontFamily="system-ui, -apple-system" fontSize="6" fontWeight="600" fill="currentColor">2.</text>
-      <text x="1" y="13.5" fontFamily="system-ui, -apple-system" fontSize="6" fontWeight="600" fill="currentColor">3.</text>
-      <line x1="6.5" y1="4" x2="14" y2="4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="6.5" y1="8" x2="14" y2="8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="6.5" y1="12" x2="14" y2="12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <text
+        x="1"
+        y="6.5"
+        fontFamily="system-ui, -apple-system"
+        fontSize="6"
+        fontWeight="600"
+        fill="currentColor"
+      >
+        1.
+      </text>
+      <text
+        x="1"
+        y="12.5"
+        fontFamily="system-ui, -apple-system"
+        fontSize="6"
+        fontWeight="600"
+        fill="currentColor"
+      >
+        2.
+      </text>
+      <line
+        x1="6.5"
+        y1="5"
+        x2="14"
+        y2="5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <line
+        x1="6.5"
+        y1="11"
+        x2="14"
+        y2="11"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }
@@ -70,11 +116,42 @@ export function OrderedListIcon(): React.JSX.Element {
 export function TaskListIcon(): React.JSX.Element {
   return (
     <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-      <rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" />
-      <rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" />
-      <path d="M3.5 4.5L5 6L6.5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      <line x1="9" y1="4.5" x2="14" y2="4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-      <line x1="9" y1="11.5" x2="14" y2="11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      {/* First task item with checkmark */}
+      <path
+        d="M2 5L3.5 6.5L6 4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <line
+        x1="7.5"
+        y1="5"
+        x2="14"
+        y2="5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      {/* Second task item with dash */}
+      <line
+        x1="2"
+        y1="11"
+        x2="5"
+        y2="11"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <line
+        x1="7.5"
+        y1="11"
+        x2="14"
+        y2="11"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }
@@ -98,22 +175,68 @@ export function CodeBlockIcon(): React.JSX.Element {
 
 export function IndentIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      {/* Arrow pointing left */}
-      <path d="M5 8l-4-3v6z" />
-      {/* Three horizontal lines */}
-      <path d="M7 4h8M7 8h8M7 12h8" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      {/* Arrow pointing right (indent) */}
+      <path
+        d="M1 8l3-2.5v5z"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="0.5"
+        strokeLinejoin="round"
+      />
+      {/* Two horizontal lines */}
+      <line
+        x1="6"
+        y1="5.5"
+        x2="15"
+        y2="5.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <line
+        x1="6"
+        y1="10.5"
+        x2="15"
+        y2="10.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }
 
 export function OutdentIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      {/* Arrow pointing right */}
-      <path d="M1 8l4-3v6z" />
-      {/* Three horizontal lines */}
-      <path d="M7 4h8M7 8h8M7 12h8" stroke="currentColor" strokeWidth="1.5" fill="none" />
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      {/* Arrow pointing left (outdent) */}
+      <path
+        d="M4 8l-3-2.5v5z"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeWidth="0.5"
+        strokeLinejoin="round"
+      />
+      {/* Two horizontal lines */}
+      <line
+        x1="6"
+        y1="5.5"
+        x2="15"
+        y2="5.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <line
+        x1="6"
+        y1="10.5"
+        x2="15"
+        y2="10.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   )
 }

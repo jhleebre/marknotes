@@ -9,12 +9,31 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.5.0</strong>
+  <strong>Version 1.6.0</strong>
 </p>
 
 ---
 
 ## Changelog
+
+### Version 1.6.0 (2026-02-08)
+
+**Task List (Checkbox) Support**
+- Added interactive checkbox support for task lists in both edit and code modes
+- Click checkboxes to toggle completion status with instant markdown sync (`- [ ]` / `- [x]`)
+- Full support for nested/hierarchical task lists with proper indentation
+- Task lists work seamlessly in table cells alongside other content
+- New toolbar button and context menu item for quick task list insertion
+- Keyboard shortcut: `Cmd+Shift+9` to toggle task lists
+- Tab/Shift+Tab for indenting/outdenting task items
+- Checkbox states preserved when saving, loading, and exporting documents
+
+**Icon Improvements**
+- Redesigned task list icon: simplified to clean checkmark + dash combination
+- Simplified all list icons from 3 lines to 2 lines for visual consistency
+- Updated bullet list and ordered list icons with cleaner, more compact design
+- Refined indent/outdent icons with better arrow positioning and 2-line layout
+- All formatting icons now share unified 2-line design language
 
 ### Version 1.5.0 (2026-02-08)
 
@@ -103,9 +122,11 @@ MarkNotes is a native macOS Electron application designed for markdown enthusias
 - **Headings** - H1 through H6 with customized font sizes (24pt to 14pt)
   - Convenient dropdown selector in toolbar for quick access
 - **Text Styles** - Bold, italic, strikethrough (`Cmd+Shift+X`), inline code
-- **Lists** - Bulleted and numbered lists with proper nesting
+- **Lists** - Bulleted, numbered, and task lists with proper nesting
+  - **Task Lists** - Interactive checkboxes with click-to-toggle (`Cmd+Shift+9`)
   - **Indent/Outdent** - Tab/Shift+Tab for list nesting (context-aware)
   - Smart indentation for regular text outside lists
+  - Checkbox states preserved across save/load/export
 - **Blockquotes** - Stylized quote blocks with accent border
 - **Links** - Interactive hyperlinks with insert modal (`Cmd + K`)
   - Internal navigation with anchor links (#heading-id)
@@ -309,6 +330,7 @@ The built application will be in the `dist/` directory.
 | Paragraph       | `Cmd + Option + 0`   |
 | Numbered List   | `Cmd + Shift + 7`    |
 | Bullet List     | `Cmd + Shift + 8`    |
+| Task List       | `Cmd + Shift + 9`    |
 | Increase Indent | `Tab`                |
 | Decrease Indent | `Shift + Tab`        |
 | Blockquote      | `Cmd + Shift + B`    |

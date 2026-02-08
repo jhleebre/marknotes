@@ -177,7 +177,10 @@ export function ContextMenu({
               {item.icon && <span className="context-menu-icon">{item.icon}</span>}
               <span>{item.label}</span>
               {item.submenu && (
-                <span className="context-menu-arrow" style={{ marginLeft: 'auto', paddingLeft: '16px' }}>
+                <span
+                  className="context-menu-arrow"
+                  style={{ marginLeft: 'auto', paddingLeft: '16px' }}
+                >
                   ▸
                 </span>
               )}
@@ -200,7 +203,11 @@ export function ContextMenu({
 
                   if (subitem.type === 'section-label') {
                     return (
-                      <div key={subindex} className="context-menu-section-label" role="presentation">
+                      <div
+                        key={subindex}
+                        className="context-menu-section-label"
+                        role="presentation"
+                      >
                         {subitem.label}
                       </div>
                     )
