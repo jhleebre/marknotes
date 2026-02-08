@@ -51,13 +51,6 @@ export function setupMenu(mainWindow: BrowserWindow): void {
         },
         { type: 'separator' },
         {
-          label: 'Export as HTML',
-          accelerator: 'CmdOrCtrl+Shift+E',
-          click: (): void => {
-            mainWindow.webContents.send('menu:exportHtml')
-          }
-        },
-        {
           label: 'Export as PDF',
           accelerator: 'CmdOrCtrl+Shift+P',
           click: (): void => {

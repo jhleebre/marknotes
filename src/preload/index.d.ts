@@ -33,7 +33,6 @@ export interface FileAPI {
 }
 
 export interface ExportAPI {
-  html: (markdown: string, defaultName: string) => Promise<FileResult>
   pdf: (markdown: string, defaultName: string) => Promise<FileResult>
 }
 
@@ -41,7 +40,6 @@ export interface MenuAPI {
   onNewFile: (callback: () => void) => () => void
   onNewFolder: (callback: () => void) => () => void
   onSave: (callback: () => void) => () => void
-  onExportHtml: (callback: () => void) => () => void
   onExportPdf: (callback: () => void) => () => void
   onSetMode: (callback: (mode: string) => void) => () => void
   onToggleSidebar: (callback: () => void) => () => void

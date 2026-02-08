@@ -9,12 +9,31 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.4.1</strong>
+  <strong>Version 1.5.0</strong>
 </p>
 
 ---
 
 ## Changelog
+
+### Version 1.5.0 (2026-02-08)
+
+**Table Improvements**
+- Added automatic row insertion when pressing Tab at the last cell of a table (standard Word/Docs behavior)
+- Table navigation now matches industry-standard editors
+
+**Paste Enhancements**
+- Fixed paste behavior to prevent unwanted line breaks when pasting into existing text
+- Improved HTML-to-markdown conversion for clipboard content
+- Added "Copy as Markdown" option in context menu for easy markdown code copying to external editors
+
+**UI/UX Improvements**
+- Disabled blockquote formatting in lists (prevents invalid markdown structure)
+- Removed HTML export, simplified to PDF-only export for cleaner workflow
+- Redesigned all icons with modern stroke-based style for visual consistency:
+  - Unified Export, Cut, Copy, Paste, Edit icons with clean line-based design
+  - Updated File, Folder, and FileTree icons for cohesive appearance
+  - Improved icon readability and aesthetics across the entire interface
 
 ### Version 1.4.1 (2026-02-06)
 
@@ -154,9 +173,9 @@ MarkNotes is a native macOS Electron application designed for markdown enthusias
 
 ### 📤 **Export Options**
 
-- **HTML Export** - Clean, styled HTML with embedded CSS (`Cmd + Shift + E`)
-- **PDF Export** - Production-ready PDF documents (`Cmd + Shift + P`)
-- Exports include all formatting, tables, and styles
+- **PDF Export** - Production-ready PDF documents with embedded styles (`Cmd + Shift + P`)
+- Exports include all formatting, tables, images, and styles
+- Images automatically embedded as base64 for portability
 - Choose custom save location for each export
 
 ### 🌓 **Native macOS Experience**
@@ -248,9 +267,9 @@ The built application will be in the `dist/` directory.
 
 ### Exporting Documents
 
-1. Use `Cmd + Shift + E` for HTML or `Cmd + Shift + P` for PDF
+1. Press `Cmd + Shift + P` or click the PDF export button in the toolbar
 2. Choose your save location in the file picker
-3. Exported files include all formatting and styles
+3. Exported PDF includes all formatting, styles, and embedded images
 
 ## Keyboard Shortcuts
 
@@ -273,10 +292,9 @@ The built application will be in the `dist/` directory.
 
 ### Export
 
-| Action         | Shortcut          |
-| -------------- | ----------------- |
-| Export as HTML | `Cmd + Shift + E` |
-| Export as PDF  | `Cmd + Shift + P` |
+| Action        | Shortcut          |
+| ------------- | ----------------- |
+| Export as PDF | `Cmd + Shift + P` |
 
 ### Formatting (WYSIWYG Mode)
 
@@ -366,7 +384,7 @@ src/
 │                          App.tsx                            │
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │                      Toolbar                          │  │
-│  │  [View Mode Selector] [Export HTML] [Export PDF]      │  │
+│  │  [View Mode Selector] [Export PDF] [Close]            │  │
 │  └───────────────────────────────────────────────────────┘  │
 │  ┌──────────┬────────────────────────────────────────────┐  │
 │  │          │                                            │  │
@@ -409,8 +427,7 @@ src/
 │   .openExternal()    │                    │   'shell:openExternal'│
 │                      │                    │                       │
 │  window.api.export   │  ─── invoke ────►  │ ipcMain.handle()      │
-│   .toHTML()          │                    │   'export:html'       │
-│   .toPDF()           │                    │   'export:pdf'        │
+│   .pdf()             │                    │   'export:pdf'        │
 │                      │                    │                       │
 │  window.api.image    │  ─── invoke ────►  │ ipcMain.handle()      │
 │   .upload()          │                    │   'image:upload'      │

@@ -178,68 +178,153 @@ export function AlignRightIcon(): React.JSX.Element {
 
 export function CutIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M4 1.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM2 4a2 2 0 1 1 3.937.52l2.5 2.5a.5.5 0 0 1-.707.707l-2.5-2.5A2 2 0 0 1 2 4zm8 0a2 2 0 1 1 3.937.52l-2.5 2.5a.5.5 0 1 1-.707-.707l2.5-2.5A2 2 0 0 1 10 4zM4 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM2 12a2 2 0 1 1 3.937.52l2.5-2.5a.5.5 0 0 1 .707.707l-2.5 2.5A2 2 0 0 1 2 12zm8 0a2 2 0 1 1 3.937.52l-2.5-2.5a.5.5 0 1 1 .707-.707l2.5 2.5A2 2 0 0 1 10 12z" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Scissors circles */}
+      <circle cx="4" cy="4" r="1.5" />
+      <circle cx="4" cy="12" r="1.5" />
+      {/* Scissors blades */}
+      <path d="M5.2 5L11 8M5.2 11L11 8" />
+      {/* Dashed line being cut */}
+      <path d="M11 8h4" strokeDasharray="1.5 1.5" />
     </svg>
   )
 }
 
 export function CopyIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2z" />
-      <path d="M2 6a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1H2V6z" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Front rectangle */}
+      <rect x="5" y="5" width="9" height="9" rx="1" />
+      {/* Back rectangle */}
+      <path d="M3 11V3a1 1 0 0 1 1-1h8" />
     </svg>
   )
 }
 
 export function PasteIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M4.5 3a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h9a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-9zM5 2a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1H5z" />
-      <path d="M6.5 1a.5.5 0 0 0-.5.5V2h4v-.5a.5.5 0 0 0-.5-.5h-3z" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Clipboard board */}
+      <rect x="4.5" y="3.5" width="7" height="10" rx="1" />
+      {/* Clipboard clip at top */}
+      <path d="M6.5 3.5V2.5a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1" />
     </svg>
   )
 }
 
 export function SelectAllIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2zm2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H2z" />
-      <path d="M3 5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5z" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Outer rectangle */}
+      <rect x="1.5" y="1.5" width="13" height="13" rx="1" />
+      {/* Inner rectangle */}
+      <rect x="4.5" y="4.5" width="7" height="7" rx="0.5" />
     </svg>
   )
 }
 
 export function FileIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M4 1h5.586a1 1 0 0 1 .707.293l2.414 2.414a1 1 0 0 1 .293.707V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zm5 1v2.5a.5.5 0 0 0 .5.5H12l-3-3z" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6L9 2z" />
+      <path d="M9 2v4h4" />
     </svg>
   )
 }
 
 export function FolderIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M2 3a1 1 0 0 1 1-1h3.586a1 1 0 0 1 .707.293L8 3H13a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3z" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M2 4a1 1 0 0 1 1-1h3l2 2h5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z" />
     </svg>
   )
 }
 
 export function FolderPlusIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M2 3a1 1 0 0 1 1-1h3.586a1 1 0 0 1 .707.293L8 3H13a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3z" />
-      <path d="M8 7v4M6 9h4" stroke="var(--bg-primary)" strokeWidth="1.5" strokeLinecap="round" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M2 4a1 1 0 0 1 1-1h3l2 2h5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z" />
+      <path d="M8 7v4M6 9h4" />
     </svg>
   )
 }
 
 export function RenameIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M12.146 1.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1 0 .708l-9.5 9.5a.5.5 0 0 1-.168.11l-4 1.5a.5.5 0 0 1-.65-.65l1.5-4a.5.5 0 0 1 .11-.168l9.5-9.5zM11.207 4L12 4.793 13.793 3 13 2.207 11.207 4z" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M11 2L14 5L5 14H2V11L11 2Z" />
     </svg>
   )
 }
@@ -258,26 +343,57 @@ export function TrashIcon(): React.JSX.Element {
 
 export function ShowInFinderIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M2 3a1 1 0 0 1 1-1h3.586a1 1 0 0 1 .707.293L8 3H13a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3z" />
-      <path d="M6 8v4h4V8H6z" fill="var(--bg-primary)" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M2 4a1 1 0 0 1 1-1h3l2 2h5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z" />
+      {/* Magnifying glass */}
+      <circle cx="8" cy="9.5" r="2" />
+      <path d="M9.5 11l1.5 1.5" />
     </svg>
   )
 }
 
 export function DuplicateIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2z" />
-      <path d="M0 8a2 2 0 0 1 2-2h1v2H2v6h6v-1h2v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V8z" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Front rectangle */}
+      <rect x="5" y="5" width="9" height="9" rx="1" />
+      {/* Back rectangle */}
+      <path d="M3 11V3a1 1 0 0 1 1-1h8" />
     </svg>
   )
 }
 
 export function EditIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207 11.207 2.5zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293l6.5-6.5zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325z" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M11 2L14 5L5 14H2V11L11 2Z" />
     </svg>
   )
 }

@@ -952,17 +952,35 @@ function ChevronIcon(): React.JSX.Element {
 
 function FolderIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M2 3a1 1 0 0 1 1-1h3.586a1 1 0 0 1 .707.293L8 3H13a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3z" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M2 4a1 1 0 0 1 1-1h3l2 2h5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z" />
     </svg>
   )
 }
 
 function FolderOpenIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M1.5 4A1.5 1.5 0 0 1 3 2.5h2.672a1.5 1.5 0 0 1 1.06.44L8.207 4.5H13A1.5 1.5 0 0 1 14.5 6v.5h-13V4z" />
-      <path d="M14.5 7h-13v5.5A1.5 1.5 0 0 0 3 14h10a1.5 1.5 0 0 0 1.5-1.5V7z" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M2 4a1 1 0 0 1 1-1h3l2 2h5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z" />
+      <path d="M2 7h12" />
     </svg>
   )
 }

@@ -48,8 +48,6 @@ const api = {
     }
   },
   export: {
-    html: (markdown: string, defaultName: string): Promise<FileResult> =>
-      ipcRenderer.invoke('export:html', markdown, defaultName),
     pdf: (markdown: string, defaultName: string): Promise<FileResult> =>
       ipcRenderer.invoke('export:pdf', markdown, defaultName)
   },
@@ -68,11 +66,6 @@ const api = {
       const listener = (): void => callback()
       ipcRenderer.on('menu:save', listener)
       return () => ipcRenderer.removeListener('menu:save', listener)
-    },
-    onExportHtml: (callback: () => void): (() => void) => {
-      const listener = (): void => callback()
-      ipcRenderer.on('menu:exportHtml', listener)
-      return () => ipcRenderer.removeListener('menu:exportHtml', listener)
     },
     onExportPdf: (callback: () => void): (() => void) => {
       const listener = (): void => callback()

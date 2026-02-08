@@ -27,15 +27,6 @@ export function Toolbar(): React.JSX.Element {
     [setMode]
   )
 
-  const handleExportHtml = useCallback(async (): Promise<void> => {
-    if (!content || !currentFileName) return
-    try {
-      await window.api.export.html(content, currentFileName)
-    } catch (error) {
-      console.error('Failed to export HTML:', error)
-    }
-  }, [content, currentFileName])
-
   const handleExportPdf = useCallback(async (): Promise<void> => {
     if (!content || !currentFileName) return
     try {
@@ -66,7 +57,6 @@ export function Toolbar(): React.JSX.Element {
     const unsubscribeSave = window.api.menu.onSave(() => {
       saveNow()
     })
-    const unsubscribeExportHtml = window.api.menu.onExportHtml(handleExportHtml)
     const unsubscribeExportPdf = window.api.menu.onExportPdf(handleExportPdf)
     const unsubscribeSetMode = window.api.menu.onSetMode((newMode) => {
       handleModeChange(newMode as EditorMode)
@@ -75,12 +65,11 @@ export function Toolbar(): React.JSX.Element {
 
     return () => {
       unsubscribeSave()
-      unsubscribeExportHtml()
       unsubscribeExportPdf()
       unsubscribeSetMode()
       unsubscribeCloseFile()
     }
-  }, [saveNow, handleExportHtml, handleExportPdf, handleModeChange, handleCloseFile])
+  }, [saveNow, handleExportPdf, handleModeChange, handleCloseFile])
 
   const isDisabled = !currentFilePath
 
@@ -133,15 +122,6 @@ export function Toolbar(): React.JSX.Element {
 
       <div className="toolbar-right">
         <div className="export-buttons">
-          <button
-            className="export-btn"
-            onClick={handleExportHtml}
-            disabled={isDisabled}
-            data-tooltip="Export as HTML (Cmd+Shift+E)"
-          >
-            <HtmlIcon />
-            <span>HTML</span>
-          </button>
           <button
             className="export-btn"
             onClick={handleExportPdf}
@@ -214,8 +194,17 @@ function SaveStatusIndicator({ status }: { status: string }): React.JSX.Element 
 // Icons
 function EditIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path d="M12.146 1.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1 0 .708l-9.5 9.5a.5.5 0 0 1-.168.11l-4 1.5a.5.5 0 0 1-.65-.65l1.5-4a.5.5 0 0 1 .11-.168l9.5-9.5zM11.207 4L12 4.793 13.793 3 13 2.207 11.207 4z" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M11 2L14 5L5 14H2V11L11 2Z" />
     </svg>
   )
 }
@@ -254,25 +243,24 @@ function CloseIcon(): React.JSX.Element {
   )
 }
 
-function HtmlIcon(): React.JSX.Element {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-      {/* Export arrow */}
-      <path d="M8 12V4M8 4L5 7M8 4L11 7" strokeLinecap="round" strokeLinejoin="round" />
-      {/* HTML brackets */}
-      <path d="M2 9L4 11L2 13M14 9L12 11L14 13" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
 function PdfIcon(): React.JSX.Element {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
-      {/* Export arrow */}
-      <path d="M8 12V4M8 4L5 7M8 4L11 7" strokeLinecap="round" strokeLinejoin="round" />
-      {/* Document icon */}
-      <rect x="2" y="10" width="4" height="5" rx="0.5" strokeLinecap="round" strokeLinejoin="round" />
-      <rect x="10" y="10" width="4" height="5" rx="0.5" strokeLinecap="round" strokeLinejoin="round" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {/* Box */}
+      <path d="M5.5 1.5h-3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-3" />
+      {/* Arrow head */}
+      <path d="M9.5 1.5h5v5" />
+      {/* Arrow line */}
+      <path d="M14.5 1.5l-7 7" />
     </svg>
   )
 }

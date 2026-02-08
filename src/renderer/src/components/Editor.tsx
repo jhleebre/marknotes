@@ -19,6 +19,7 @@ import { TableRow } from '@tiptap/extension-table-row'
 import { TableCell } from '@tiptap/extension-table-cell'
 import { TableHeader } from '@tiptap/extension-table-header'
 import { Plugin, PluginKey } from '@tiptap/pm/state'
+import { DOMSerializer } from '@tiptap/pm/model'
 import { InputRule } from '@tiptap/core'
 import { common, createLowlight } from 'lowlight'
 import { marked } from 'marked'
@@ -826,8 +827,16 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
                 this.editor.commands.sinkListItem('listItem')
                 return true
               }
-              // Default table behavior: go to next cell
-              return this.editor.commands.goToNextCell()
+              // Try to go to next cell
+              if (this.editor.commands.goToNextCell()) {
+                return true
+              }
+              // If goToNextCell returns false, we're at the last cell
+              // Add a new row and move to its first cell (standard Word/Docs behavior)
+              this.editor.commands.addRowAfter()
+              // Move to the first cell of the new row
+              this.editor.commands.goToNextCell()
+              return true
             },
             'Shift-Tab': () => {
               // Check if we're in a list FIRST
@@ -1239,6 +1248,33 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       icon: <CopyIcon />,
       onClick: () => document.execCommand('copy')
     },
+    {
+      type: 'item',
+      label: 'Copy as Markdown',
+      icon: <CopyIcon />,
+      onClick: async () => {
+        const { state } = editor
+        const { from, to } = state.selection
+
+        // Serialize selected content to HTML
+        const slice = state.doc.slice(from, to)
+        const serializer = DOMSerializer.fromSchema(editor.schema)
+        const fragment = serializer.serializeFragment(slice.content)
+        const div = document.createElement('div')
+        div.appendChild(fragment)
+        const html = div.innerHTML
+
+        // Convert HTML to markdown
+        const markdown = turndownService.turndown(html)
+
+        // Copy to clipboard as plain text
+        try {
+          await navigator.clipboard.writeText(markdown)
+        } catch (err) {
+          console.error('Failed to copy as markdown:', err)
+        }
+      }
+    },
     { type: 'divider' },
     {
       type: 'item',
@@ -1330,7 +1366,10 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       label: 'Blockquote',
       icon: <QuoteIcon />,
       onClick: () => editor.chain().focus().toggleBlockquote().run(),
-      disabled: editor.isActive('heading')
+      disabled:
+        editor.isActive('heading') ||
+        editor.isActive('bulletList') ||
+        editor.isActive('orderedList')
     },
     {
       type: 'item',
@@ -1370,16 +1409,58 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
             // Check for HTML
             if (item.types.includes('text/html')) {
               const blob = await item.getType('text/html')
-              const html = await blob.text()
+              let html = await blob.text()
+
+              // Parse HTML to unwrap unnecessary outer <p> tags
+              const parser = new DOMParser()
+              const doc = parser.parseFromString(html, 'text/html')
+              const body = doc.body
+
+              // If content is a single <p> tag with only inline content, unwrap it
+              if (body.children.length === 1 && body.firstElementChild?.tagName === 'P') {
+                const p = body.firstElementChild
+                // Check if paragraph contains block elements
+                const hasBlockElements = Array.from(p.querySelectorAll('*')).some((child) => {
+                  const tagName = child.tagName
+                  return [
+                    'DIV',
+                    'P',
+                    'H1',
+                    'H2',
+                    'H3',
+                    'H4',
+                    'H5',
+                    'H6',
+                    'UL',
+                    'OL',
+                    'BLOCKQUOTE',
+                    'PRE',
+                    'TABLE'
+                  ].includes(tagName)
+                })
+
+                // If no block elements, unwrap the <p> tag
+                if (!hasBlockElements) {
+                  html = p.innerHTML
+                }
+              }
+
               editor.chain().focus().insertContent(html).run()
               return
             }
 
-            // Fallback to plain text
+            // Fallback to plain text - insert directly without wrapping in <p>
             if (item.types.includes('text/plain')) {
               const blob = await item.getType('text/plain')
               const text = await blob.text()
-              editor.chain().focus().insertContent(text).run()
+
+              // Use low-level transaction to insert text at current position
+              // This avoids wrapping in <p> tags and adding line breaks
+              const { state, view } = editor
+              const { from, to } = state.selection
+              const tr = state.tr.insertText(text, from, to)
+              view.dispatch(tr)
+              editor.commands.focus()
               return
             }
           }
@@ -1481,7 +1562,10 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       label: 'Blockquote',
       icon: <QuoteIcon />,
       onClick: () => editor.chain().focus().toggleBlockquote().run(),
-      disabled: editor.isActive('heading')
+      disabled:
+        editor.isActive('heading') ||
+        editor.isActive('bulletList') ||
+        editor.isActive('orderedList')
     },
     {
       type: 'item',
@@ -2287,7 +2371,11 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         <button
           className={`format-btn ${editor.isActive('blockquote') ? 'active' : ''}`}
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          disabled={editor.isActive('heading')}
+          disabled={
+            editor.isActive('heading') ||
+            editor.isActive('bulletList') ||
+            editor.isActive('orderedList')
+          }
           data-tooltip="Blockquote (Cmd+Shift+B)"
         >
           <QuoteIcon />
