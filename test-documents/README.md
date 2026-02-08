@@ -13,8 +13,8 @@ test-documents/
 ├── 03. Tables Test.md                  # 테이블 테스트
 ├── 04. Links and Navigation Test.md    # 링크와 네비게이션 테스트
 ├── 05. Images Test.md                  # 이미지 테스트
-├── 06. Comprehensive Test.md           # 종합 테스트
-└── Task List Test.md                   # Task List(체크박스) 테스트
+├── 06. Task List Test.md               # Task List(체크박스) 테스트
+└── 07. Comprehensive Test.md           # 종합 테스트
 ```
 
 ## 🎯 용도
@@ -53,7 +53,7 @@ cp test-documents/*.md ~/Documents/MarkNotes/
 cp test-documents/*.md ~/Documents/MarkNotes/
 
 # 특정 문서만 초기화
-cp "test-documents/Task List Test.md" ~/Documents/MarkNotes/
+cp "test-documents/06. Task List Test.md" ~/Documents/MarkNotes/
 ```
 
 ### 새 테스트 문서 추가
@@ -120,7 +120,7 @@ git commit -m "docs: add new test document"
 - .assets 폴더 관리
 - 이미지 정리 기능
 
-### Task List Test.md
+### 06. Task List Test.md
 체크박스(Task List) 기능 (v1.6.0 신규)
 - 체크박스 생성/토글 (Cmd+Shift+9)
 - 중첩된 체크박스 (최대 5단계)
@@ -129,7 +129,7 @@ git commit -m "docs: add new test document"
 - 상태 저장/로드
 - 실제 사용 시나리오
 
-### 06. Comprehensive Test.md
+### 07. Comprehensive Test.md
 모든 기능을 복합적으로 사용하는 실전 시나리오
 - 프로젝트 문서 (일정표, 코드, 테이블, 체크박스 혼합)
 - 회의록
