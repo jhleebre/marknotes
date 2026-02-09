@@ -877,7 +877,17 @@ interface EditorProps {
 }
 
 export function Editor({ onReady }: EditorProps): React.JSX.Element {
-  const { mode, content, setContent, updateCounts, isLoadingContent } = useDocumentStore()
+  const {
+    mode,
+    content,
+    setContent,
+    updateCounts,
+    isLoadingContent,
+    currentFilePath,
+    setCurrentFile,
+    setOriginalContent,
+    setIsLoadingContent
+  } = useDocumentStore()
   const isUpdatingFromMarkdown = useRef(false)
   const lastMarkdownContent = useRef('')
   const [, forceUpdate] = useState({})
@@ -1137,6 +1147,51 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
                 } catch (e) {
                   console.error('Failed to decode URI:', e)
                 }
+              } else if (
+                href.endsWith('.md') &&
+                !href.startsWith('http://') &&
+                !href.startsWith('https://') &&
+                !href.startsWith('file://') &&
+                !href.startsWith('/')
+              ) {
+                // Relative markdown file link - open in MarkNotes
+                const loadRelativeFile = async (): Promise<void> => {
+                  try {
+                    // Decode URL-encoded filename (e.g., %20 -> space)
+                    const decodedHref = decodeURIComponent(href)
+
+                    // Get current file's directory
+                    const currentPath = currentFilePath
+                    if (!currentPath) return
+
+                    const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/'))
+                    const targetPath = `${currentDir}/${decodedHref}`
+
+                    // Check if file exists
+                    const exists = await window.api.file.exists(targetPath)
+                    if (!exists) {
+                      console.error('File not found:', targetPath)
+                      return
+                    }
+
+                    // Load the file content
+                    setIsLoadingContent(true)
+                    const result = await window.api.file.read(targetPath)
+                    if (result.success && result.content !== undefined) {
+                      const fileName = decodedHref.split('/').pop() || decodedHref
+                      setCurrentFile(targetPath, fileName)
+                      setContent(result.content)
+                      setOriginalContent(result.content)
+                    } else {
+                      console.error('Failed to load file:', result.error)
+                    }
+                  } catch (error) {
+                    console.error('Failed to open relative file:', error)
+                  } finally {
+                    setIsLoadingContent(false)
+                  }
+                }
+                loadRelativeFile()
               } else {
                 // External link - open in browser
                 window.api.shell.openExternal(href).catch((err) => {
@@ -1281,6 +1336,51 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
             } catch (err) {
               console.error('Failed to decode URI:', err)
             }
+          } else if (
+            href.endsWith('.md') &&
+            !href.startsWith('http://') &&
+            !href.startsWith('https://') &&
+            !href.startsWith('file://') &&
+            !href.startsWith('/')
+          ) {
+            // Relative markdown file link - open in MarkNotes
+            const loadRelativeFile = async (): Promise<void> => {
+              try {
+                // Decode URL-encoded filename (e.g., %20 -> space)
+                const decodedHref = decodeURIComponent(href)
+
+                // Get current file's directory
+                const currentPath = currentFilePath
+                if (!currentPath) return
+
+                const currentDir = currentPath.substring(0, currentPath.lastIndexOf('/'))
+                const targetPath = `${currentDir}/${decodedHref}`
+
+                // Check if file exists
+                const exists = await window.api.file.exists(targetPath)
+                if (!exists) {
+                  console.error('File not found:', targetPath)
+                  return
+                }
+
+                // Load the file content
+                setIsLoadingContent(true)
+                const result = await window.api.file.read(targetPath)
+                if (result.success && result.content !== undefined) {
+                  const fileName = decodedHref.split('/').pop() || decodedHref
+                  setCurrentFile(targetPath, fileName)
+                  setContent(result.content)
+                  setOriginalContent(result.content)
+                } else {
+                  console.error('Failed to load file:', result.error)
+                }
+              } catch (error) {
+                console.error('Failed to open relative file:', error)
+              } finally {
+                setIsLoadingContent(false)
+              }
+            }
+            loadRelativeFile()
           } else {
             // External link - open in browser
             window.api.shell.openExternal(href).catch((err) => {
@@ -1299,7 +1399,15 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
       }
     }
     return undefined
-  }, [mode, content])
+  }, [
+    mode,
+    content,
+    currentFilePath,
+    setCurrentFile,
+    setContent,
+    setOriginalContent,
+    setIsLoadingContent
+  ])
 
   // Get context menu items based on type
   const getContextMenuItems = useCallback((): ContextMenuItem[] => {
@@ -1795,7 +1903,7 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       icon: <TableIcon />,
       onClick: () =>
         editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
-      disabled: editor.isActive('heading')
+      disabled: editor.isActive('heading') || editor.isActive('table')
     },
     {
       type: 'item',
@@ -2154,7 +2262,25 @@ function getTableMenuItems(editor: TipTapEditor): ContextMenuItem[] {
       type: 'item',
       label: 'Delete Row',
       icon: <TrashIcon />,
-      onClick: () => editor.chain().focus().deleteRow().run(),
+      onClick: () => {
+        const { state } = editor
+        const { selection } = state
+        const { $from } = selection
+
+        // Check if we're in a table
+        const table = $from.node(-3) // Go up to the table node
+        if (table && table.type.name === 'table') {
+          const rowCount = table.childCount
+
+          // If only one row remains, delete the entire table
+          if (rowCount <= 1) {
+            editor.chain().focus().deleteTable().run()
+            return
+          }
+        }
+
+        editor.chain().focus().deleteRow().run()
+      },
       danger: true
     },
     {
@@ -2652,7 +2778,7 @@ function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Elemen
         <button
           className="format-btn"
           onClick={insertTable}
-          disabled={editor.isActive('heading')}
+          disabled={editor.isActive('heading') || editor.isActive('table')}
           data-tooltip="Insert Table"
         >
           <TableIcon />

@@ -9,16 +9,46 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.6.0</strong>
+  <strong>Version 1.7.0</strong>
 </p>
 
 ---
 
 ## Changelog
 
+### Version 1.7.0 (2026-02-09)
+
+**Internal Document Navigation**
+
+- Added support for relative markdown file links - clicking links to other `.md` files now opens them within MarkNotes instead of externally
+- URL-encoded filenames (spaces, special characters) are automatically decoded and resolved
+- Works in both Edit mode (Cmd+Click) and Code/Preview mode (regular click)
+- Seamless navigation between test documents and cross-referenced notes
+
+**Table Improvements**
+
+- Insert Table button now disabled when cursor is inside a table cell (prevents unsupported nested tables)
+- Deleting the last remaining row in a table now removes the entire table (cleaner workflow)
+- Improved context menu behavior for table operations
+
+**Markdown Formatting Fixes**
+
+- Fixed nested formatting in table cells - proper HTML list structures for indented items
+- Corrected checkbox syntax in tables (checkboxes now require text for proper rendering)
+- Fixed range notation using hyphens instead of tildes to avoid strikethrough rendering (e.g., `H1-H6` instead of `H1~H6`)
+- Updated test documents with proper nested list HTML structure in table cells
+
+**Test Document Enhancements**
+
+- Reorganized test document numbering for better flow
+- Updated cross-references and internal links throughout test suite
+- Added comprehensive instructions for creating nested lists in table cells
+- Improved documentation of markdown limitations and workarounds
+
 ### Version 1.6.0 (2026-02-08)
 
 **Task List (Checkbox) Support**
+
 - Added interactive checkbox support for task lists in both edit and code modes
 - Click checkboxes to toggle completion status with instant markdown sync (`- [ ]` / `- [x]`)
 - Full support for nested/hierarchical task lists with proper indentation
@@ -29,6 +59,7 @@
 - Checkbox states preserved when saving, loading, and exporting documents
 
 **Icon Improvements**
+
 - Redesigned task list icon: simplified to clean checkmark + dash combination
 - Simplified all list icons from 3 lines to 2 lines for visual consistency
 - Updated bullet list and ordered list icons with cleaner, more compact design
@@ -38,15 +69,18 @@
 ### Version 1.5.0 (2026-02-08)
 
 **Table Improvements**
+
 - Added automatic row insertion when pressing Tab at the last cell of a table (standard Word/Docs behavior)
 - Table navigation now matches industry-standard editors
 
 **Paste Enhancements**
+
 - Fixed paste behavior to prevent unwanted line breaks when pasting into existing text
 - Improved HTML-to-markdown conversion for clipboard content
 - Added "Copy as Markdown" option in context menu for easy markdown code copying to external editors
 
 **UI/UX Improvements**
+
 - Disabled blockquote formatting in lists (prevents invalid markdown structure)
 - Removed HTML export, simplified to PDF-only export for cleaner workflow
 - Redesigned all icons with modern stroke-based style for visual consistency:
@@ -57,6 +91,7 @@
 ### Version 1.4.1 (2026-02-06)
 
 **Link Editing Improvements**
+
 - Context menu now displays "Edit Link" when clicking on existing links (previously showed "Add Link")
 - Fixed link editing when right-clicking on a link without text selection
   - Modal now correctly shows existing link text and URL
@@ -67,24 +102,28 @@
 ### Version 1.4.0 (2026-02-05)
 
 **Table Enhancements**
+
 - Added support for block-level markdown in table cells (lists, code blocks, blockquotes, headings)
 - Preserve line breaks and complex formatting in table cells when saving/loading
 - Fixed Tab/Shift-Tab behavior in lists within tables to properly indent/outdent instead of navigating cells
 - Maintain proper HTML entity encoding to prevent table structure breaking
 
 **UI/UX Improvements**
+
 - Replaced individual H1-H6, P buttons with single dropdown selector for cleaner formatting toolbar
 - Redesigned bullet list and ordered list icons for better visibility
 
 ### Version 1.3.0 (2026-02-04)
 
 **Formatting Improvements**
+
 - Added heading formatting restrictions: headings now prevent conflicting inline/block formatting
 - Fixed nested ordered list indentation (4 spaces for proper markdown parsing)
 - Added 5-level nested unordered list styling (disc → circle → square → ▫ → ⁃)
 - Blocked backtick auto-conversion to inline code within headings
 
 **UI/UX Enhancements**
+
 - Simplified indent/outdent icons with cleaner arrow design
 - Simplified HTML/PDF export icons focusing on export action
 - Added arrow icons to table context menu for better clarity
@@ -94,12 +133,14 @@
 - Reordered context menu items to match toolbar layout
 
 **Context Menu Improvements**
+
 - Added Cut Image option to image context menu
 - Renamed "Embed Image (Base64)" to "Embed in Document"
 - Enhanced empty area context menu with all formatting options
 - Fixed paste functionality to properly handle cut/copied images
 
 **Bug Fixes**
+
 - Fixed Tab key behavior in lists (no longer indents first item incorrectly)
 - Improved clipboard handling for images in context menu paste
 

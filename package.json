@@ -1,6 +1,6 @@
 {
   "name": "marknotes",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "A lightweight markdown editor for your notes",
   "main": "./out/main/index.js",
   "author": "MarkNotes",

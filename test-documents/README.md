@@ -22,6 +22,7 @@ test-documents/
 ### 원본 보관
 
 이 디렉토리의 파일들은 **원본(pristine) 상태**로 유지됩니다.
+
 - MarkNotes 앱에서 수정되지 않음
 - Git으로 버전 관리됨
 - 테스트 문서 초기화 시 사용
@@ -29,6 +30,7 @@ test-documents/
 ### 테스트 수행
 
 테스트를 수행할 때는:
+
 1. 이 디렉토리의 파일들을 `~/Documents/MarkNotes/`로 복사
 2. MarkNotes 앱에서 열어서 테스트
 3. 테스트 중 자동 저장으로 인한 수정은 `~/Documents/MarkNotes/`에만 영향
@@ -73,22 +75,28 @@ git commit -m "docs: add new test document"
 ## 📋 테스트 문서 설명
 
 ### 00. Test Guide - START HERE.md
+
 **시작점!** 전체 테스트 가이드와 방법론
+
 - 테스트 문서 목록과 설명
 - 테스트 방법론
 - 빠른 시작 가이드
 - 체크리스트
 
 ### 01. Text Formatting Test.md
+
 기본 텍스트 포맷팅 테스트
-- 헤딩 6단계 (H1~H6)
+
+- 헤딩 6단계 (H1-H6)
 - 인라인 스타일 (볼드, 이탤릭, 취소선, 코드)
 - 블록쿼트, 수평선
 - 코드 블록 (JavaScript, Python, TypeScript, etc.)
 - 다크모드 테스트
 
 ### 02. Lists Test.md
+
 모든 리스트 타입과 중첩 테스트
+
 - 불릿 리스트 (Cmd+Shift+8)
 - 숫자 리스트 (Cmd+Shift+7)
 - 최대 5단계 중첩 (마커 변경 확인)
@@ -96,7 +104,9 @@ git commit -m "docs: add new test document"
 - Tab/Shift+Tab 들여쓰기
 
 ### 03. Tables Test.md
+
 테이블 관련 모든 기능
+
 - 기본 테이블 생성
 - 정렬 (왼쪽, 가운데, 오른쪽)
 - Context menu (행/열 추가/삭제, 정렬 변경)
@@ -104,7 +114,9 @@ git commit -m "docs: add new test document"
 - Tab 키 네비게이션
 
 ### 04. Links and Navigation Test.md
+
 링크와 네비게이션 기능
+
 - 외부 링크 (다양한 프로토콜)
 - 내부 링크/앵커 (문서 내 이동)
 - 링크 편집 (Cmd+K)
@@ -112,7 +124,9 @@ git commit -m "docs: add new test document"
 - Cmd+Click 동작
 
 ### 05. Images Test.md
+
 이미지 관련 모든 기능
+
 - 이미지 형식 (JPG, PNG, GIF, SVG, WEBP)
 - 크기 조절 (Small/Medium/Large/Original)
 - Alt 텍스트 편집
@@ -121,7 +135,9 @@ git commit -m "docs: add new test document"
 - 이미지 정리 기능
 
 ### 06. Task List Test.md
+
 체크박스(Task List) 기능 (v1.6.0 신규)
+
 - 체크박스 생성/토글 (Cmd+Shift+9)
 - 중첩된 체크박스 (최대 5단계)
 - 테이블 내 체크박스
@@ -130,7 +146,9 @@ git commit -m "docs: add new test document"
 - 실제 사용 시나리오
 
 ### 07. Comprehensive Test.md
+
 모든 기능을 복합적으로 사용하는 실전 시나리오
+
 - 프로젝트 문서 (일정표, 코드, 테이블, 체크박스 혼합)
 - 회의록
 - 학습 노트 (코드 블록, 다이어그램)
