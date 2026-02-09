@@ -923,6 +923,32 @@
   margin-bottom: 0;
 }
 
+/* Nested ordered lists inside task lists - Edit Mode */
+.wysiwyg-editor .ProseMirror ul[data-type='taskList'] li ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5em;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.wysiwyg-editor .ProseMirror ul[data-type='taskList'] li ol li {
+  display: list-item !important;
+  list-style-type: decimal !important;
+}
+
+/* Nested unordered lists (non-task) inside task lists - Edit Mode */
+.wysiwyg-editor .ProseMirror ul[data-type='taskList'] li ul:not([data-type='taskList']) {
+  list-style-type: disc !important;
+  padding-left: 1.5em;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.wysiwyg-editor .ProseMirror ul[data-type='taskList'] li ul:not([data-type='taskList']) li {
+  display: list-item !important;
+  list-style-type: disc !important;
+}
+
 /* Task List Styles - Preview Mode */
 .preview-content ul[data-type='taskList'] {
   list-style: none;
@@ -963,4 +989,30 @@
   padding-left: 1.5em;
   margin-top: 4px;
   margin-bottom: 0;
+}
+
+/* Nested ordered lists inside task lists - Preview Mode */
+.preview-content ul[data-type='taskList'] li ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5em;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.preview-content ul[data-type='taskList'] li ol li {
+  display: list-item !important;
+  list-style-type: decimal !important;
+}
+
+/* Nested unordered lists (non-task) inside task lists - Preview Mode */
+.preview-content ul[data-type='taskList'] li ul:not([data-type='taskList']) {
+  list-style-type: disc !important;
+  padding-left: 1.5em;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.preview-content ul[data-type='taskList'] li ul:not([data-type='taskList']) li {
+  display: list-item !important;
+  list-style-type: disc !important;
 }

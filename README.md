@@ -9,12 +9,32 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.7.0</strong>
+  <strong>Version 1.7.1</strong>
 </p>
 
 ---
 
 ## Changelog
+
+### Version 1.7.1 (2026-02-09)
+
+**PDF Export Improvements**
+
+- Fixed task list rendering in PDF exports - checkboxes no longer display bullets
+- Added proper indentation for nested task lists in PDF output
+- Fixed markdown rendering in table cells for PDF exports (bold, italic, links, code, checkboxes now render correctly)
+
+**Task List Enhancements**
+
+- Added support for nested numbered and bullet lists inside task list items
+- Fixed display of mixed list types (checkboxes with regular lists) in both edit and preview modes
+- Improved CSS styling for complex nested list structures
+
+**Test Document Fixes**
+
+- Corrected table of contents anchor link formatting
+- Updated test documents with proper HTML structure for nested checkboxes in tables
+- Improved test documentation for table cell checkbox creation workflow
 
 ### Version 1.7.0 (2026-02-09)
 

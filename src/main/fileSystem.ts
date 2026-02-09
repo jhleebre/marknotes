@@ -318,13 +318,28 @@ renderer.image = function ({ href, title, text }) {
   return `<img src="${src}" alt="${alt}"${titleAttr}>`
 }
 
-// Custom table cell renderer to apply alignment from markdown
+// Custom table cell renderer to apply alignment from markdown and parse both inline and block markdown
 renderer.tablecell = function (token) {
   const text = token.text
+  // Parse both inline and block-level markdown (lists, blockquotes, code blocks, etc.)
+  let parsedText = marked.parse(text) as string
+
+  // Process task lists
+  parsedText = processTaskListsForExport(parsedText)
+
+  // Remove ALL <p> tags (not just outer ones) to prevent extra spacing
+  parsedText = parsedText.replace(/<\/?p>/g, '')
+
+  // Remove excessive whitespace between HTML tags
+  parsedText = parsedText.replace(/>\s+</g, '><')
+
+  // Clean up and trim
+  parsedText = parsedText.trim()
+
   const type = token.header ? 'th' : 'td'
   const align = token.align
   const style = align ? ` style="text-align: ${align}"` : ''
-  return `<${type}${style}>${text}</${type}>\n`
+  return `<${type}${style}>${parsedText}</${type}>\n`
 }
 
 marked.use({ renderer })
@@ -459,6 +474,27 @@ function postProcessImageSizes(html: string): string {
   return html.replace(pattern, (_match, imgAttrs, size) => {
     return `<div class="image-wrapper image-size-${size}" data-size="${size}"><img${imgAttrs}></div>`
   })
+}
+
+// Helper function to process task lists for export
+function processTaskListsForExport(html: string): string {
+  // Step 1: Find all <ul> that contain checkboxes and add class
+  // Use a more reliable pattern matching
+  html = html.replace(/<ul>(\s*<li>.*?<input[^>]*type=["']checkbox["'][^>]*>)/gi, '<ul class="task-list">$1')
+
+  // Step 2: Add class to all <li> that directly contain a checkbox
+  html = html.replace(/<li>(\s*<input[^>]*type=["']checkbox["'][^>]*>)/gi, '<li class="task-list-item">$1')
+
+  // Step 3: Handle nested task lists
+  // Find any remaining <ul> inside task-list that also contains checkboxes
+  let changed = true
+  while (changed) {
+    const before = html
+    html = html.replace(/(<ul class="task-list"[\s\S]*?)<ul>(\s*<li>.*?<input[^>]*type=["']checkbox["'][^>]*>)/gi, '$1<ul class="task-list">$2')
+    changed = (html !== before)
+  }
+
+  return html
 }
 
 // Helper function to embed images as base64 in HTML
@@ -670,6 +706,8 @@ export function setupFileHandlers(mainWindow: BrowserWindow): void {
         let html = await marked(markdown)
         // Process image sizes from comments
         html = postProcessImageSizes(html)
+        // Process task lists for export
+        html = processTaskListsForExport(html)
         // Embed images as base64
         html = await embedImagesInHtml(html)
         const template = `<!DOCTYPE html>
@@ -737,10 +775,68 @@ export function setupFileHandlers(mainWindow: BrowserWindow): void {
     table { border-collapse: collapse; width: 100%; margin: 1em 0; }
     th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
     th { background: #f4f4f4; }
+
+    /* Task list styles */
+    ul.task-list {
+      list-style: none !important;
+      padding-left: 0 !important;
+    }
+    ul.task-list li {
+      list-style: none !important;
+      list-style-type: none !important;
+    }
+    li.task-list-item {
+      list-style: none !important;
+      list-style-type: none !important;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 4px 0;
+    }
+    li.task-list-item input[type='checkbox'] {
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+    /* Nested task lists - any ul inside a task list */
+    ul.task-list ul {
+      padding-left: 1.5em !important;
+      margin-top: 4px;
+      list-style: none !important;
+    }
+    /* Double nested */
+    ul.task-list ul ul {
+      padding-left: 3em !important;
+    }
+    /* Triple nested */
+    ul.task-list ul ul ul {
+      padding-left: 4.5em !important;
+    }
   </style>
   <script>
-    // Handle link clicks
+    // Process task lists on page load
     document.addEventListener('DOMContentLoaded', function() {
+      // Find all ul elements
+      const allUls = document.querySelectorAll('ul');
+      allUls.forEach(function(ul) {
+        // Check if this ul contains any checkbox inputs
+        const hasCheckbox = ul.querySelector('li > input[type="checkbox"]');
+        if (hasCheckbox) {
+          ul.classList.add('task-list');
+          ul.style.listStyle = 'none';
+
+          // Add class to all li containing checkboxes
+          const listItems = ul.querySelectorAll('li');
+          listItems.forEach(function(li) {
+            const checkbox = li.querySelector('input[type="checkbox"]');
+            if (checkbox && li.firstElementChild === checkbox) {
+              li.classList.add('task-list-item');
+              li.style.listStyle = 'none';
+            }
+          });
+        }
+      });
+
+      // Handle link clicks
       document.addEventListener('click', function(e) {
         if (e.target.tagName === 'A') {
           const href = e.target.getAttribute('href');
