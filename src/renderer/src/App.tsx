@@ -16,7 +16,8 @@ function App(): React.JSX.Element {
     setIsDarkMode,
     currentFilePath,
     content,
-    originalContent
+    originalContent,
+    setMode
   } = useDocumentStore()
   const { saveNow } = useAutoSave()
   const [editor, setEditor] = useState<TipTapEditor | null>(null)
@@ -58,6 +59,17 @@ function App(): React.JSX.Element {
       unsubscribe()
     }
   }, [toggleSidebar])
+
+  // Listen for mode change menu command (Cmd+1 / Cmd+2)
+  useEffect(() => {
+    const unsubscribe = window.api.menu.onSetMode((mode) => {
+      setMode(mode as 'wysiwyg' | 'split')
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [setMode])
 
   // Listen for cleanup images menu command
   useEffect(() => {
