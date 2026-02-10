@@ -64,7 +64,6 @@ MarkNotes is a desktop markdown editor designed for writers who want a distracti
 
 ### 🖼️ Simple Image Management
 
-- **Drag & Drop** - Insert images from your desktop
 - **Auto-Organized** - Images stored in `.assets/` folder automatically
 - **Resize Anytime** - Right-click images to resize (small/medium/large/original)
 - **Export Ready** - Images automatically embedded in PDF exports
@@ -209,7 +208,7 @@ Use the formatting buttons in the title bar or keyboard shortcuts:
 2. Create links to those headings using `#heading-id` format
 3. Heading IDs are automatically generated (lowercase, with hyphens)
    - "Getting Started" becomes `#getting-started`
-   - "Tips & Tricks" becomes `#tips--tricks`
+   - "Tips & Tricks" becomes `#tips-tricks`
 
 ### Organize with Folders
 
@@ -323,8 +322,6 @@ Yes! MarkNotes:
 ## Need More Help?
 
 - **Bug Reports** - Found a problem? [Open an issue](../../issues)
-- **Feature Requests** - Have an idea? [Start a discussion](../../discussions)
-- **Questions** - Need help? [Ask in discussions](../../discussions)
 
 ---
 
@@ -354,8 +351,6 @@ npm run dev
 # Build for production
 npm run build:mac
 ```
-
-For detailed development information, see [CLAUDE.md](CLAUDE.md).
 
 ---
 
