@@ -11,7 +11,8 @@ import {
   TrashIcon,
   ShowInFinderIcon,
   CopyIcon,
-  DuplicateIcon
+  DuplicateIcon,
+  ChevronIcon
 } from '../utils/icons'
 import './FileTree.css'
 
@@ -226,11 +227,11 @@ function FileTreeItem({
       >
         {entry.isDirectory && (
           <span className={`chevron ${isExpanded ? 'expanded' : ''}`}>
-            <ChevronIcon />
+            <ChevronIcon className="icon" />
           </span>
         )}
         <span className="file-icon">
-          {entry.isDirectory ? <FolderIconImported /> : <FileIcon />}
+          {entry.isDirectory ? <FolderIconImported className="icon" /> : <FileIcon className="icon" />}
         </span>
         {isEditing ? (
           <input
@@ -744,13 +745,13 @@ export function FileTree(): React.JSX.Element {
         {
           type: 'item',
           label: 'New File',
-          icon: <FileIcon />,
+          icon: <FileIcon className="icon" />,
           onClick: () => openCreateFileModal(null)
         },
         {
           type: 'item',
           label: 'New Folder',
-          icon: <FolderPlusIcon />,
+          icon: <FolderPlusIcon className="icon" />,
           onClick: () => openCreateFolderModal(null)
         },
         {
@@ -759,7 +760,7 @@ export function FileTree(): React.JSX.Element {
         {
           type: 'item',
           label: 'Show in Finder',
-          icon: <ShowInFinderIcon />,
+          icon: <ShowInFinderIcon className="icon" />,
           onClick: () =>
             handleShowInFinder({ path: rootPath, name: 'MarkNotes', isDirectory: true })
         }
@@ -777,13 +778,13 @@ export function FileTree(): React.JSX.Element {
           {
             type: 'item',
             label: 'New File',
-            icon: <FileIcon />,
+            icon: <FileIcon className="icon" />,
             onClick: () => openCreateFileModal(entry.path)
           },
           {
             type: 'item',
             label: 'New Folder',
-            icon: <FolderPlusIcon />,
+            icon: <FolderPlusIcon className="icon" />,
             onClick: () => openCreateFolderModal(entry.path)
           },
           {
@@ -797,7 +798,7 @@ export function FileTree(): React.JSX.Element {
         items.push({
           type: 'item',
           label: 'Open',
-          icon: <FileIcon />,
+          icon: <FileIcon className="icon" />,
           onClick: () => handleFileSelect(entry.path, entry.name)
         })
       }
@@ -807,7 +808,7 @@ export function FileTree(): React.JSX.Element {
         {
           type: 'item',
           label: 'Show in Finder',
-          icon: <ShowInFinderIcon />,
+          icon: <ShowInFinderIcon className="icon" />,
           onClick: () => handleShowInFinder(entry)
         },
         {
@@ -816,13 +817,13 @@ export function FileTree(): React.JSX.Element {
         {
           type: 'item',
           label: 'Rename',
-          icon: <RenameIcon />,
+          icon: <RenameIcon className="icon" />,
           onClick: () => handleStartRename(entry.path)
         },
         {
           type: 'item',
           label: entry.isDirectory ? 'Copy Folder Path' : 'Copy File Path',
-          icon: <CopyIcon />,
+          icon: <CopyIcon className="icon" />,
           onClick: () => handleCopyPath(entry)
         }
       )
@@ -832,7 +833,7 @@ export function FileTree(): React.JSX.Element {
         items.push({
           type: 'item',
           label: 'Duplicate',
-          icon: <DuplicateIcon />,
+          icon: <DuplicateIcon className="icon" />,
           onClick: () => handleDuplicate(entry)
         })
       }
@@ -844,7 +845,7 @@ export function FileTree(): React.JSX.Element {
         {
           type: 'item',
           label: 'Delete',
-          icon: <TrashIcon />,
+          icon: <TrashIcon className="icon" />,
           onClick: () => handleDelete(entry),
           danger: true
         }
@@ -925,23 +926,5 @@ export function FileTree(): React.JSX.Element {
         onCreate={handleModalCreate}
       />
     </div>
-  )
-}
-
-// Local icons not in utils/icons
-function ChevronIcon(): React.JSX.Element {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 12 12"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M4 2l4 4-4 4" />
-    </svg>
   )
 }

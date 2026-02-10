@@ -50,6 +50,7 @@ import {
   HRIcon,
   TableIcon,
   ImageIcon,
+  ImageUpIcon,
   AlignLeftIcon,
   AlignCenterIcon,
   AlignRightIcon,
@@ -1809,19 +1810,19 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Cut',
-      icon: <CutIcon />,
+      icon: <CutIcon className="icon" />,
       onClick: () => document.execCommand('cut')
     },
     {
       type: 'item',
       label: 'Copy',
-      icon: <CopyIcon />,
+      icon: <CopyIcon className="icon" />,
       onClick: () => document.execCommand('copy')
     },
     {
       type: 'item',
       label: 'Copy as Markdown',
-      icon: <CopyIcon />,
+      icon: <CopyIcon className="icon" />,
       onClick: async () => {
         const { state } = editor
         const { from, to } = state.selection
@@ -1849,35 +1850,35 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Bold',
-      icon: <BoldIcon />,
+      icon: <BoldIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleBold().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Italic',
-      icon: <ItalicIcon />,
+      icon: <ItalicIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleItalic().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Strikethrough',
-      icon: <StrikeIcon />,
+      icon: <StrikeIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleStrike().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Inline Code',
-      icon: <CodeIcon />,
+      icon: <CodeIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleCode().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: editor.isActive('link') ? 'Edit Link' : 'Add Link',
-      icon: <LinkIcon />,
+      icon: <LinkIcon className="icon" />,
       onClick: () => {
         const event = new CustomEvent('open-link-modal')
         document.dispatchEvent(event)
@@ -1888,28 +1889,28 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Numbered List',
-      icon: <OrderedListIcon />,
+      icon: <OrderedListIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleOrderedList().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Bullet List',
-      icon: <BulletListIcon />,
+      icon: <BulletListIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleBulletList().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Task List',
-      icon: <TaskListIcon />,
+      icon: <TaskListIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleTaskList().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Indent',
-      icon: <IndentIcon />,
+      icon: <IndentIcon className="icon" />,
       onClick: () => {
         if (editor.isActive('taskList')) {
           editor.chain().focus().sinkListItem('taskItem').run()
@@ -1933,7 +1934,7 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Outdent',
-      icon: <OutdentIcon />,
+      icon: <OutdentIcon className="icon" />,
       onClick: () => {
         if (editor.isActive('taskList')) {
           editor.chain().focus().liftListItem('taskItem').run()
@@ -1957,7 +1958,7 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Blockquote',
-      icon: <QuoteIcon />,
+      icon: <QuoteIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleBlockquote().run(),
       disabled:
         editor.isActive('heading') ||
@@ -1968,7 +1969,7 @@ function getTextSelectionMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Code Block',
-      icon: <CodeBlockIcon />,
+      icon: <CodeBlockIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleCodeBlock().run(),
       disabled: editor.isActive('heading')
     }
@@ -1980,7 +1981,7 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Paste',
-      icon: <PasteIcon />,
+      icon: <PasteIcon className="icon" />,
       onClick: async () => {
         try {
           // Read all clipboard items (text, images, etc.)
@@ -2066,42 +2067,42 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Select All',
-      icon: <SelectAllIcon />,
+      icon: <SelectAllIcon className="icon" />,
       onClick: () => editor.chain().focus().selectAll().run()
     },
     { type: 'divider' },
     {
       type: 'item',
       label: 'Bold',
-      icon: <BoldIcon />,
+      icon: <BoldIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleBold().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Italic',
-      icon: <ItalicIcon />,
+      icon: <ItalicIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleItalic().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Strikethrough',
-      icon: <StrikeIcon />,
+      icon: <StrikeIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleStrike().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Inline Code',
-      icon: <CodeIcon />,
+      icon: <CodeIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleCode().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: editor.isActive('link') ? 'Edit Link' : 'Add Link',
-      icon: <LinkIcon />,
+      icon: <LinkIcon className="icon" />,
       onClick: () => {
         const event = new CustomEvent('open-link-modal')
         document.dispatchEvent(event)
@@ -2112,28 +2113,28 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Numbered List',
-      icon: <OrderedListIcon />,
+      icon: <OrderedListIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleOrderedList().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Bullet List',
-      icon: <BulletListIcon />,
+      icon: <BulletListIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleBulletList().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Task List',
-      icon: <TaskListIcon />,
+      icon: <TaskListIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleTaskList().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Indent',
-      icon: <IndentIcon />,
+      icon: <IndentIcon className="icon" />,
       onClick: () => {
         if (editor.isActive('taskList')) {
           editor.chain().focus().sinkListItem('taskItem').run()
@@ -2157,7 +2158,7 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Outdent',
-      icon: <OutdentIcon />,
+      icon: <OutdentIcon className="icon" />,
       onClick: () => {
         if (editor.isActive('taskList')) {
           editor.chain().focus().liftListItem('taskItem').run()
@@ -2181,7 +2182,7 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Blockquote',
-      icon: <QuoteIcon />,
+      icon: <QuoteIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleBlockquote().run(),
       disabled:
         editor.isActive('heading') ||
@@ -2192,7 +2193,7 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Code Block',
-      icon: <CodeBlockIcon />,
+      icon: <CodeBlockIcon className="icon" />,
       onClick: () => editor.chain().focus().toggleCodeBlock().run(),
       disabled: editor.isActive('heading')
     },
@@ -2200,14 +2201,14 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Horizontal Rule',
-      icon: <HRIcon />,
+      icon: <HRIcon className="icon" />,
       onClick: () => editor.chain().focus().setHorizontalRule().run(),
       disabled: editor.isActive('heading')
     },
     {
       type: 'item',
       label: 'Insert Table',
-      icon: <TableIcon />,
+      icon: <TableIcon className="icon" />,
       onClick: () =>
         editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
       disabled: editor.isActive('heading') || editor.isActive('table')
@@ -2215,7 +2216,7 @@ function getEmptyAreaMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Insert Image',
-      icon: <ImageIcon />,
+      icon: <ImageIcon className="icon" />,
       onClick: () => {
         const event = new CustomEvent('open-image-modal')
         document.dispatchEvent(event)
@@ -2380,51 +2381,51 @@ function getImageMenuItems(
     {
       type: 'item',
       label: 'Cut Image',
-      icon: <CutIcon />,
+      icon: <CutIcon className="icon" />,
       onClick: () => document.execCommand('cut')
     },
     {
       type: 'item',
       label: 'Copy Image',
-      icon: <CopyIcon />,
+      icon: <CopyIcon className="icon" />,
       onClick: () => document.execCommand('copy')
     },
     { type: 'divider' },
     {
       type: 'item',
       label: 'Small (300px)',
-      icon: <ResizeIcon />,
+      icon: <ResizeIcon className="icon" />,
       onClick: () => handleResize('small')
     },
     {
       type: 'item',
       label: 'Medium (600px)',
-      icon: <ResizeIcon />,
+      icon: <ResizeIcon className="icon" />,
       onClick: () => handleResize('medium')
     },
     {
       type: 'item',
       label: 'Large (900px)',
-      icon: <ResizeIcon />,
+      icon: <ResizeIcon className="icon" />,
       onClick: () => handleResize('large')
     },
     {
       type: 'item',
       label: 'Original Size',
-      icon: <ResizeIcon />,
+      icon: <ResizeIcon className="icon" />,
       onClick: () => handleResize('original')
     },
     { type: 'divider' },
     {
       type: 'item',
       label: 'Edit Alt Text',
-      icon: <EditIcon />,
+      icon: <EditIcon className="icon" />,
       onClick: handleEditAltText
     },
     {
       type: 'item',
       label: 'Embed in Document',
-      icon: <CodeIcon />,
+      icon: <ImageUpIcon className="icon" />,
       onClick: handleEmbedImage,
       disabled: !canEmbed
     },
@@ -2432,7 +2433,7 @@ function getImageMenuItems(
     {
       type: 'item',
       label: 'Delete Image',
-      icon: <TrashIcon />,
+      icon: <TrashIcon className="icon" />,
       onClick: handleDeleteImage,
       danger: true
     }
@@ -2523,52 +2524,52 @@ function getTableMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Add Row Above',
-      icon: <ArrowUpIcon />,
+      icon: <ArrowUpIcon className="icon" />,
       onClick: () => editor.chain().focus().addRowBefore().run()
     },
     {
       type: 'item',
       label: 'Add Row Below',
-      icon: <ArrowDownIcon />,
+      icon: <ArrowDownIcon className="icon" />,
       onClick: () => editor.chain().focus().addRowAfter().run()
     },
     { type: 'divider' },
     {
       type: 'item',
       label: 'Add Column Left',
-      icon: <ArrowLeftIcon />,
+      icon: <ArrowLeftIcon className="icon" />,
       onClick: () => editor.chain().focus().addColumnBefore().run()
     },
     {
       type: 'item',
       label: 'Add Column Right',
-      icon: <ArrowRightIcon />,
+      icon: <ArrowRightIcon className="icon" />,
       onClick: () => editor.chain().focus().addColumnAfter().run()
     },
     { type: 'divider' },
     {
       type: 'item',
       label: 'Align Left',
-      icon: <AlignLeftIcon />,
+      icon: <AlignLeftIcon className="icon" />,
       onClick: () => setCellAlignment('left')
     },
     {
       type: 'item',
       label: 'Align Center',
-      icon: <AlignCenterIcon />,
+      icon: <AlignCenterIcon className="icon" />,
       onClick: () => setCellAlignment('center')
     },
     {
       type: 'item',
       label: 'Align Right',
-      icon: <AlignRightIcon />,
+      icon: <AlignRightIcon className="icon" />,
       onClick: () => setCellAlignment('right')
     },
     { type: 'divider' },
     {
       type: 'item',
       label: 'Delete Row',
-      icon: <TrashIcon />,
+      icon: <TrashIcon className="icon" />,
       onClick: () => {
         const { state } = editor
         const { selection } = state
@@ -2593,14 +2594,14 @@ function getTableMenuItems(editor: TipTapEditor): ContextMenuItem[] {
     {
       type: 'item',
       label: 'Delete Column',
-      icon: <TrashIcon />,
+      icon: <TrashIcon className="icon" />,
       onClick: () => editor.chain().focus().deleteColumn().run(),
       danger: true
     },
     {
       type: 'item',
       label: 'Delete Table',
-      icon: <TrashIcon />,
+      icon: <TrashIcon className="icon" />,
       onClick: () => editor.chain().focus().deleteTable().run(),
       danger: true
     }

@@ -68,6 +68,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Icon Styles - Common styles for all lucide-react icons */
+.icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.5;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
 /* App Layout */
 .app {
   display: flex;

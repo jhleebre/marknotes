@@ -123,7 +123,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             onClick={toggleSidebar}
             data-tooltip={isSidebarVisible ? 'Hide Sidebar (Cmd+.)' : 'Show Sidebar (Cmd+.)'}
           >
-            {isSidebarVisible ? <SidebarIcon /> : <SidebarHiddenIcon />}
+            {isSidebarVisible ? <SidebarIcon className="icon" /> : <SidebarHiddenIcon className="icon" />}
           </button>
 
           <div className="title-bar-divider" />
@@ -133,14 +133,14 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             onClick={handleNewFile}
             data-tooltip="New File (Cmd+N)"
           >
-            <FilePlusIcon />
+            <FilePlusIcon className="icon" />
           </button>
           <button
             className="title-bar-btn"
             onClick={handleNewFolder}
             data-tooltip="New Folder (Cmd+Shift+N)"
           >
-            <FolderPlusIcon />
+            <FolderPlusIcon className="icon" />
           </button>
 
           <div className="title-bar-divider" />
@@ -152,7 +152,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled || !editor?.can().undo()}
             data-tooltip="Undo (Cmd+Z)"
           >
-            <UndoIcon />
+            <UndoIcon className="icon" />
           </button>
           <button
             className="title-bar-btn"
@@ -160,7 +160,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled || !editor?.can().redo()}
             data-tooltip="Redo (Cmd+Shift+Z)"
           >
-            <RedoIcon />
+            <RedoIcon className="icon" />
           </button>
 
           <div className="title-bar-divider" />
@@ -214,7 +214,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled || editor?.isActive('heading')}
             data-tooltip="Bold (Cmd+B)"
           >
-            <BoldIcon />
+            <BoldIcon className="icon" />
           </button>
           <button
             className={`title-bar-btn ${editor?.isActive('italic') ? 'active' : ''}`}
@@ -222,7 +222,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled || editor?.isActive('heading')}
             data-tooltip="Italic (Cmd+I)"
           >
-            <ItalicIcon />
+            <ItalicIcon className="icon" />
           </button>
           <button
             className={`title-bar-btn ${editor?.isActive('strike') ? 'active' : ''}`}
@@ -230,7 +230,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled || editor?.isActive('heading')}
             data-tooltip="Strikethrough (Cmd+Shift+X)"
           >
-            <StrikeIcon />
+            <StrikeIcon className="icon" />
           </button>
           <button
             className={`title-bar-btn ${editor?.isActive('code') ? 'active' : ''}`}
@@ -238,7 +238,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled || editor?.isActive('heading')}
             data-tooltip="Inline Code (Cmd+E)"
           >
-            <CodeIcon />
+            <CodeIcon className="icon" />
           </button>
           <button
             className={`title-bar-btn ${editor?.isActive('link') ? 'active' : ''}`}
@@ -246,7 +246,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled || editor?.isActive('heading')}
             data-tooltip="Insert Link (Cmd+K)"
           >
-            <LinkIcon />
+            <LinkIcon className="icon" />
           </button>
 
           <div className="title-bar-divider" />
@@ -258,7 +258,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled || editor?.isActive('heading')}
             data-tooltip="Numbered List (Cmd+Shift+7)"
           >
-            <OrderedListIcon />
+            <OrderedListIcon className="icon" />
           </button>
           <button
             className={`title-bar-btn ${editor?.isActive('bulletList') ? 'active' : ''}`}
@@ -266,7 +266,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled || editor?.isActive('heading')}
             data-tooltip="Bullet List (Cmd+Shift+8)"
           >
-            <BulletListIcon />
+            <BulletListIcon className="icon" />
           </button>
           <button
             className={`title-bar-btn ${editor?.isActive('taskList') ? 'active' : ''}`}
@@ -274,7 +274,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled || editor?.isActive('heading')}
             data-tooltip="Task List (Cmd+Shift+9)"
           >
-            <TaskListIcon />
+            <TaskListIcon className="icon" />
           </button>
           <button
             className="title-bar-btn"
@@ -304,7 +304,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             }
             data-tooltip="Indent (Tab)"
           >
-            <IndentIcon />
+            <IndentIcon className="icon" />
           </button>
           <button
             className="title-bar-btn"
@@ -334,7 +334,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             }
             data-tooltip="Outdent (Shift+Tab)"
           >
-            <OutdentIcon />
+            <OutdentIcon className="icon" />
           </button>
           <button
             className={`title-bar-btn ${editor?.isActive('blockquote') ? 'active' : ''}`}
@@ -348,7 +348,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             }
             data-tooltip="Blockquote (Cmd+Shift+B)"
           >
-            <QuoteIcon />
+            <QuoteIcon className="icon" />
           </button>
           <button
             className={`title-bar-btn ${editor?.isActive('codeBlock') ? 'active' : ''}`}
@@ -356,7 +356,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled || editor?.isActive('heading')}
             data-tooltip="Code Block (Cmd+Option+C)"
           >
-            <CodeBlockIcon />
+            <CodeBlockIcon className="icon" />
           </button>
 
           <div className="title-bar-divider" />
@@ -368,7 +368,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled || editor?.isActive('heading')}
             data-tooltip="Horizontal Rule"
           >
-            <HRIcon />
+            <HRIcon className="icon" />
           </button>
           <button
             className="title-bar-btn"
@@ -376,7 +376,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled || editor?.isActive('heading') || editor?.isActive('table')}
             data-tooltip="Insert Table"
           >
-            <TableIcon />
+            <TableIcon className="icon" />
           </button>
           <button
             className="title-bar-btn"
@@ -384,7 +384,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled || editor?.isActive('heading')}
             data-tooltip="Insert Image"
           >
-            <ImageIcon />
+            <ImageIcon className="icon" />
           </button>
 
           <div className="title-bar-divider" />
@@ -396,7 +396,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled}
             data-tooltip="Export as PDF (Cmd+Shift+P)"
           >
-            <PdfExportIcon />
+            <PdfExportIcon className="icon" />
           </button>
           <button
             className="title-bar-btn"
@@ -404,7 +404,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             disabled={isDisabled}
             data-tooltip="Close File (Cmd+W)"
           >
-            <CloseFileIcon />
+            <CloseFileIcon className="icon" />
           </button>
         </div>
       </div>

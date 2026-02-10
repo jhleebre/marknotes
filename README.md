@@ -1,11 +1,11 @@
 # MarkNotes
 
 <p align="center">
-  <strong>A simple, local-first markdown editor for macOS</strong>
+  <strong>Just write, forget syntax</strong>
 </p>
 
 <p align="center">
-  Write, organize, and export your notes in a beautiful, distraction-free interface with WYSIWYG editing, advanced table support, and comprehensive formatting tools.
+  A beautiful, local-first markdown editor for macOS that combines the power of markdown with the simplicity of WYSIWYG editing.
 </p>
 
 <p align="center">
@@ -14,746 +14,357 @@
 
 ---
 
-## Changelog
+## What is MarkNotes?
 
-### Version 1.8.0 (2026-02-10)
+MarkNotes is a desktop markdown editor designed for writers who want a distraction-free writing experience without learning markdown syntax. Edit your notes visually like a word processor, while everything is saved as clean, portable markdown files on your Mac.
 
-**Major UI Reorganization**
-
-- Moved all formatting toolbar functionality to the title bar for a cleaner, more integrated interface
-- Platform-aware layout: macOS traffic light buttons on left, Windows/Linux window controls on right
-- All editing controls (headings, bold, italic, lists, tables, links, images, etc.) now accessible from title bar
-- Fast-appearing custom tooltips on all title bar buttons for better discoverability
-- Draggable title bar area for window management (double-click to maximize, drag to move)
-
-**File Tree Simplification**
-
-- Removed header section with "MarkNotes" title and action buttons for cleaner sidebar
-- New file and new folder buttons relocated to title bar
-- More compact and focused file navigation experience
-- Improved visual consistency with simplified design
-
-**Status Bar Enhancement**
-
-- Now displays full relative path from root directory (e.g., "Projects/Notes/test" instead of just "test")
-- Added line counter showing current line and total lines (Line X/Y format)
-- Better context for file location within folder structure
-- .md extension automatically hidden for cleaner display
-
-**Icon System Unification**
-
-- Added new stroke-based icons: Undo, Redo, FilePlus, PdfExport, CloseFile, Sidebar toggle
-- All icons now use consistent 1.5px stroke width for unified visual language
-- Improved icon clarity and modern aesthetic across the entire interface
-
-**Architecture Improvements**
-
-- Implemented custom event system for component communication (TitleBar ↔ Editor ↔ FileTree)
-- Enhanced Zustand store to track current line and total line numbers
-- Removed legacy Toolbar component (~800 lines of code eliminated)
-- Cleaned up formatting toolbar remnants from Editor component
-- Net code reduction of ~1,154 lines while maintaining all functionality
-
-**Code Quality**
-
-- Removed Toolbar.tsx and Toolbar.css (obsolete components)
-- Cleaned up Editor.css by removing 160 lines of unused formatting toolbar styles
-- Removed file tree header styles from FileTree.css
-- Improved component separation and maintainability
-
-### Version 1.7.1 (2026-02-09)
-
-**PDF Export Improvements**
-
-- Fixed task list rendering in PDF exports - checkboxes no longer display bullets
-- Added proper indentation for nested task lists in PDF output
-- Fixed markdown rendering in table cells for PDF exports (bold, italic, links, code, checkboxes now render correctly)
-
-**Task List Enhancements**
-
-- Added support for nested numbered and bullet lists inside task list items
-- Fixed display of mixed list types (checkboxes with regular lists) in both edit and preview modes
-- Improved CSS styling for complex nested list structures
-
-**Test Document Fixes**
-
-- Corrected table of contents anchor link formatting
-- Updated test documents with proper HTML structure for nested checkboxes in tables
-- Improved test documentation for table cell checkbox creation workflow
-
-### Version 1.7.0 (2026-02-09)
-
-**Internal Document Navigation**
-
-- Added support for relative markdown file links - clicking links to other `.md` files now opens them within MarkNotes instead of externally
-- URL-encoded filenames (spaces, special characters) are automatically decoded and resolved
-- Works in both Edit mode (Cmd+Click) and Code/Preview mode (regular click)
-- Seamless navigation between test documents and cross-referenced notes
-
-**Table Improvements**
-
-- Insert Table button now disabled when cursor is inside a table cell (prevents unsupported nested tables)
-- Deleting the last remaining row in a table now removes the entire table (cleaner workflow)
-- Improved context menu behavior for table operations
-
-**Markdown Formatting Fixes**
-
-- Fixed nested formatting in table cells - proper HTML list structures for indented items
-- Corrected checkbox syntax in tables (checkboxes now require text for proper rendering)
-- Fixed range notation using hyphens instead of tildes to avoid strikethrough rendering (e.g., `H1-H6` instead of `H1~H6`)
-- Updated test documents with proper nested list HTML structure in table cells
-
-**Test Document Enhancements**
-
-- Reorganized test document numbering for better flow
-- Updated cross-references and internal links throughout test suite
-- Added comprehensive instructions for creating nested lists in table cells
-- Improved documentation of markdown limitations and workarounds
-
-### Version 1.6.0 (2026-02-08)
-
-**Task List (Checkbox) Support**
-
-- Added interactive checkbox support for task lists in both edit and code modes
-- Click checkboxes to toggle completion status with instant markdown sync (`- [ ]` / `- [x]`)
-- Full support for nested/hierarchical task lists with proper indentation
-- Task lists work seamlessly in table cells alongside other content
-- New toolbar button and context menu item for quick task list insertion
-- Keyboard shortcut: `Cmd+Shift+9` to toggle task lists
-- Tab/Shift+Tab for indenting/outdenting task items
-- Checkbox states preserved when saving, loading, and exporting documents
-
-**Icon Improvements**
-
-- Redesigned task list icon: simplified to clean checkmark + dash combination
-- Simplified all list icons from 3 lines to 2 lines for visual consistency
-- Updated bullet list and ordered list icons with cleaner, more compact design
-- Refined indent/outdent icons with better arrow positioning and 2-line layout
-- All formatting icons now share unified 2-line design language
-
-### Version 1.5.0 (2026-02-08)
-
-**Table Improvements**
-
-- Added automatic row insertion when pressing Tab at the last cell of a table (standard Word/Docs behavior)
-- Table navigation now matches industry-standard editors
-
-**Paste Enhancements**
-
-- Fixed paste behavior to prevent unwanted line breaks when pasting into existing text
-- Improved HTML-to-markdown conversion for clipboard content
-- Added "Copy as Markdown" option in context menu for easy markdown code copying to external editors
-
-**UI/UX Improvements**
-
-- Disabled blockquote formatting in lists (prevents invalid markdown structure)
-- Removed HTML export, simplified to PDF-only export for cleaner workflow
-- Redesigned all icons with modern stroke-based style for visual consistency:
-  - Unified Export, Cut, Copy, Paste, Edit icons with clean line-based design
-  - Updated File, Folder, and FileTree icons for cohesive appearance
-  - Improved icon readability and aesthetics across the entire interface
-
-### Version 1.4.1 (2026-02-06)
-
-**Link Editing Improvements**
-
-- Context menu now displays "Edit Link" when clicking on existing links (previously showed "Add Link")
-- Fixed link editing when right-clicking on a link without text selection
-  - Modal now correctly shows existing link text and URL
-  - Editing link text now replaces the entire link text instead of inserting at cursor position
-  - Link text field is now editable when modifying existing links
-- Enhanced link editing workflow with proper detection of edit vs. insert mode
-
-### Version 1.4.0 (2026-02-05)
-
-**Table Enhancements**
-
-- Added support for block-level markdown in table cells (lists, code blocks, blockquotes, headings)
-- Preserve line breaks and complex formatting in table cells when saving/loading
-- Fixed Tab/Shift-Tab behavior in lists within tables to properly indent/outdent instead of navigating cells
-- Maintain proper HTML entity encoding to prevent table structure breaking
-
-**UI/UX Improvements**
-
-- Replaced individual H1-H6, P buttons with single dropdown selector for cleaner formatting toolbar
-- Redesigned bullet list and ordered list icons for better visibility
-
-### Version 1.3.0 (2026-02-04)
-
-**Formatting Improvements**
-
-- Added heading formatting restrictions: headings now prevent conflicting inline/block formatting
-- Fixed nested ordered list indentation (4 spaces for proper markdown parsing)
-- Added 5-level nested unordered list styling (disc → circle → square → ▫ → ⁃)
-- Blocked backtick auto-conversion to inline code within headings
-
-**UI/UX Enhancements**
-
-- Simplified indent/outdent icons with cleaner arrow design
-- Simplified HTML/PDF export icons focusing on export action
-- Added arrow icons to table context menu for better clarity
-- Fixed AltTextModal styling to match CreateModal appearance
-- Updated indent/outdent tooltips to simpler labels
-- Removed section labels from context menus for cleaner UI
-- Reordered context menu items to match toolbar layout
-
-**Context Menu Improvements**
-
-- Added Cut Image option to image context menu
-- Renamed "Embed Image (Base64)" to "Embed in Document"
-- Enhanced empty area context menu with all formatting options
-- Fixed paste functionality to properly handle cut/copied images
-
-**Bug Fixes**
-
-- Fixed Tab key behavior in lists (no longer indents first item incorrectly)
-- Improved clipboard handling for images in context menu paste
+**Your notes, your files, your control** - No accounts, no cloud, no subscriptions. All your notes live in `~/Documents/MarkNotes/` as plain text files you can access anytime.
 
 ---
 
-## Overview
+## Why Choose MarkNotes?
 
-MarkNotes is a native macOS Electron application designed for markdown enthusiasts who want the best of both worlds: the power of markdown syntax with the convenience of rich text editing. All your notes are stored as plain markdown files in `~/Documents/MarkNotes`, making them portable, version-controllable, and future-proof.
+✨ **Visual Editing** - Write like you're using Word or Pages. Bold, lists, tables, images - all work without remembering syntax.
 
-## Features
+🏠 **Local & Private** - Your notes never leave your computer. No sign-ups, no syncing, no privacy concerns.
 
-### 🎨 **Two Editing Modes**
+⚡ **Fast & Simple** - Opens instantly, auto-saves constantly, and stays out of your way.
 
-- **WYSIWYG Mode (Edit)** - Rich text editing powered by TipTap with instant markdown conversion
-- **Code Mode** - Side-by-side markdown source editor and live preview pane
-- Switch modes seamlessly with `Cmd + 1` (Edit) or `Cmd + 2` (Code)
+📝 **Markdown Power** - Export to PDF, edit the raw markdown if needed, and use your notes anywhere markdown works.
 
-### 📝 **Rich Text Formatting**
+🎨 **Beautiful Design** - Clean interface with automatic dark mode that follows your system preferences.
 
-- **Headings** - H1 through H6 with customized font sizes (24pt to 14pt)
-  - Convenient dropdown selector in toolbar for quick access
-- **Text Styles** - Bold, italic, strikethrough (`Cmd+Shift+X`), inline code
-- **Lists** - Bulleted, numbered, and task lists with proper nesting
-  - **Task Lists** - Interactive checkboxes with click-to-toggle (`Cmd+Shift+9`)
-  - **Indent/Outdent** - Tab/Shift+Tab for list nesting (context-aware)
-  - Smart indentation for regular text outside lists
-  - Checkbox states preserved across save/load/export
-- **Blockquotes** - Stylized quote blocks with accent border
-- **Links** - Interactive hyperlinks with insert modal (`Cmd + K`)
-  - Internal navigation with anchor links (#heading-id)
-  - External links open in default browser
-  - Cmd+Click to follow links in edit mode
-- **Code Blocks** - Syntax-highlighted code with monospace font
-- **Horizontal Rules** - Visual section dividers
+---
 
-### 📊 **Advanced Table Support**
+## Key Features
 
-- **Table Insertion** - Create 3×3 tables instantly from the toolbar
-- **Block-Level Content** - Full support for complex markdown in table cells:
-  - Bulleted and numbered lists (with proper nesting)
-  - Code blocks with syntax highlighting
-  - Blockquotes and headings
-  - Line breaks and multi-paragraph text
-  - All inline formatting (bold, italic, links, images, code)
-- **Right-Click Context Menu** - Full table manipulation:
-  - Add row above/below
-  - Add column left/right
-  - Column alignment (left, center, right)
-  - Delete row/column/table
-- **GFM-Compliant Alignment** - Standard markdown alignment syntax (`:---`, `:---:`, `---:`)
-- **Smart Rendering** - Tables display consistently in edit, preview, and export
-- **Context-Aware Tab Behavior**:
-  - Inside lists: Tab/Shift+Tab for indent/outdent
-  - Outside lists: Tab/Shift+Tab for cell navigation
+### 📝 Write Without Thinking About Syntax
 
-### 🖼️ **Image Management**
+- **WYSIWYG Editing** - Click buttons to format. See your formatting immediately.
+- **Auto-Save** - Changes save automatically 5 seconds after you stop typing. Never lose work.
+- **Two Modes** - Write visually (Edit mode) or see the markdown code side-by-side (Code mode)
+- **Switch Anytime** - Press `Cmd+1` for visual editing or `Cmd+2` for code view
 
-- **File Upload** - Insert images with toolbar button
-  - Supported formats: JPG, PNG, GIF, SVG, WEBP
-  - Automatic storage in `.assets/` folder with unique filenames
-  - Alt text support for accessibility
-- **Image Resizing** - Right-click any image to resize:
-  - Small (300px), Medium (600px), Large (900px), or Original size
-  - Size preferences preserved in markdown
-- **Context Menu Actions**:
-  - Resize to predefined dimensions
-  - Edit alt text
-  - Embed as base64 (makes document fully portable)
-  - Copy image to clipboard
-  - Remove image
-- **Smart Storage** - Images stored as relative paths (`.assets/filename.png`)
-- **Automatic Cleanup** - Remove unused images from .assets folder via menu
-- **Export Compatible** - Images embedded in HTML/PDF exports automatically
+### 🎨 Rich Formatting Made Easy
 
-### 📁 **File Management**
+- **Headings** - Six levels with a simple dropdown selector
+- **Text Styles** - Bold (`Cmd+B`), Italic (`Cmd+I`), Strikethrough, Code
+- **Lists** - Bullet lists, numbered lists, and interactive checkboxes
+- **Links** - Insert links with `Cmd+K`, including internal document links
+- **Blockquotes** - Beautiful styled quotes for emphasis
+- **Code Blocks** - Syntax-highlighted code snippets
+- **Tables** - Full-featured tables with formatting inside cells
 
-- **Sidebar Navigation** - Browse and organize notes in a collapsible file tree
-- **Folders** - Create nested folder structures with drag-and-drop support
-- **Context Menus** - Right-click files/folders to rename or delete
-  - Smart positioning (auto-adjusts to stay on screen)
-  - Auto-close on scroll for better UX
-- **Quick Actions** - `Cmd + N` for new file, `Cmd + Shift + N` for new folder
-- **Persistent State** - Selected file and sidebar state saved between sessions
-- **Clean UI** - `.md` extensions hidden throughout interface for cleaner look
+### 📊 Professional Tables
 
-### 💾 **Smart Auto-Save**
+- **Easy Creation** - Click the table button to insert a 3×3 table
+- **Right-Click Menu** - Add/delete rows and columns, change alignment
+- **Rich Content** - Put lists, code, and formatting inside table cells
+- **Smart Navigation** - Tab to move between cells, automatically adds rows when needed
 
-- Changes automatically saved 5 seconds after typing stops
-- Visual feedback in status bar during save
-- No manual save needed (though `Cmd + S` works too)
-- Prevents data loss with robust debouncing
+### 🖼️ Simple Image Management
 
-### 📤 **Export Options**
+- **Drag & Drop** - Insert images from your desktop
+- **Auto-Organized** - Images stored in `.assets/` folder automatically
+- **Resize Anytime** - Right-click images to resize (small/medium/large/original)
+- **Export Ready** - Images automatically embedded in PDF exports
 
-- **PDF Export** - Production-ready PDF documents with embedded styles (`Cmd + Shift + P`)
-- Exports include all formatting, tables, images, and styles
-- Images automatically embedded as base64 for portability
-- Choose custom save location for each export
+### 📁 Organize Your Notes
 
-### 🌓 **Native macOS Experience**
+- **Folders** - Create nested folders to organize by topic or project
+- **Sidebar** - Browse all your notes in the collapsible file tree
+- **Quick Actions** - `Cmd+N` for new file, `Cmd+Shift+N` for new folder
+- **Drag & Drop** - Move files between folders easily
 
-- **System Appearance** - Automatic dark/light mode following macOS settings
-- **Native Menus** - Standard File, Edit, View, and Help menus
-- **Keyboard Shortcuts** - Full keyboard navigation and commands
-- **Window Management** - Native titlebar and traffic lights
-- **Custom Tooltips** - Fast-appearing tooltips (0.3s delay) on all interactive elements
+### 📤 Export Your Work
 
-### 📊 **Live Statistics**
+- **PDF Export** - Create professional PDFs with one click (`Cmd+Shift+P`)
+- **Formatted Output** - All your styles, images, and tables export perfectly
+- **Save Anywhere** - Choose where to save each export
 
-- Real-time word and character count in status bar
-- Updates as you type without performance impact
-- Accurate markdown-based counting
+### 🌓 Native macOS Experience
 
-## Installation
+- **System Integration** - Follows your dark/light mode preference automatically
+- **Standard Menus** - Familiar File, Edit, and View menus
+- **Keyboard Shortcuts** - Full keyboard control for everything
+- **Fast Tooltips** - Hover over any button to see what it does
 
-### Prerequisites
+---
 
-- macOS 10.15 or later
-- Node.js 18+ (Node.js 25+ recommended)
-- npm or pnpm
+## Download & Install
 
-### Development Setup
+### System Requirements
 
-```bash
-# Clone the repository
-git clone <repository-url>
-cd makrdown-note-app
+- macOS 10.15 (Catalina) or later
+- 100 MB free disk space
 
-# Install dependencies
-npm install
+### Installation
 
-# Start development server with hot reload
-npm run dev
-```
+1. **Download** the latest release from the [releases page](../../releases)
+2. **Open** the downloaded `.dmg` file
+3. **Drag** MarkNotes to your Applications folder
+4. **Launch** MarkNotes from Applications or Spotlight
 
-### Building for Production
+On first launch, MarkNotes creates a `MarkNotes` folder in your Documents and adds a welcome note to help you get started.
 
-```bash
-# Build the application
-npm run build
+---
 
-# Package as macOS application (creates DMG and ZIP)
-npm run build:mac
+## Getting Started
 
-# Package for other platforms
-npm run build:win    # Windows
-npm run build:linux  # Linux
-```
+### Create Your First Note
 
-The built application will be in the `dist/` directory.
+1. Launch MarkNotes
+2. Press `Cmd+N` or click "New File" in the title bar
+3. Choose a location and name for your note
+4. Start writing!
 
-## Usage
+### Format Your Text
 
-### Getting Started
+Use the formatting buttons in the title bar or keyboard shortcuts:
 
-1. Launch MarkNotes - a `~/Documents/MarkNotes` folder is created automatically
-2. Create your first note with `Cmd + N` or click the "New File" button
-3. Start writing in WYSIWYG mode or switch to Code mode with `Cmd + 2`
-4. Organize notes by creating folders with `Cmd + Shift + N`
+- **Bold** - Select text and press `Cmd+B`
+- **Italic** - Select text and press `Cmd+I`
+- **Headings** - Use the dropdown to choose H1-H6
+- **Lists** - Click the list buttons or press `Cmd+Shift+8` for bullets
 
-### Working with Tables
+### Add a Table
 
-1. Click the table icon in the formatting toolbar
-2. A 3×3 table with headers is inserted at your cursor
-3. Right-click any cell to access table operations
-4. Add/remove rows and columns as needed
-5. Tables work seamlessly across all modes and exports
+1. Click the table icon in the title bar
+2. A 3×3 table appears at your cursor
+3. Click in cells to start typing
+4. Press Tab to move to the next cell
+5. Right-click any cell for more options (add/remove rows, change alignment)
 
-### Working with Images
+### Insert Images
 
-1. Click the image icon in the formatting toolbar
-2. Choose an image file from your computer (JPG, PNG, GIF, SVG, WEBP)
-3. Add optional alt text for accessibility
-4. The image is automatically copied to `.assets/` folder and inserted
-5. Right-click any image to resize, edit alt text, embed as base64, or remove
-6. Images are preserved in HTML/PDF exports automatically
-7. Use "Clean Up Unused Images" from the File menu to remove orphaned assets
+1. Click the image icon in the title bar
+2. Select an image file from your computer
+3. Optionally add alt text (description)
+4. Click "Insert Image"
+5. Right-click the image anytime to resize or edit
 
-### Creating Links and Table of Contents
+### Create Links
 
-1. Select text and press `Cmd + K` to insert a link
-2. For internal navigation, use `#heading-id` format (e.g., `#introduction`)
-3. Heading IDs are auto-generated from heading text in lowercase-hyphenated format
-4. Cmd+Click to follow links in edit mode
-5. External links (http/https) open in your default browser
+1. Select the text you want to turn into a link
+2. Press `Cmd+K`
+3. Enter the URL (or `#heading-id` for internal links)
+4. Click "Insert Link"
 
-### Exporting Documents
+### Export to PDF
 
-1. Press `Cmd + Shift + P` or click the PDF export button in the toolbar
-2. Choose your save location in the file picker
-3. Exported PDF includes all formatting, styles, and embedded images
+1. Press `Cmd+Shift+P` or click the PDF export button
+2. Choose where to save your PDF
+3. Done! Your formatted document is ready to share
+
+---
 
 ## Keyboard Shortcuts
 
-### File Operations
+### Files & Navigation
 
-| Action         | Shortcut          |
-| -------------- | ----------------- |
-| New File       | `Cmd + N`         |
-| New Folder     | `Cmd + Shift + N` |
-| Save (manual)  | `Cmd + S`         |
-| Toggle Sidebar | `Cmd + .`         |
-| Close File     | `Cmd + W`         |
+| Action              | Shortcut            |
+| ------------------- | ------------------- |
+| New File            | `Cmd+N`             |
+| New Folder          | `Cmd+Shift+N`       |
+| Force Save          | `Cmd+S`             |
+| Close File          | `Cmd+W`             |
+| Toggle Sidebar      | `Cmd+.`             |
+| Switch to Edit Mode | `Cmd+1`             |
+| Switch to Code Mode | `Cmd+2`             |
+| Export as PDF       | `Cmd+Shift+P`       |
 
-### View Modes
+### Text Formatting
 
-| Mode                   | Shortcut  |
-| ---------------------- | --------- |
-| WYSIWYG Mode (Edit)    | `Cmd + 1` |
-| Code Mode (Split View) | `Cmd + 2` |
+| Action            | Shortcut             |
+| ----------------- | -------------------- |
+| Bold              | `Cmd+B`              |
+| Italic            | `Cmd+I`              |
+| Strikethrough     | `Cmd+Shift+X`        |
+| Inline Code       | `Cmd+E`              |
+| Insert Link       | `Cmd+K`              |
+| Numbered List     | `Cmd+Shift+7`        |
+| Bullet List       | `Cmd+Shift+8`        |
+| Task List         | `Cmd+Shift+9`        |
+| Blockquote        | `Cmd+Shift+B`        |
+| Code Block        | `Cmd+Option+C`       |
+| Heading 1-6       | `Cmd+Option+1-6`     |
+| Normal Paragraph  | `Cmd+Option+0`       |
 
-### Export
+### Editing
 
-| Action        | Shortcut          |
-| ------------- | ----------------- |
-| Export as PDF | `Cmd + Shift + P` |
+| Action             | Shortcut         |
+| ------------------ | ---------------- |
+| Undo               | `Cmd+Z`          |
+| Redo               | `Cmd+Shift+Z`    |
+| Indent (in lists)  | `Tab`            |
+| Outdent (in lists) | `Shift+Tab`      |
 
-### Formatting (WYSIWYG Mode)
+---
 
-| Action          | Shortcut             |
-| --------------- | -------------------- |
-| Bold            | `Cmd + B`            |
-| Italic          | `Cmd + I`            |
-| Strikethrough   | `Cmd + Shift + X`    |
-| Inline Code     | `Cmd + E`            |
-| Insert Link     | `Cmd + K`            |
-| Heading 1-6     | `Cmd + Option + 1-6` |
-| Paragraph       | `Cmd + Option + 0`   |
-| Numbered List   | `Cmd + Shift + 7`    |
-| Bullet List     | `Cmd + Shift + 8`    |
-| Task List       | `Cmd + Shift + 9`    |
-| Increase Indent | `Tab`                |
-| Decrease Indent | `Shift + Tab`        |
-| Blockquote      | `Cmd + Shift + B`    |
-| Code Block      | `Cmd + Option + C`   |
-| Undo            | `Cmd + Z`            |
-| Redo            | `Cmd + Shift + Z`    |
+## Tips & Tricks
 
-## Technical Stack
+### Create a Table of Contents
 
-### Core Technologies
+1. Add headings throughout your document
+2. Create links to those headings using `#heading-id` format
+3. Heading IDs are automatically generated (lowercase, with hyphens)
+   - "Getting Started" becomes `#getting-started`
+   - "Tips & Tricks" becomes `#tips--tricks`
 
-- **Electron** - Cross-platform desktop framework
-- **React 18** - UI framework with hooks and modern patterns
-- **TypeScript** - Type-safe development
-- **Vite** - Fast build tool and dev server via electron-vite
-- **TipTap** - Headless WYSIWYG editor built on ProseMirror
+### Organize with Folders
 
-### Key Libraries
+- Create folders for different projects or topics
+- Drag files between folders to reorganize
+- Right-click folders for quick actions (new file, rename, delete)
 
-- **State Management**: Zustand (lightweight, no boilerplate)
-- **Markdown Parsing**: Marked.js with GFM support
-- **Markdown Generation**: Turndown with custom table rules
-- **Table Extensions**: @tiptap/extension-table suite
-- **PDF Generation**: Electron's built-in printToPDF API
-- **File System**: Node.js fs/promises with secure IPC
-- **File Watching**: Chokidar for detecting external changes
+### Work Faster with Shortcuts
 
-## Architecture
+- Learn a few key shortcuts (`Cmd+B`, `Cmd+I`, `Cmd+K`) to speed up formatting
+- Use `Tab` and `Shift+Tab` to indent/outdent list items quickly
+- Press `Cmd+1` and `Cmd+2` to switch between edit and code modes
 
-### Project Structure
+### Make Links Clickable
 
-```
-src/
-├── main/                      # Electron Main Process (Node.js)
-│   ├── index.ts              # Application lifecycle, window management
-│   ├── fileSystem.ts         # File I/O operations, IPC handlers
-│   └── menu.ts               # Native menu bar configuration
-│
-├── preload/                   # Preload Scripts (Context Bridge)
-│   ├── index.ts              # Secure API exposure to renderer
-│   └── index.d.ts            # TypeScript type declarations
-│
-└── renderer/                  # Renderer Process (React)
-    └── src/
-        ├── components/        # React Components
-        │   ├── Editor.tsx    # Main editor with TipTap integration
-        │   ├── Editor.css    # Editor and formatting styles
-        │   ├── TitleBar.tsx  # Integrated title bar with all controls
-        │   ├── TitleBar.css  # Title bar and tooltip styles
-        │   ├── FileTree.tsx  # Sidebar file/folder browser
-        │   ├── FileTree.css  # File tree styles
-        │   ├── StatusBar.tsx # File path, line counter, word/character count
-        │   ├── LinkModal.tsx # Link insertion modal
-        │   ├── ImageModal.tsx # Image insertion modal
-        │   ├── ImageModal.css # Image modal styles
-        │   └── CreateModal.tsx # File/folder creation modal
-        │
-        ├── hooks/
-        │   └── useAutoSave.ts # Debounced auto-save logic
-        │
-        ├── store/
-        │   └── useDocumentStore.ts # Zustand state management
-        │
-        ├── utils/
-        │   └── icons.tsx     # Unified icon system with stroke-based design
-        │
-        ├── App.tsx           # Root component and layout
-        ├── App.css           # Global styles and CSS variables
-        └── main.tsx          # React entry point
-```
+- In Edit mode: Hold `Cmd` and click a link to follow it
+- In Code mode: Just click the link in the preview pane
+- External links open in your default browser
 
-### Component Architecture
+### Clean Up Unused Images
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│                          App.tsx                             │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │                      TitleBar                          │  │
-│  │  [New] [New Folder] [Sidebar] [Undo/Redo]              │  │
-│  │  [H▼] [B] [I] [Link] [Table] [List...] [Mode] [PDF]    │  │
-│  └────────────────────────────────────────────────────────┘  │
-│  ┌──────────┬─────────────────────────────────────────────┐  │
-│  │          │                                             │  │
-│  │ FileTree │              Editor                         │  │
-│  │          │                                             │  │
-│  │ [Folders]│  ┌───────────────────────────────────────┐  │  │
-│  │ [Files]  │  │                                       │  │  │
-│  │          │  │   WYSIWYG: TipTap Editor              │  │  │
-│  │          │  │   Code: Markdown + Preview Split      │  │  │
-│  │          │  │                                       │  │  │
-│  │          │  └───────────────────────────────────────┘  │  │
-│  └──────────┴─────────────────────────────────────────────┘  │
-│  ┌────────────────────────────────────────────────────────┐  │
-│  │                    StatusBar                           │  │
-│  │  Projects/Notes/test | Line 5/23 | 123 words | 456 chars  │
-│  └────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────┘
-```
+- Go to **File > Clean Up Unused Images**
+- MarkNotes removes images that aren't used in any notes
+- Keeps your `.assets` folder tidy
 
-### IPC Communication Flow
+---
 
-```
-┌──────────────────────┐                    ┌───────────────────────┐
-│   Renderer Process   │                    │    Main Process       │
-│     (React App)      │                    │     (Node.js)         │
-├──────────────────────┤                    ├───────────────────────┤
-│                      │                    │                       │
-│  window.api.file     │  ─── invoke ────►  │ ipcMain.handle()      │
-│   .list()            │                    │   'file:list'         │
-│   .read()            │                    │   'file:read'         │
-│   .write()           │                    │   'file:write'        │
-│   .create()          │                    │   'file:create'       │
-│   .delete()          │                    │   'file:delete'       │
-│   .rename()          │                    │   'file:rename'       │
-│   .move()            │                    │   'file:move'         │
-│                      │                    │                       │
-│  window.api.shell    │  ─── invoke ────►  │ ipcMain.handle()      │
-│   .openExternal()    │                    │   'shell:openExternal'│
-│                      │                    │                       │
-│  window.api.export   │  ─── invoke ────►  │ ipcMain.handle()      │
-│   .pdf()             │                    │   'export:pdf'        │
-│                      │                    │                       │
-│  window.api.image    │  ─── invoke ────►  │ ipcMain.handle()      │
-│   .upload()          │                    │   'image:upload'      │
-│   .embedBase64()     │                    │   'image:embedBase64' │
-│   .cleanup()         │                    │   'image:cleanup'     │
-│                      │                    │                       │
-│  window.api.menu     │  ◄─── send ──────  │ webContents.send()    │
-│   .onNewFile()       │                    │   'menu:new-file'     │
-│   .onNewFolder()     │                    │   'menu:new-folder'   │
-│   .onSave()          │                    │   'menu:save'         │
-│   .onCleanupImages() │                    │   'menu:cleanupImages'│
-│                      │                    │                       │
-└──────────────────────┘                    └───────────────────────┘
-           ▲                                          │
-           │                                          │
-           │         Preload Script                   │
-           │         (context bridge)                 │
-           └──────────────────────────────────────────┘
-                  Security boundary
-```
+## Frequently Asked Questions
 
-### Data Flow
+### Where are my notes stored?
 
-1. **File Loading**: FileTree → window.api → IPC → Main Process → fs.readdir
-2. **File Reading**: User clicks file → IPC → fs.readFile → Store → Editor
-3. **Auto-Save**: Editor onChange → debounce → Store → IPC → fs.writeFile
-4. **Export**: Toolbar button → generate HTML/PDF → IPC → dialog + save
+All notes are saved in `~/Documents/MarkNotes/` as plain `.md` (markdown) files. You can access them directly from Finder anytime.
 
-## Development
+### Can I use my notes with other apps?
 
-### Running the App
+Yes! MarkNotes uses standard markdown files. You can edit them in any text editor, view them on GitHub, or use them with other markdown apps.
 
-```bash
-# Development mode with hot reload
-npm run dev
+### Does MarkNotes sync to the cloud?
 
-# The app will open automatically
-# Changes to renderer code hot-reload instantly
-# Changes to main process require restart
-```
+No, MarkNotes is local-only by design. This keeps your notes private and fast. If you want cloud backup, you can:
+- Use iCloud to sync your Documents folder
+- Copy the MarkNotes folder to Dropbox or similar
+- Use Git to version control your notes
 
-### Type Checking
+### Can I customize the appearance?
 
-```bash
-# Check all TypeScript types
-npm run typecheck
+MarkNotes automatically follows your system dark/light mode. The interface uses standard macOS styling for a native feel.
 
-# Check main process only
-npm run typecheck:node
+### What about Windows or Linux?
 
-# Check renderer process only
-npm run typecheck:web
-```
+MarkNotes is currently macOS-only, but the technology (Electron) supports other platforms. Windows and Linux versions may be added in the future.
 
-### Code Style
+### How do I backup my notes?
 
-The project uses ESLint and Prettier (configured via ESLint):
+Your notes are just files in `~/Documents/MarkNotes/`. You can:
+- Use Time Machine (automatic on macOS)
+- Copy the folder to an external drive
+- Use cloud storage (Dropbox, Google Drive, etc.)
+- Use Git for version control
 
-```bash
-# Lint all files
-npm run lint
+### Is my data safe?
 
-# Auto-fix linting issues
-npm run lint -- --fix
-```
+Yes! MarkNotes:
+- Never sends data anywhere (no internet connection needed)
+- Doesn't collect any analytics or telemetry
+- Auto-saves every 5 seconds to prevent data loss
+- Stores everything as plain text files you control
 
-### File Storage Details
-
-- **Root Directory**: `~/Documents/MarkNotes/`
-- **File Format**: Plain text `.md` files with UTF-8 encoding
-- **Folder Structure**: Nested folders supported, follows filesystem hierarchy
-- **Welcome Note**: Created on first launch with app instructions
-- **Metadata**: No database, all info derived from filesystem
-
-### Security Features
-
-- **Context Isolation**: Enabled to prevent renderer access to Node.js
-- **Node Integration**: Disabled in renderer for security
-- **IPC Whitelist**: Only explicitly exposed APIs available
-- **Path Validation**: All file paths validated to prevent traversal attacks
-- **Sandbox Mode**: Renderer process runs in sandboxed environment
-
-## Technical Decisions
-
-### Why TipTap?
-
-- **Rich Extension Ecosystem** - Official table, list, and formatting extensions
-- **ProseMirror Foundation** - Robust, battle-tested document model
-- **React-First API** - Hooks-based integration with React
-- **Markdown Support** - Built-in markdown shortcuts and conversion
-- **Active Development** - Regular updates and strong community
-
-### Why Zustand Over Redux?
-
-- **Minimal Boilerplate** - No actions, reducers, or complex setup
-- **Built-in TypeScript** - Excellent type inference out of the box
-- **No Context Providers** - Direct store access from any component
-- **Performance** - Automatic shallow comparison prevents re-renders
-- **Size** - Only 2KB, perfect for this application scale
-
-### Why Local-First Architecture?
-
-- **Privacy by Design** - No cloud, no accounts, no data collection
-- **Instant Startup** - No network requests or authentication
-- **Works Offline** - Full functionality without internet
-- **Git-Friendly** - Plain markdown files work with version control
-- **Data Ownership** - Users have complete control over their files
-- **Portability** - Easy to backup, sync, or migrate notes
-
-### Why Electron Over Other Options?
-
-- **Native APIs** - Full access to filesystem, menus, and system integration
-- **Cross-Platform** - Single codebase for macOS, Windows, and Linux
-- **Web Technologies** - Leverage React, TypeScript, and modern tooling
-- **Mature Ecosystem** - Extensive libraries and community support
-
-## Customization
-
-### Theming
-
-Colors are defined as CSS variables in `src/renderer/src/App.css`:
-
-```css
-/* Light mode variables */
---bg-primary: #ffffff;
---text-primary: #1a1a1a;
---accent-color: #007aff;
-/* ... more variables */
-```
-
-Dark mode automatically switches based on system preferences using `prefers-color-scheme: dark`.
-
-### Default Fonts
-
-- **Body Text**: -apple-system, SF Pro, 12pt
-- **Headings**: SF Pro, 600 weight, 14-24pt
-  - H1: 24pt, H2: 22pt, H3: 20pt, H4: 18pt, H5: 16pt, H6: 14pt
-- **Code**: SF Mono, Monaco, Courier New
-
-### Storage Location
-
-To change the default storage location, modify `NOTES_DIR` in `src/main/fileSystem.ts`:
-
-```typescript
-const NOTES_DIR = join(homedir(), 'Documents', 'MarkNotes')
-```
+---
 
 ## Troubleshooting
 
-### App Won't Start
+### The app won't open
 
-- Verify Node.js version: `node --version` (should be 18+)
-- Clear dependencies: `rm -rf node_modules package-lock.json && npm install`
-- Check for port conflicts: default dev server uses port 5173
+- Make sure you're running macOS 10.15 or later
+- Try moving MarkNotes to your Applications folder
+- Check System Preferences > Security & Privacy if macOS blocks it
 
-### Files Not Saving
+### My files aren't showing up
 
-- Check file permissions in `~/Documents/MarkNotes/`
-- Look for errors in console: open DevTools with `Cmd + Option + I`
-- Verify disk space availability
+- Look in `~/Documents/MarkNotes/` in Finder to verify files exist
+- Click the sidebar toggle button (`Cmd+.`) if the sidebar is hidden
+- Only `.md` files are shown (other file types are filtered out)
 
-### Tables Not Rendering
+### Auto-save isn't working
 
-- Ensure you're using GFM-compliant table syntax
-- Tables need header row with separator: `| --- | --- |`
-- Switch modes to refresh rendering: `Cmd + 2` then `Cmd + 1`
+- Check that you have write permissions for `~/Documents/MarkNotes/`
+- Look at the status bar - it shows "Saving..." when auto-saving
+- Force save with `Cmd+S` to test if saving works at all
 
-### Export Issues
+### Tables look wrong
 
-- PDF export requires Chromium rendering engine (built into Electron)
-- HTML export includes inline CSS for portability
-- Check write permissions in target export directory
+- Make sure your table has a header row with separators (`| --- |`)
+- Try switching to Code mode (`Cmd+2`) and back to Edit mode (`Cmd+1`)
+- Check that cells don't have conflicting formatting
 
-## Roadmap
+### Images aren't showing
 
-Potential future features (contributions welcome):
+- Images are stored in the `.assets/` folder next to your notes
+- Make sure images are in supported formats (JPG, PNG, GIF, SVG, WEBP)
+- Check file permissions in the `.assets/` folder
 
-- [ ] Multiple windows/tabs support
-- [ ] Tag-based organization
-- [ ] Full-text search across all notes
-- [ ] Vim keybindings mode
-- [ ] Custom CSS themes
-- [ ] Cloud sync integration (optional)
-- [ ] Collaborative editing
-- [ ] Mobile companion app
+### PDF export isn't working
 
-## Contributing
+- Make sure you have write permissions in your chosen save location
+- Check that you have enough disk space
+- Try exporting to a different location (like Desktop)
 
-Contributions are welcome! Please feel free to submit issues or pull requests.
+---
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+## Need More Help?
+
+- **Bug Reports** - Found a problem? [Open an issue](../../issues)
+- **Feature Requests** - Have an idea? [Start a discussion](../../discussions)
+- **Questions** - Need help? [Ask in discussions](../../discussions)
+
+---
+
+## For Developers
+
+MarkNotes is built with Electron, React, and TypeScript. The codebase is open source.
+
+### Tech Stack
+
+- **Electron** - Desktop framework
+- **React 19** - UI framework
+- **TypeScript** - Type safety
+- **TipTap** - WYSIWYG editor
+- **Marked** - Markdown parser
+- **Zustand** - State management
+
+### Development
+
+```bash
+# Clone and install
+git clone <repository-url>
+npm install
+
+# Run dev server
+npm run dev
+
+# Build for production
+npm run build:mac
+```
+
+For detailed development information, see [CLAUDE.md](CLAUDE.md).
+
+---
 
 ## License
 
-MIT License - see LICENSE file for details
+MIT License - You're free to use, modify, and distribute MarkNotes.
+
+---
+
+<p align="center">
+  Made with ❤️ for markdown enthusiasts
+</p>
