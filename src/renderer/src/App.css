@@ -9,10 +9,16 @@
   --border-color: #d2d2d7;
   --border-hover: #b8b8bc;
   --accent-color: #007aff;
+  --primary-color: #007aff;
+  --primary-hover: #0051d5;
+  --primary-color-alpha: rgba(0, 122, 255, 0.1);
   --hover-bg: rgba(0, 0, 0, 0.04);
+  --active-bg: rgba(0, 0, 0, 0.08);
   --selected-bg: rgba(0, 122, 255, 0.1);
   --scrollbar-thumb: rgba(0, 0, 0, 0.2);
   --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
+  --tooltip-bg: rgba(0, 0, 0, 0.85);
+  --tooltip-text: #ffffff;
 }
 
 /* CSS Variables - Dark Mode */
@@ -26,10 +32,16 @@
   --border-color: #3a3a3c;
   --border-hover: #48484a;
   --accent-color: #0a84ff;
+  --primary-color: #0a84ff;
+  --primary-hover: #0070e0;
+  --primary-color-alpha: rgba(10, 132, 255, 0.15);
   --hover-bg: rgba(255, 255, 255, 0.05);
+  --active-bg: rgba(255, 255, 255, 0.1);
   --selected-bg: rgba(10, 132, 255, 0.2);
   --scrollbar-thumb: rgba(255, 255, 255, 0.2);
   --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
+  --tooltip-bg: rgba(0, 0, 0, 0.9);
+  --tooltip-text: #ffffff;
 }
 
 /* Global Styles */
@@ -59,8 +71,15 @@ body {
 /* App Layout */
 .app {
   display: flex;
+  flex-direction: column;
   height: 100%;
   width: 100%;
+  overflow: hidden;
+}
+
+.app-body {
+  display: flex;
+  flex: 1;
   overflow: hidden;
 }
 

@@ -23,6 +23,8 @@ export interface DocumentState {
   saveStatus: SaveStatus
   wordCount: number
   charCount: number
+  currentLine: number
+  totalLines: number
 
   // UI state
   isSidebarVisible: boolean
@@ -41,6 +43,7 @@ export interface DocumentState {
   setMode: (mode: EditorMode) => void
   setSaveStatus: (status: SaveStatus) => void
   updateCounts: (content: string) => void
+  setLineNumbers: (current: number, total: number) => void
 
   toggleSidebar: () => void
   setIsDarkMode: (isDark: boolean) => void
@@ -67,6 +70,8 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   saveStatus: 'saved',
   wordCount: 0,
   charCount: 0,
+  currentLine: 1,
+  totalLines: 1,
 
   // UI state
   isSidebarVisible: true,
@@ -105,8 +110,12 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
     const text = content.trim()
     const words = text ? text.split(/\s+/).length : 0
     const chars = text.length
-    set({ wordCount: words, charCount: chars })
+    // Calculate total lines from content
+    const lines = content ? content.split('\n').length : 1
+    set({ wordCount: words, charCount: chars, totalLines: lines })
   },
+
+  setLineNumbers: (current, total): void => set({ currentLine: current, totalLines: total }),
 
   toggleSidebar: (): void => set((state) => ({ isSidebarVisible: !state.isSidebarVisible })),
 

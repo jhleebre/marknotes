@@ -1,0 +1,168 @@
+.title-bar {
+  position: relative;
+  height: 46px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  z-index: 100;
+  overflow: visible;
+}
+
+.title-bar-drag-region {
+  -webkit-app-region: drag;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  overflow: visible;
+}
+
+/* macOS: add left padding for traffic light buttons */
+.title-bar.darwin .title-bar-drag-region {
+  padding-left: 120px;
+}
+
+/* Windows/Linux: add right padding for window controls */
+.title-bar.win32 .title-bar-drag-region,
+.title-bar.linux .title-bar-drag-region {
+  padding-right: 140px;
+}
+
+.title-bar-section {
+  -webkit-app-region: no-drag;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: visible;
+}
+
+.title-bar-left {
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+/* Hide scrollbar */
+.title-bar-left::-webkit-scrollbar {
+  display: none;
+}
+
+.title-bar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.title-bar-btn:hover:not(:disabled) {
+  background: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+.title-bar-btn:active:not(:disabled) {
+  background: var(--active-bg);
+  transform: scale(0.95);
+}
+
+.title-bar-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.title-bar-btn.active {
+  background: var(--primary-color);
+  color: white;
+}
+
+.title-bar-btn.active:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.title-bar-select {
+  height: 32px;
+  padding: 0 28px 0 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  min-width: 120px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+
+.title-bar-select:hover:not(:disabled) {
+  border-color: var(--primary-color);
+}
+
+.title-bar-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-alpha);
+}
+
+.title-bar-select:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.title-bar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-color);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* Tooltip */
+.title-bar-btn[data-tooltip]:hover::after,
+.title-bar-select[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -16px;
+  left: relative;
+  padding: 4px 8px;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  font-size: 11px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Dark mode adjustments */
+:root.dark .title-bar-select {
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* Responsive: hide some buttons on smaller screens */
+@media (max-width: 1200px) {
+  .title-bar-btn[data-tooltip*='Indent'],
+  .title-bar-btn[data-tooltip*='Outdent'] {
+    display: none;
+  }
+}
+
+@media (max-width: 1000px) {
+  .title-bar-btn[data-tooltip*='Strikethrough'],
+  .title-bar-btn[data-tooltip*='Inline Code'] {
+    display: none;
+  }
+}

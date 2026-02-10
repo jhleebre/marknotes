@@ -9,12 +9,57 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.7.1</strong>
+  <strong>Version 1.8.0</strong>
 </p>
 
 ---
 
 ## Changelog
+
+### Version 1.8.0 (2026-02-10)
+
+**Major UI Reorganization**
+
+- Moved all formatting toolbar functionality to the title bar for a cleaner, more integrated interface
+- Platform-aware layout: macOS traffic light buttons on left, Windows/Linux window controls on right
+- All editing controls (headings, bold, italic, lists, tables, links, images, etc.) now accessible from title bar
+- Fast-appearing custom tooltips on all title bar buttons for better discoverability
+- Draggable title bar area for window management (double-click to maximize, drag to move)
+
+**File Tree Simplification**
+
+- Removed header section with "MarkNotes" title and action buttons for cleaner sidebar
+- New file and new folder buttons relocated to title bar
+- More compact and focused file navigation experience
+- Improved visual consistency with simplified design
+
+**Status Bar Enhancement**
+
+- Now displays full relative path from root directory (e.g., "Projects/Notes/test" instead of just "test")
+- Added line counter showing current line and total lines (Line X/Y format)
+- Better context for file location within folder structure
+- .md extension automatically hidden for cleaner display
+
+**Icon System Unification**
+
+- Added new stroke-based icons: Undo, Redo, FilePlus, PdfExport, CloseFile, Sidebar toggle
+- All icons now use consistent 1.5px stroke width for unified visual language
+- Improved icon clarity and modern aesthetic across the entire interface
+
+**Architecture Improvements**
+
+- Implemented custom event system for component communication (TitleBar ↔ Editor ↔ FileTree)
+- Enhanced Zustand store to track current line and total line numbers
+- Removed legacy Toolbar component (~800 lines of code eliminated)
+- Cleaned up formatting toolbar remnants from Editor component
+- Net code reduction of ~1,154 lines while maintaining all functionality
+
+**Code Quality**
+
+- Removed Toolbar.tsx and Toolbar.css (obsolete components)
+- Cleaned up Editor.css by removing 160 lines of unused formatting toolbar styles
+- Removed file tree header styles from FileTree.css
+- Improved component separation and maintainability
 
 ### Version 1.7.1 (2026-02-09)
 
@@ -439,11 +484,11 @@ src/
         ├── components/        # React Components
         │   ├── Editor.tsx    # Main editor with TipTap integration
         │   ├── Editor.css    # Editor and formatting styles
+        │   ├── TitleBar.tsx  # Integrated title bar with all controls
+        │   ├── TitleBar.css  # Title bar and tooltip styles
         │   ├── FileTree.tsx  # Sidebar file/folder browser
         │   ├── FileTree.css  # File tree styles
-        │   ├── Toolbar.tsx   # Mode switcher and export controls
-        │   ├── Toolbar.css   # Toolbar and tooltip styles
-        │   ├── StatusBar.tsx # Word/character count display
+        │   ├── StatusBar.tsx # File path, line counter, word/character count
         │   ├── LinkModal.tsx # Link insertion modal
         │   ├── ImageModal.tsx # Image insertion modal
         │   ├── ImageModal.css # Image modal styles
@@ -455,6 +500,9 @@ src/
         ├── store/
         │   └── useDocumentStore.ts # Zustand state management
         │
+        ├── utils/
+        │   └── icons.tsx     # Unified icon system with stroke-based design
+        │
         ├── App.tsx           # Root component and layout
         ├── App.css           # Global styles and CSS variables
         └── main.tsx          # React entry point
@@ -463,30 +511,29 @@ src/
 ### Component Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                          App.tsx                            │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │                      Toolbar                          │  │
-│  │  [View Mode Selector] [Export PDF] [Close]            │  │
-│  └───────────────────────────────────────────────────────┘  │
-│  ┌──────────┬────────────────────────────────────────────┐  │
-│  │          │                                            │  │
-│  │ FileTree │              Editor                        │  │
-│  │          │  ┌──────────────────────────────────────┐  │  │
-│  │ [Folders]│  │     FormattingToolbar                │  │  │
-│  │ [Files]  │  │  [H1-H6] [B] [I] [Link] [Table]...   │  │  │
-│  │          │  ├──────────────────────────────────────┤  │  │
-│  │          │  │                                      │  │  │
-│  │          │  │   WYSIWYG: TipTap Editor             │  │  │
-│  │          │  │   Code: Markdown + Preview Split     │  │  │
-│  │          │  │                                      │  │  │
-│  │          │  └──────────────────────────────────────┘  │  │
-│  └──────────┴────────────────────────────────────────────┘  │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │                    StatusBar                          │  │
-│  │  Words: 123 | Characters: 456 | Auto-saved ✓          │  │
-│  └───────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                          App.tsx                             │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │                      TitleBar                          │  │
+│  │  [New] [New Folder] [Sidebar] [Undo/Redo]              │  │
+│  │  [H▼] [B] [I] [Link] [Table] [List...] [Mode] [PDF]    │  │
+│  └────────────────────────────────────────────────────────┘  │
+│  ┌──────────┬─────────────────────────────────────────────┐  │
+│  │          │                                             │  │
+│  │ FileTree │              Editor                         │  │
+│  │          │                                             │  │
+│  │ [Folders]│  ┌───────────────────────────────────────┐  │  │
+│  │ [Files]  │  │                                       │  │  │
+│  │          │  │   WYSIWYG: TipTap Editor              │  │  │
+│  │          │  │   Code: Markdown + Preview Split      │  │  │
+│  │          │  │                                       │  │  │
+│  │          │  └───────────────────────────────────────┘  │  │
+│  └──────────┴─────────────────────────────────────────────┘  │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │                    StatusBar                           │  │
+│  │  Projects/Notes/test | Line 5/23 | 123 words | 456 chars  │
+│  └────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ### IPC Communication Flow

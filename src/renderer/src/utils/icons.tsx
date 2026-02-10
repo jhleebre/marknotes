@@ -394,8 +394,8 @@ export function FileIcon(): React.JSX.Element {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6L9 2z" />
-      <path d="M9 2v4h4" />
+      <path d="M8.5 2H3.5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1V5.5L8.5 2z" />
+      <path d="M8.5 2v3.5H13.5" />
     </svg>
   )
 }
@@ -412,7 +412,7 @@ export function FolderIcon(): React.JSX.Element {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M2 4a1 1 0 0 1 1-1h3l2 2h5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z" />
+      <path d="M2.5 5.5v7a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1h-4.5l-1.5-1.5h-3a1 1 0 0 0-1 1v1.5z" />
     </svg>
   )
 }
@@ -570,6 +570,132 @@ export function ArrowRightIcon(): React.JSX.Element {
         fillRule="evenodd"
         d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8z"
       />
+    </svg>
+  )
+}
+
+export function UndoIcon(): React.JSX.Element {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 7h9a3 3 0 0 1 0 6h-4" />
+      <path d="M6 4L3 7l3 3" />
+    </svg>
+  )
+}
+
+export function RedoIcon(): React.JSX.Element {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M13 7H4a3 3 0 0 0 0 6h4" />
+      <path d="M10 4l3 3-3 3" />
+    </svg>
+  )
+}
+
+export function FilePlusIcon(): React.JSX.Element {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M9 2H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V6L9 2z" />
+      <path d="M9 2v4h4" />
+      <path d="M8 9v4M6 11h4" />
+    </svg>
+  )
+}
+
+export function PdfExportIcon(): React.JSX.Element {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M5.5 1.5h-3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-3" />
+      <path d="M9.5 1.5h5v5" />
+      <path d="M14.5 1.5l-7 7" />
+    </svg>
+  )
+}
+
+export function CloseFileIcon(): React.JSX.Element {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 4L4 12M4 4l8 8" />
+    </svg>
+  )
+}
+
+export function SidebarIcon(): React.JSX.Element {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="1.5" y="1.5" width="13" height="13" rx="1" />
+      <path d="M5.5 1.5v13" />
+    </svg>
+  )
+}
+
+export function SidebarHiddenIcon(): React.JSX.Element {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="1.5" y="1.5" width="13" height="13" rx="1" />
     </svg>
   )
 }

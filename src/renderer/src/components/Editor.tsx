@@ -874,9 +874,10 @@ turndownService.addRule('imageWithSize', {
 
 interface EditorProps {
   onReady?: () => void
+  onEditorReady?: (editor: TipTapEditor) => void
 }
 
-export function Editor({ onReady }: EditorProps): React.JSX.Element {
+export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Element {
   const {
     mode,
     content,
@@ -886,7 +887,8 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
     currentFilePath,
     setCurrentFile,
     setOriginalContent,
-    setIsLoadingContent
+    setIsLoadingContent,
+    setLineNumbers
   } = useDocumentStore()
   const isUpdatingFromMarkdown = useRef(false)
   const lastMarkdownContent = useRef('')
@@ -904,6 +906,20 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
     currentAlt: string
     imagePos: number
   }>({ isOpen: false, currentAlt: '', imagePos: -1 })
+  const [linkModalOpen, setLinkModalOpen] = useState(false)
+  const [linkModalData, setLinkModalData] = useState<{
+    text: string
+    url: string
+    isEditing: boolean
+  }>({
+    text: '',
+    url: '',
+    isEditing: false
+  })
+  const [imageModalOpen, setImageModalOpen] = useState(false)
+  const [imageModalData, setImageModalData] = useState<{ alt: string }>({
+    alt: ''
+  })
 
   const editor = useEditor({
     extensions: [
@@ -1218,9 +1234,38 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
         updateCounts(markdown)
       }
     },
-    onSelectionUpdate: () => {
+    onSelectionUpdate: ({ editor }) => {
       // Force re-render to update toolbar button states when cursor moves
       forceUpdate({})
+
+      // Update line numbers
+      const { state } = editor
+      const { selection } = state
+      const { $from } = selection
+
+      // Calculate current line number (1-indexed)
+      let currentLine = 1
+      state.doc.forEach((node, offset) => {
+        if (offset < $from.pos) {
+          const text = node.textContent
+          currentLine += (text.match(/\n/g) || []).length
+          if (node.type.name === 'paragraph' || node.type.name === 'heading') {
+            currentLine++
+          }
+        }
+      })
+
+      // Calculate total lines
+      let totalLines = 0
+      state.doc.forEach((node) => {
+        const text = node.textContent
+        totalLines += (text.match(/\n/g) || []).length
+        if (node.type.name === 'paragraph' || node.type.name === 'heading') {
+          totalLines++
+        }
+      })
+
+      setLineNumbers(currentLine, Math.max(1, totalLines))
     }
   })
 
@@ -1243,10 +1288,22 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
 
   // Notify when editor is ready
   useEffect(() => {
-    if (editor && onReady) {
-      onReady()
+    if (editor) {
+      if (onReady) {
+        onReady()
+      }
+      if (onEditorReady) {
+        onEditorReady(editor)
+      }
     }
-  }, [editor, onReady])
+  }, [editor, onReady, onEditorReady])
+
+  // Calculate counts when content is first loaded
+  useEffect(() => {
+    if (currentFilePath && content) {
+      updateCounts(content)
+    }
+  }, [currentFilePath]) // Only run when file changes, not on every content update
 
   // Close context menu on click outside
   useEffect(() => {
@@ -1302,6 +1359,243 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
     },
     [editor, setContent, updateCounts]
   )
+
+  // Insert table
+  const insertTable = useCallback((): void => {
+    if (!editor) return
+    editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+  }, [editor])
+
+  // Handle link button click
+  const handleLinkButtonClick = useCallback((): void => {
+    if (!editor) return
+    const { state } = editor
+    const { from, to, $from } = state.selection
+    let selectedText = state.doc.textBetween(from, to, '')
+
+    // Get existing link URL if selection is within a link
+    const linkAttrs = editor.getAttributes('link')
+    const existingUrl = linkAttrs.href || ''
+
+    // If cursor is inside a link (not just a selection), extract the full link text
+    if (!selectedText && editor.isActive('link')) {
+      const marks = $from.marks()
+      const linkMark = marks.find((mark) => mark.type.name === 'link')
+
+      if (linkMark) {
+        let linkStart = from
+        let linkEnd = from
+
+        // Scan backward
+        let pos = from - 1
+        while (pos >= 0) {
+          const resolvedPos = state.doc.resolve(pos)
+          const marksAtPos = resolvedPos.marks()
+          if (
+            !marksAtPos.some((m) => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)
+          ) {
+            linkStart = pos + 1
+            break
+          }
+          pos--
+        }
+        if (pos < 0) linkStart = 0
+
+        // Scan forward
+        pos = from
+        const docSize = state.doc.content.size
+        while (pos < docSize) {
+          const resolvedPos = state.doc.resolve(pos)
+          const marksAtPos = resolvedPos.marks()
+          if (
+            !marksAtPos.some((m) => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)
+          ) {
+            linkEnd = pos
+            break
+          }
+          pos++
+        }
+        if (pos >= docSize) linkEnd = docSize
+
+        selectedText = state.doc.textBetween(linkStart, linkEnd, '')
+      }
+    }
+
+    setLinkModalData({
+      text: selectedText,
+      url: existingUrl,
+      isEditing: editor.isActive('link')
+    })
+    setLinkModalOpen(true)
+  }, [editor])
+
+  // Handle link insert
+  const handleLinkInsert = useCallback(
+    (text: string, url: string): void => {
+      if (!editor) return
+      const { state } = editor
+      const { from, to, $from } = state.selection
+      const hasSelection = from !== to
+
+      const isEditingLink = editor.isActive('link')
+
+      if (isEditingLink && !hasSelection) {
+        const marks = $from.marks()
+        const linkMark = marks.find((mark) => mark.type.name === 'link')
+
+        if (linkMark) {
+          let linkStart = from
+          let linkEnd = from
+
+          let pos = from - 1
+          while (pos >= 0) {
+            const resolvedPos = state.doc.resolve(pos)
+            const marksAtPos = resolvedPos.marks()
+            if (
+              !marksAtPos.some(
+                (m) => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href
+              )
+            ) {
+              linkStart = pos + 1
+              break
+            }
+            pos--
+          }
+          if (pos < 0) linkStart = 0
+
+          pos = from
+          const docSize = state.doc.content.size
+          while (pos < docSize) {
+            const resolvedPos = state.doc.resolve(pos)
+            const marksAtPos = resolvedPos.marks()
+            if (
+              !marksAtPos.some(
+                (m) => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href
+              )
+            ) {
+              linkEnd = pos
+              break
+            }
+            pos++
+          }
+          if (pos >= docSize) linkEnd = docSize
+
+          const tr = state.tr
+          tr.removeMark(linkStart, linkEnd, editor.schema.marks.link)
+          tr.insertText(text, linkStart, linkEnd)
+          tr.addMark(
+            linkStart,
+            linkStart + text.length,
+            editor.schema.marks.link.create({ href: url })
+          )
+          editor.view.dispatch(tr)
+
+          editor.commands.focus()
+          editor.commands.setTextSelection(linkStart + text.length)
+          return
+        }
+      }
+
+      if (hasSelection) {
+        editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+      } else {
+        editor.chain().focus().insertContent(`<a href="${url}">${text}</a>`).run()
+      }
+    },
+    [editor]
+  )
+
+  // Handle image button click
+  const handleImageButtonClick = useCallback((): void => {
+    setImageModalData({ alt: '' })
+    setImageModalOpen(true)
+  }, [])
+
+  // Handle image insert
+  const handleImageInsert = useCallback(
+    async (src: string, alt: string): Promise<void> => {
+      if (!editor) return
+      let displaySrc = src
+      let assetPath: string | null = null
+
+      if (src.startsWith('.assets/')) {
+        assetPath = src
+        const result = await window.api.image.resolveAssetPath(src)
+        if (result.success && result.content) {
+          displaySrc = result.content
+        }
+      }
+
+      editor.chain().focus().setImage({ src: displaySrc, alt }).run()
+
+      if (assetPath) {
+        const { state } = editor
+        let imagePos = -1
+
+        state.doc.descendants((node, pos) => {
+          if (node.type.name === 'image' && node.attrs.src === displaySrc) {
+            imagePos = pos
+            return false
+          }
+          return true
+        })
+
+        if (imagePos !== -1) {
+          const tr = state.tr
+          const node = state.doc.nodeAt(imagePos)
+          if (node) {
+            tr.setNodeMarkup(imagePos, undefined, {
+              ...(node.attrs as object),
+              assetPath
+            })
+            editor.view.dispatch(tr)
+          }
+        }
+      }
+    },
+    [editor]
+  )
+
+  // Listen for custom events from TitleBar
+  useEffect(() => {
+    const handleOpenLinkModal = (): void => {
+      handleLinkButtonClick()
+    }
+
+    const handleOpenImageModal = (): void => {
+      handleImageButtonClick()
+    }
+
+    const handleInsertTable = (): void => {
+      insertTable()
+    }
+
+    document.addEventListener('open-link-modal', handleOpenLinkModal)
+    document.addEventListener('open-image-modal', handleOpenImageModal)
+    document.addEventListener('insert-table', handleInsertTable)
+
+    return () => {
+      document.removeEventListener('open-link-modal', handleOpenLinkModal)
+      document.removeEventListener('open-image-modal', handleOpenImageModal)
+      document.removeEventListener('insert-table', handleInsertTable)
+    }
+  }, [handleLinkButtonClick, handleImageButtonClick, insertTable])
+
+  // Handle Cmd+K keyboard shortcut for link
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        if (editor?.isActive('heading')) {
+          return
+        }
+        handleLinkButtonClick()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [handleLinkButtonClick, editor])
 
   // Update preview HTML for code/split mode
   useEffect(() => {
@@ -1440,7 +1734,6 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
     <div className="editor-container">
       {mode === 'wysiwyg' && (
         <div className="wysiwyg-mode">
-          <FormattingToolbar editor={editor} />
           <EditorContent editor={editor} className="wysiwyg-editor" />
           {contextMenu.show && editor && (
             <ContextMenu
@@ -1451,6 +1744,20 @@ export function Editor({ onReady }: EditorProps): React.JSX.Element {
               zIndex={1000}
             />
           )}
+          <LinkModal
+            isOpen={linkModalOpen}
+            initialText={linkModalData.text}
+            initialUrl={linkModalData.url}
+            isEditing={linkModalData.isEditing}
+            onClose={() => setLinkModalOpen(false)}
+            onInsert={handleLinkInsert}
+          />
+          <ImageModal
+            isOpen={imageModalOpen}
+            initialAlt={imageModalData.alt}
+            onClose={() => setImageModalOpen(false)}
+            onInsert={handleImageInsert}
+          />
           <AltTextModal
             isOpen={altTextModal.isOpen}
             initialAlt={altTextModal.currentAlt}
@@ -2300,539 +2607,3 @@ function getTableMenuItems(editor: TipTapEditor): ContextMenuItem[] {
   ]
 }
 
-// Formatting Toolbar Component
-interface FormattingToolbarProps {
-  editor: TipTapEditor | null
-}
-
-function FormattingToolbar({ editor }: FormattingToolbarProps): React.JSX.Element | null {
-  const [linkModalOpen, setLinkModalOpen] = useState(false)
-  const [linkModalData, setLinkModalData] = useState<{
-    text: string
-    url: string
-    isEditing: boolean
-  }>({
-    text: '',
-    url: '',
-    isEditing: false
-  })
-  const [imageModalOpen, setImageModalOpen] = useState(false)
-  const [imageModalData, setImageModalData] = useState<{ alt: string }>({
-    alt: ''
-  })
-
-  const handleLinkButtonClick = useCallback((): void => {
-    if (!editor) return
-    const { state } = editor
-    const { from, to, $from } = state.selection
-    let selectedText = state.doc.textBetween(from, to, '')
-
-    // Get existing link URL if selection is within a link
-    const linkAttrs = editor.getAttributes('link')
-    const existingUrl = linkAttrs.href || ''
-
-    // If cursor is inside a link (not just a selection), extract the full link text
-    if (!selectedText && editor.isActive('link')) {
-      // Find the link mark at cursor position
-      const marks = $from.marks()
-      const linkMark = marks.find((mark) => mark.type.name === 'link')
-
-      if (linkMark) {
-        // Find the range of the link mark
-        let linkStart = from
-        let linkEnd = from
-
-        // Scan backward to find link start
-        let pos = from - 1
-        while (pos >= 0) {
-          const resolvedPos = state.doc.resolve(pos)
-          const marksAtPos = resolvedPos.marks()
-          if (
-            !marksAtPos.some((m) => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)
-          ) {
-            linkStart = pos + 1
-            break
-          }
-          pos--
-        }
-        if (pos < 0) linkStart = 0
-
-        // Scan forward to find link end
-        pos = from
-        const docSize = state.doc.content.size
-        while (pos < docSize) {
-          const resolvedPos = state.doc.resolve(pos)
-          const marksAtPos = resolvedPos.marks()
-          if (
-            !marksAtPos.some((m) => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)
-          ) {
-            linkEnd = pos
-            break
-          }
-          pos++
-        }
-        if (pos >= docSize) linkEnd = docSize
-
-        // Extract text from the link range
-        selectedText = state.doc.textBetween(linkStart, linkEnd, '')
-      }
-    }
-
-    setLinkModalData({
-      text: selectedText,
-      url: existingUrl,
-      isEditing: editor.isActive('link')
-    })
-    setLinkModalOpen(true)
-  }, [editor])
-
-  const handleLinkInsert = (text: string, url: string): void => {
-    if (!editor) return
-    const { state } = editor
-    const { from, to, $from } = state.selection
-    const hasSelection = from !== to
-
-    // Check if we're editing an existing link
-    const isEditingLink = editor.isActive('link')
-
-    if (isEditingLink && !hasSelection) {
-      // Editing an existing link (cursor is inside link, no selection)
-      // Find the link mark at cursor position
-      const marks = $from.marks()
-      const linkMark = marks.find((mark) => mark.type.name === 'link')
-
-      if (linkMark) {
-        // Find the range of the link mark
-        let linkStart = from
-        let linkEnd = from
-
-        // Scan backward to find link start
-        let pos = from - 1
-        while (pos >= 0) {
-          const resolvedPos = state.doc.resolve(pos)
-          const marksAtPos = resolvedPos.marks()
-          if (
-            !marksAtPos.some((m) => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)
-          ) {
-            linkStart = pos + 1
-            break
-          }
-          pos--
-        }
-        if (pos < 0) linkStart = 0
-
-        // Scan forward to find link end
-        pos = from
-        const docSize = state.doc.content.size
-        while (pos < docSize) {
-          const resolvedPos = state.doc.resolve(pos)
-          const marksAtPos = resolvedPos.marks()
-          if (
-            !marksAtPos.some((m) => m.type.name === 'link' && m.attrs.href === linkMark.attrs.href)
-          ) {
-            linkEnd = pos
-            break
-          }
-          pos++
-        }
-        if (pos >= docSize) linkEnd = docSize
-
-        // Replace the link's text and URL
-        const tr = state.tr
-        tr.removeMark(linkStart, linkEnd, editor.schema.marks.link)
-        tr.insertText(text, linkStart, linkEnd)
-        tr.addMark(
-          linkStart,
-          linkStart + text.length,
-          editor.schema.marks.link.create({ href: url })
-        )
-        editor.view.dispatch(tr)
-
-        // Move cursor to end of link
-        editor.commands.focus()
-        editor.commands.setTextSelection(linkStart + text.length)
-        return
-      }
-    }
-
-    if (hasSelection) {
-      // Update existing selection with link
-      editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
-    } else {
-      // Insert new text with link
-      editor.chain().focus().insertContent(`<a href="${url}">${text}</a>`).run()
-    }
-  }
-
-  const handleImageButtonClick = useCallback((): void => {
-    setImageModalData({
-      alt: ''
-    })
-    setImageModalOpen(true)
-  }, [])
-
-  // Handle Cmd+K keyboard shortcut
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent): void => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        // Block if heading is active
-        if (editor?.isActive('heading')) {
-          return
-        }
-        handleLinkButtonClick()
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [handleLinkButtonClick, editor])
-
-  // Listen for custom events from context menus
-  useEffect(() => {
-    const handleOpenLinkModal = (): void => {
-      handleLinkButtonClick()
-    }
-
-    const handleOpenImageModal = (): void => {
-      handleImageButtonClick()
-    }
-
-    document.addEventListener('open-link-modal', handleOpenLinkModal)
-    document.addEventListener('open-image-modal', handleOpenImageModal)
-
-    return () => {
-      document.removeEventListener('open-link-modal', handleOpenLinkModal)
-      document.removeEventListener('open-image-modal', handleOpenImageModal)
-    }
-  }, [handleLinkButtonClick, handleImageButtonClick])
-
-  if (!editor) return null
-
-  const insertTable = (): void => {
-    editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
-  }
-
-  const handleImageInsert = async (src: string, alt: string): Promise<void> => {
-    if (!editor) return
-    // Resolve .assets paths to data URLs for display
-    let displaySrc = src
-    let assetPath: string | null = null
-
-    if (src.startsWith('.assets/')) {
-      assetPath = src // Store original .assets path
-      const result = await window.api.image.resolveAssetPath(src)
-      if (result.success && result.content) {
-        displaySrc = result.content
-      }
-    }
-
-    // Insert image
-    editor.chain().focus().setImage({ src: displaySrc, alt }).run()
-
-    // If this is an .assets image, update the assetPath attribute
-    if (assetPath) {
-      const { state } = editor
-      let imagePos = -1
-
-      state.doc.descendants((node, pos) => {
-        if (node.type.name === 'image' && node.attrs.src === displaySrc) {
-          imagePos = pos
-          return false
-        }
-        return true
-      })
-
-      if (imagePos !== -1) {
-        const tr = state.tr
-        const node = state.doc.nodeAt(imagePos)
-        if (node) {
-          tr.setNodeMarkup(imagePos, undefined, {
-            ...(node.attrs as object),
-            assetPath
-          })
-          editor.view.dispatch(tr)
-        }
-      }
-    }
-  }
-
-  return (
-    <div className="formatting-toolbar">
-      <div className="toolbar-group">
-        <button
-          className="format-btn"
-          onClick={() => editor.chain().focus().undo().run()}
-          disabled={!editor.can().undo()}
-          data-tooltip="Undo (Cmd+Z)"
-        >
-          <UndoIcon />
-        </button>
-        <button
-          className="format-btn"
-          onClick={() => editor.chain().focus().redo().run()}
-          disabled={!editor.can().redo()}
-          data-tooltip="Redo (Cmd+Shift+Z)"
-        >
-          <RedoIcon />
-        </button>
-      </div>
-
-      <div className="toolbar-divider" />
-
-      <div className="toolbar-group">
-        <select
-          className="format-select"
-          value={
-            editor.isActive('heading', { level: 1 })
-              ? 'h1'
-              : editor.isActive('heading', { level: 2 })
-                ? 'h2'
-                : editor.isActive('heading', { level: 3 })
-                  ? 'h3'
-                  : editor.isActive('heading', { level: 4 })
-                    ? 'h4'
-                    : editor.isActive('heading', { level: 5 })
-                      ? 'h5'
-                      : editor.isActive('heading', { level: 6 })
-                        ? 'h6'
-                        : 'p'
-          }
-          onChange={(e) => {
-            const value = e.target.value
-            if (value === 'p') {
-              editor.chain().focus().setParagraph().run()
-            } else {
-              const level = parseInt(value.replace('h', '')) as 1 | 2 | 3 | 4 | 5 | 6
-              editor.chain().focus().toggleHeading({ level }).run()
-            }
-          }}
-          data-tooltip="Text style"
-        >
-          <option value="p">Normal Text</option>
-          <option value="h1">Heading 1</option>
-          <option value="h2">Heading 2</option>
-          <option value="h3">Heading 3</option>
-          <option value="h4">Heading 4</option>
-          <option value="h5">Heading 5</option>
-          <option value="h6">Heading 6</option>
-        </select>
-      </div>
-
-      <div className="toolbar-divider" />
-
-      <div className="toolbar-group">
-        <button
-          className={`format-btn ${editor.isActive('bold') ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          disabled={editor.isActive('heading')}
-          data-tooltip="Bold (Cmd+B)"
-        >
-          <BoldIcon />
-        </button>
-        <button
-          className={`format-btn ${editor.isActive('italic') ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          disabled={editor.isActive('heading')}
-          data-tooltip="Italic (Cmd+I)"
-        >
-          <ItalicIcon />
-        </button>
-        <button
-          className={`format-btn ${editor.isActive('strike') ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleStrike().run()}
-          disabled={editor.isActive('heading')}
-          data-tooltip="Strikethrough (Cmd+Shift+X)"
-        >
-          <StrikeIcon />
-        </button>
-        <button
-          className={`format-btn ${editor.isActive('code') ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleCode().run()}
-          disabled={editor.isActive('heading')}
-          data-tooltip="Inline Code (Cmd+E)"
-        >
-          <CodeIcon />
-        </button>
-        <button
-          className={`format-btn ${editor.isActive('link') ? 'active' : ''}`}
-          onClick={handleLinkButtonClick}
-          disabled={editor.isActive('heading')}
-          data-tooltip="Insert Link (Cmd+K)"
-        >
-          <LinkIcon />
-        </button>
-      </div>
-
-      <div className="toolbar-divider" />
-
-      <div className="toolbar-group">
-        <button
-          className={`format-btn ${editor.isActive('orderedList') ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          disabled={editor.isActive('heading')}
-          data-tooltip="Numbered List (Cmd+Shift+7)"
-        >
-          <OrderedListIcon />
-        </button>
-        <button
-          className={`format-btn ${editor.isActive('bulletList') ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          disabled={editor.isActive('heading')}
-          data-tooltip="Bullet List (Cmd+Shift+8)"
-        >
-          <BulletListIcon />
-        </button>
-        <button
-          className={`format-btn ${editor.isActive('taskList') ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleTaskList().run()}
-          disabled={editor.isActive('heading')}
-          data-tooltip="Task List (Cmd+Shift+9)"
-        >
-          <TaskListIcon />
-        </button>
-        <button
-          className="format-btn"
-          onClick={() => {
-            if (editor.isActive('taskList')) {
-              editor.chain().focus().sinkListItem('taskItem').run()
-            } else {
-              editor.chain().focus().sinkListItem('listItem').run()
-            }
-          }}
-          disabled={(() => {
-            if (editor.isActive('heading')) return true
-            const isInList =
-              editor.isActive('bulletList') ||
-              editor.isActive('orderedList') ||
-              editor.isActive('taskList')
-            if (!isInList) return true // Disable if not in a list
-            if (editor.isActive('taskList')) {
-              return !editor.can().sinkListItem('taskItem') // Disable if first item
-            }
-            return !editor.can().sinkListItem('listItem') // Disable if first item
-          })()}
-          data-tooltip="Indent (Tab)"
-        >
-          <IndentIcon />
-        </button>
-        <button
-          className="format-btn"
-          onClick={() => {
-            if (editor.isActive('taskList')) {
-              editor.chain().focus().liftListItem('taskItem').run()
-            } else {
-              editor.chain().focus().liftListItem('listItem').run()
-            }
-          }}
-          disabled={(() => {
-            if (editor.isActive('heading')) return true
-            const isInList =
-              editor.isActive('bulletList') ||
-              editor.isActive('orderedList') ||
-              editor.isActive('taskList')
-            if (!isInList) return true // Disable if not in a list
-            if (editor.isActive('taskList')) {
-              return !editor.can().liftListItem('taskItem') // Disable if lift not possible
-            }
-            return !editor.can().liftListItem('listItem') // Disable if lift not possible
-          })()}
-          data-tooltip="Outdent (Shift+Tab)"
-        >
-          <OutdentIcon />
-        </button>
-        <button
-          className={`format-btn ${editor.isActive('blockquote') ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          disabled={
-            editor.isActive('heading') ||
-            editor.isActive('bulletList') ||
-            editor.isActive('orderedList') ||
-            editor.isActive('taskList')
-          }
-          data-tooltip="Blockquote (Cmd+Shift+B)"
-        >
-          <QuoteIcon />
-        </button>
-        <button
-          className={`format-btn ${editor.isActive('codeBlock') ? 'active' : ''}`}
-          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          disabled={editor.isActive('heading')}
-          data-tooltip="Code Block (Cmd+Option+C)"
-        >
-          <CodeBlockIcon />
-        </button>
-      </div>
-
-      <div className="toolbar-divider" />
-
-      <div className="toolbar-group">
-        <button
-          className="format-btn"
-          onClick={() => editor.chain().focus().setHorizontalRule().run()}
-          disabled={editor.isActive('heading')}
-          data-tooltip="Horizontal Rule"
-        >
-          <HRIcon />
-        </button>
-        <button
-          className="format-btn"
-          onClick={insertTable}
-          disabled={editor.isActive('heading') || editor.isActive('table')}
-          data-tooltip="Insert Table"
-        >
-          <TableIcon />
-        </button>
-        <button
-          className="format-btn"
-          onClick={handleImageButtonClick}
-          disabled={editor.isActive('heading')}
-          data-tooltip="Insert Image"
-        >
-          <ImageIcon />
-        </button>
-      </div>
-
-      <LinkModal
-        isOpen={linkModalOpen}
-        initialText={linkModalData.text}
-        initialUrl={linkModalData.url}
-        isEditing={linkModalData.isEditing}
-        onClose={() => setLinkModalOpen(false)}
-        onInsert={handleLinkInsert}
-      />
-
-      <ImageModal
-        isOpen={imageModalOpen}
-        initialAlt={imageModalData.alt}
-        onClose={() => setImageModalOpen(false)}
-        onInsert={handleImageInsert}
-      />
-    </div>
-  )
-}
-
-// Undo and Redo icons (not in utils/icons since they're only used in toolbar)
-function UndoIcon(): React.JSX.Element {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path
-        fillRule="evenodd"
-        d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"
-      />
-      <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308a.25.25 0 0 0 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z" />
-    </svg>
-  )
-}
-
-function RedoIcon(): React.JSX.Element {
-  return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-      <path
-        fillRule="evenodd"
-        d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"
-      />
-      <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
-    </svg>
-  )
-}

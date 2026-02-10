@@ -1,10 +1,11 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { FileTree } from './components/FileTree'
-import { Toolbar } from './components/Toolbar'
+import { TitleBar } from './components/TitleBar'
 import { Editor } from './components/Editor'
 import { StatusBar } from './components/StatusBar'
 import { useDocumentStore } from './store/useDocumentStore'
 import { useAutoSave } from './hooks/useAutoSave'
+import type { Editor as TipTapEditor } from '@tiptap/react'
 import './App.css'
 
 function App(): React.JSX.Element {
@@ -18,6 +19,7 @@ function App(): React.JSX.Element {
     originalContent
   } = useDocumentStore()
   const { saveNow } = useAutoSave()
+  const [editor, setEditor] = useState<TipTapEditor | null>(null)
 
   // Apply dark mode class to document
   useEffect(() => {
@@ -96,11 +98,15 @@ function App(): React.JSX.Element {
 
   return (
     <div className="app">
-      {isSidebarVisible && <FileTree />}
-      <div className="main-content">
-        <Toolbar />
-        <div className="editor-area">{currentFilePath ? <Editor /> : <WelcomeScreen />}</div>
-        <StatusBar />
+      <TitleBar editor={editor} />
+      <div className="app-body">
+        {isSidebarVisible && <FileTree />}
+        <div className="main-content">
+          <div className="editor-area">
+            {currentFilePath ? <Editor onEditorReady={setEditor} /> : <WelcomeScreen />}
+          </div>
+          <StatusBar />
+        </div>
       </div>
     </div>
   )

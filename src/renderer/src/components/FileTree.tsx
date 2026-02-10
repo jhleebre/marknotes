@@ -5,6 +5,7 @@ import { CreateModal } from './CreateModal'
 import { ContextMenu, type ContextMenuItem } from './ContextMenu'
 import {
   FileIcon,
+  FolderIcon as FolderIconImported,
   FolderPlusIcon,
   RenameIcon,
   TrashIcon,
@@ -229,7 +230,7 @@ function FileTreeItem({
           </span>
         )}
         <span className="file-icon">
-          {entry.isDirectory ? isExpanded ? <FolderOpenIcon /> : <FolderIcon /> : <FileIcon />}
+          {entry.isDirectory ? <FolderIconImported /> : <FileIcon />}
         </span>
         {isEditing ? (
           <input
@@ -699,14 +700,27 @@ export function FileTree(): React.JSX.Element {
     setCreateModalOpen(true)
   }, [])
 
-  // Listen for menu commands
+  // Listen for menu commands and custom events from TitleBar
   useEffect(() => {
     const unsubscribeNewFile = window.api.menu.onNewFile(openCreateFileModal)
     const unsubscribeNewFolder = window.api.menu.onNewFolder(openCreateFolderModal)
 
+    // Listen for custom events from TitleBar
+    const handleRequestNewFile = (): void => {
+      openCreateFileModal()
+    }
+    const handleRequestNewFolder = (): void => {
+      openCreateFolderModal()
+    }
+
+    document.addEventListener('request-new-file', handleRequestNewFile)
+    document.addEventListener('request-new-folder', handleRequestNewFolder)
+
     return () => {
       unsubscribeNewFile()
       unsubscribeNewFolder()
+      document.removeEventListener('request-new-file', handleRequestNewFile)
+      document.removeEventListener('request-new-folder', handleRequestNewFolder)
     }
   }, [openCreateFileModal, openCreateFolderModal])
 
@@ -853,26 +867,6 @@ export function FileTree(): React.JSX.Element {
 
   return (
     <div className="file-tree">
-      <div className="file-tree-header">
-        <span className="header-title">MarkNotes</span>
-        <div className="header-actions">
-          <button
-            className="action-btn"
-            onClick={() => openCreateFileModal()}
-            data-tooltip="New File (Cmd+N)"
-          >
-            <FileIcon />
-          </button>
-          <button
-            className="action-btn"
-            onClick={() => openCreateFolderModal()}
-            data-tooltip="New Folder (Cmd+Shift+N)"
-          >
-            <FolderPlusIcon />
-          </button>
-        </div>
-      </div>
-
       <div
         className={`file-tree-content ${dragState.dropTarget === 'root' ? 'drop-target-root' : ''}`}
         onContextMenu={handleRootContextMenu}
@@ -937,50 +931,17 @@ export function FileTree(): React.JSX.Element {
 // Local icons not in utils/icons
 function ChevronIcon(): React.JSX.Element {
   return (
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
-      <path
-        d="M4.5 2L8.5 6L4.5 10"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
-  )
-}
-
-function FolderIcon(): React.JSX.Element {
-  return (
     <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M2 4a1 1 0 0 1 1-1h3l2 2h5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z" />
-    </svg>
-  )
-}
-
-function FolderOpenIcon(): React.JSX.Element {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M2 4a1 1 0 0 1 1-1h3l2 2h5a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4z" />
-      <path d="M2 7h12" />
+      <path d="M4 2l4 4-4 4" />
     </svg>
   )
 }
