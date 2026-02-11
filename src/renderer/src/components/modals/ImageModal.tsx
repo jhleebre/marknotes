@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { CloseIcon } from '../utils/icons'
+import { CloseIcon } from '../../utils/icons'
 import './ImageModal.css'
 
 interface ImageModalProps {

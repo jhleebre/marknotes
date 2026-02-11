@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useDocumentStore } from '../store/useDocumentStore'
-import { useAutoSave } from '../hooks/useAutoSave'
+import { useDocumentStore } from '../../store/useDocumentStore'
+import { useAutoSave } from '../../hooks/useAutoSave'
+import { markWrite } from '../../utils/writeTracker'
 import type { Editor as TipTapEditor } from '@tiptap/react'
 import {
   SidebarIcon,
@@ -26,7 +27,7 @@ import {
   ImageIcon,
   PdfExportIcon,
   CloseFileIcon
-} from '../utils/icons'
+} from '../../utils/icons'
 import './TitleBar.css'
 
 interface TitleBarProps {
@@ -45,6 +46,9 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
     setContent,
     setOriginalContent
   } = useDocumentStore()
+
+  // Subscribe to selection changes so toolbar buttons reflect current formatting
+  useDocumentStore((s) => s.editorSelectionKey)
   const { saveNow } = useAutoSave()
 
   const [platform, setPlatform] = useState<'darwin' | 'win32' | 'linux'>('darwin')
@@ -53,6 +57,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
     // Detect platform
     const userAgent = navigator.userAgent.toLowerCase()
     if (userAgent.indexOf('win') !== -1) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPlatform('win32')
     } else if (userAgent.indexOf('linux') !== -1) {
       setPlatform('linux')
@@ -74,6 +79,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
     // Save current file if there are unsaved changes
     if (currentFilePath && content !== originalContent) {
       try {
+        markWrite()
         await window.api.file.write(currentFilePath, content)
       } catch (error) {
         console.error('Failed to save before closing file:', error)
@@ -123,16 +129,16 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             onClick={toggleSidebar}
             data-tooltip={isSidebarVisible ? 'Hide Sidebar (Cmd+.)' : 'Show Sidebar (Cmd+.)'}
           >
-            {isSidebarVisible ? <SidebarIcon className="icon" /> : <SidebarHiddenIcon className="icon" />}
+            {isSidebarVisible ? (
+              <SidebarIcon className="icon" />
+            ) : (
+              <SidebarHiddenIcon className="icon" />
+            )}
           </button>
 
           <div className="title-bar-divider" />
 
-          <button
-            className="title-bar-btn"
-            onClick={handleNewFile}
-            data-tooltip="New File (Cmd+N)"
-          >
+          <button className="title-bar-btn" onClick={handleNewFile} data-tooltip="New File (Cmd+N)">
             <FilePlusIcon className="icon" />
           </button>
           <button

@@ -1,19 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-
-export interface FileEntry {
-  name: string
-  isDirectory: boolean
-  path: string
-  children?: FileEntry[]
-}
-
-export interface FileResult {
-  success: boolean
-  content?: string
-  files?: FileEntry[]
-  error?: string
-}
+import type { FileResult } from '../shared/types'
 
 // Custom APIs for renderer
 const api = {
@@ -101,6 +88,16 @@ const api = {
       const listener = (): void => callback()
       ipcRenderer.on('menu:cleanupImages', listener)
       return () => ipcRenderer.removeListener('menu:cleanupImages', listener)
+    },
+    onUndo: (callback: () => void): (() => void) => {
+      const listener = (): void => callback()
+      ipcRenderer.on('menu:undo', listener)
+      return () => ipcRenderer.removeListener('menu:undo', listener)
+    },
+    onRedo: (callback: () => void): (() => void) => {
+      const listener = (): void => callback()
+      ipcRenderer.on('menu:redo', listener)
+      return () => ipcRenderer.removeListener('menu:redo', listener)
     }
   },
   theme: {

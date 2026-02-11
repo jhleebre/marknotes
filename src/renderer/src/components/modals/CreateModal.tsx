@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
-import type { FileEntry } from '../../../preload/index.d'
-import { ChevronIcon, FolderIcon, FolderOpenIcon, RootFolderIcon, CloseIcon } from '../utils/icons'
+import type { FileEntry } from '../../../../shared/types'
+import {
+  ChevronIcon,
+  FolderIcon,
+  FolderOpenIcon,
+  RootFolderIcon,
+  CloseIcon
+} from '../../utils/icons'
 import './CreateModal.css'
 
 interface CreateModalProps {

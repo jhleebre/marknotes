@@ -1,6 +1,7 @@
 import { useEffect, useCallback, useRef, useMemo } from 'react'
 import debounce from 'lodash.debounce'
 import { useDocumentStore } from '../store/useDocumentStore'
+import { markWrite } from '../utils/writeTracker'
 
 const AUTO_SAVE_DELAY = 5000 // 5 seconds
 
@@ -37,6 +38,7 @@ export function useAutoSave(): {
     setSaveStatus('saving')
 
     try {
+      markWrite()
       const result = await window.api.file.write(filePath, fileContent)
       if (result.success) {
         setOriginalContent(fileContent)
@@ -94,6 +96,7 @@ export function useAutoSave(): {
     setSaveStatus('saving')
 
     try {
+      markWrite()
       const result = await window.api.file.write(filePath, fileContent)
       if (result.success) {
         setOriginalContent(fileContent)

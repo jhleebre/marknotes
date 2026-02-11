@@ -1,4 +1,4 @@
-import { useDocumentStore } from '../store/useDocumentStore'
+import { useDocumentStore } from '../../store/useDocumentStore'
 import './StatusBar.css'
 
 export function StatusBar(): React.JSX.Element {

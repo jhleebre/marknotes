@@ -1,7 +1,7 @@
 import { app, shell, BrowserWindow, nativeTheme, clipboard, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { setupFileHandlers, cleanupOnQuit } from './fileSystem'
+import { setupFileHandlers, cleanupOnQuit } from './setupHandlers'
 import { setupMenu } from './menu'
 
 // Set app name early for macOS menu bar
@@ -36,6 +36,15 @@ function createWindow(): void {
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
+  })
+
+  // Handle Cmd+- for zoom out via before-input-event
+  // Electron's menu accelerator for 'CmdOrCtrl+-' does not reliably register on macOS
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.type === 'keyDown' && (input.meta || input.control) && input.key === '-') {
+      mainWindow!.webContents.setZoomLevel(mainWindow!.webContents.getZoomLevel() - 0.5)
+      event.preventDefault()
+    }
   })
 
   // Setup file system handlers

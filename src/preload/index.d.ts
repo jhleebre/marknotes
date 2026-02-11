@@ -1,18 +1,7 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 
-export interface FileEntry {
-  name: string
-  isDirectory: boolean
-  path: string
-  children?: FileEntry[]
-}
-
-export interface FileResult {
-  success: boolean
-  content?: string
-  files?: FileEntry[]
-  error?: string
-}
+export type { FileEntry, FileResult } from '../shared/types'
+import type { FileResult } from '../shared/types'
 
 export interface FileAPI {
   getRootPath: () => Promise<string>
@@ -47,6 +36,8 @@ export interface MenuAPI {
   onAbout: (callback: () => void) => () => void
   onShortcuts: (callback: () => void) => () => void
   onCleanupImages: (callback: () => void) => () => void
+  onUndo: (callback: () => void) => () => void
+  onRedo: (callback: () => void) => () => void
 }
 
 export interface ThemeAPI {

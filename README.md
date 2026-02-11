@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.8.0</strong>
+  <strong>Version 1.9.0</strong>
 </p>
 
 ---
@@ -146,7 +146,7 @@ Use the formatting buttons in the title bar or keyboard shortcuts:
 
 1. Select the text you want to turn into a link
 2. Press `Cmd+K`
-3. Enter the URL (or `#heading-id` for internal links)
+3. Enter the URL, or type `#` to see a list of headings in your document
 4. Click "Insert Link"
 
 ### Export to PDF
@@ -171,6 +171,10 @@ Use the formatting buttons in the title bar or keyboard shortcuts:
 | Switch to Edit Mode | `Cmd+1`             |
 | Switch to Code Mode | `Cmd+2`             |
 | Export as PDF       | `Cmd+Shift+P`       |
+| Zoom In             | `Cmd+=`             |
+| Zoom Out            | `Cmd+-`             |
+| Actual Size         | `Cmd+0`             |
+| Keyboard Shortcuts  | `Cmd+/`             |
 
 ### Text Formatting
 

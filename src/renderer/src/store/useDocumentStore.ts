@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { FileEntry } from '../../../preload/index.d'
+import type { FileEntry } from '../../../shared/types'
 
 export type EditorMode = 'wysiwyg' | 'split'
 
@@ -25,6 +25,7 @@ export interface DocumentState {
   charCount: number
   currentLine: number
   totalLines: number
+  editorSelectionKey: number
 
   // UI state
   isSidebarVisible: boolean
@@ -44,6 +45,7 @@ export interface DocumentState {
   setSaveStatus: (status: SaveStatus) => void
   updateCounts: (content: string) => void
   setLineNumbers: (current: number, total: number) => void
+  bumpSelectionKey: () => void
 
   toggleSidebar: () => void
   setIsDarkMode: (isDark: boolean) => void
@@ -72,6 +74,7 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   charCount: 0,
   currentLine: 1,
   totalLines: 1,
+  editorSelectionKey: 0,
 
   // UI state
   isSidebarVisible: true,
@@ -107,15 +110,28 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   setSaveStatus: (status): void => set({ saveStatus: status }),
 
   updateCounts: (content): void => {
-    const text = content.trim()
+    let text = content
+    // Strip images (including base64 data URLs)
+    text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    // Strip HTML comments (e.g., <!-- size:small -->)
+    text = text.replace(/<!--[\s\S]*?-->/g, '')
+    // Strip table separator rows (e.g., | --- | --- |)
+    text = text.replace(/^\|[\s:|-]+\|$/gm, '')
+    // Strip table pipes
+    text = text.replace(/\|/g, ' ')
+    // Keep link text, strip URL: [text](url) → text
+    text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+
+    text = text.trim()
     const words = text ? text.split(/\s+/).length : 0
     const chars = text.length
-    // Calculate total lines from content
-    const lines = content ? content.split('\n').length : 1
-    set({ wordCount: words, charCount: chars, totalLines: lines })
+    set({ wordCount: words, charCount: chars })
   },
 
   setLineNumbers: (current, total): void => set({ currentLine: current, totalLines: total }),
+
+  bumpSelectionKey: (): void =>
+    set((state) => ({ editorSelectionKey: state.editorSelectionKey + 1 })),
 
   toggleSidebar: (): void => set((state) => ({ isSidebarVisible: !state.isSidebarVisible })),
 

@@ -1,7 +1,7 @@
 {
   "name": "marknotes",
-  "version": "1.8.0",
-  "description": "A lightweight markdown editor for your notes",
+  "version": "1.9.0",
+  "description": "A local-first WYSIWYG markdown editor for macOS — just write, forget syntax",
   "main": "./out/main/index.js",
   "author": "MarkNotes",
   "homepage": "https://github.com/marknotes/marknotes",

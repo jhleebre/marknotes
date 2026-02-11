@@ -79,18 +79,26 @@ export function setupMenu(mainWindow: BrowserWindow): void {
     {
       label: 'Edit',
       submenu: [
-        { role: 'undo' as const },
-        { role: 'redo' as const },
+        {
+          label: 'Undo',
+          accelerator: 'CmdOrCtrl+Z',
+          click: (): void => {
+            mainWindow.webContents.send('menu:undo')
+          }
+        },
+        {
+          label: 'Redo',
+          accelerator: 'CmdOrCtrl+Shift+Z',
+          click: (): void => {
+            mainWindow.webContents.send('menu:redo')
+          }
+        },
         { type: 'separator' as const },
         { role: 'cut' as const },
         { role: 'copy' as const },
         { role: 'paste' as const },
         ...(isMac
-          ? [
-              { role: 'pasteAndMatchStyle' as const },
-              { role: 'delete' as const },
-              { role: 'selectAll' as const }
-            ]
+          ? [{ role: 'delete' as const }, { role: 'selectAll' as const }]
           : [
               { role: 'delete' as const },
               { type: 'separator' as const },
@@ -129,9 +137,27 @@ export function setupMenu(mainWindow: BrowserWindow): void {
         { role: 'forceReload' as const },
         { role: 'toggleDevTools' as const },
         { type: 'separator' },
-        { role: 'resetZoom' as const },
-        { role: 'zoomIn' as const },
-        { role: 'zoomOut' as const },
+        {
+          label: 'Actual Size',
+          accelerator: 'CmdOrCtrl+0',
+          click: (): void => {
+            mainWindow.webContents.setZoomLevel(0)
+          }
+        },
+        {
+          label: 'Zoom In',
+          accelerator: 'CmdOrCtrl+=',
+          click: (): void => {
+            mainWindow.webContents.setZoomLevel(mainWindow.webContents.getZoomLevel() + 0.5)
+          }
+        },
+        {
+          label: 'Zoom Out',
+          accelerator: 'CmdOrCtrl+-',
+          click: (): void => {
+            mainWindow.webContents.setZoomLevel(mainWindow.webContents.getZoomLevel() - 0.5)
+          }
+        },
         { type: 'separator' },
         { role: 'togglefullscreen' as const }
       ]
