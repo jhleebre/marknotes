@@ -34,7 +34,7 @@ mac:
   extendInfo:
     NSDocumentsFolderUsageDescription: MarkNotes needs access to Documents folder to store your notes.
 dmg:
-  artifactName: ${name}-${version}.${ext}
+  artifactName: ${name}-${version}-${arch}.${ext}
 linux:
   target:
     - AppImage
