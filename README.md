@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.9.2</strong>
+  <strong>Version 1.9.3</strong>
 </p>
 
 ---
@@ -65,6 +65,7 @@ MarkNotes is a desktop markdown editor designed for writers who want a distracti
 
 ### 🖼️ Simple Image Management
 
+- **Drag & Drop** - Drag images from Finder directly into the editor
 - **Auto-Organized** - Images stored in `.assets/` folder automatically
 - **Resize Anytime** - Right-click images to resize (small/medium/large/original)
 - **Export Ready** - Images automatically embedded in PDF exports
@@ -137,6 +138,9 @@ Use the formatting buttons in the title bar or keyboard shortcuts:
 
 ### Insert Images
 
+**Drag & Drop** - Simply drag image files from Finder into the editor.
+
+**Or use the image button:**
 1. Click the image icon in the title bar
 2. Select an image file from your computer
 3. Optionally add alt text (description)

@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import './ShortcutsModal.css'
 
 interface ShortcutsModalProps {
@@ -5,52 +6,67 @@ interface ShortcutsModalProps {
   onClose: () => void
 }
 
-const shortcuts = [
-  {
-    category: 'File',
-    items: [
-      { keys: ['Cmd', 'N'], label: 'New File' },
-      { keys: ['Cmd', 'Shift', 'N'], label: 'New Folder' },
-      { keys: ['Cmd', 'S'], label: 'Save' },
-      { keys: ['Cmd', 'Shift', 'P'], label: 'Export as PDF' },
-      { keys: ['Cmd', 'W'], label: 'Close File' }
-    ]
-  },
-  {
-    category: 'Edit',
-    items: [
-      { keys: ['Cmd', 'Z'], label: 'Undo' },
-      { keys: ['Cmd', 'Shift', 'Z'], label: 'Redo' },
-      { keys: ['Cmd', 'F'], label: 'Find' },
-      { keys: ['Cmd', 'Shift', 'F'], label: 'Find & Replace' },
-      { keys: ['Cmd', 'B'], label: 'Bold' },
-      { keys: ['Cmd', 'I'], label: 'Italic' },
-      { keys: ['Cmd', 'Shift', 'X'], label: 'Strikethrough' },
-      { keys: ['Cmd', 'E'], label: 'Inline Code' },
-      { keys: ['Cmd', 'K'], label: 'Insert Link' },
-      { keys: ['Cmd', 'Shift', 'B'], label: 'Blockquote' },
-      { keys: ['Cmd', 'Shift', '8'], label: 'Bullet List' },
-      { keys: ['Cmd', 'Shift', '7'], label: 'Ordered List' },
-      { keys: ['Cmd', 'Shift', '9'], label: 'Task List' },
-      { keys: ['Cmd', 'Shift', 'C'], label: 'Code Block' },
-      { keys: ['Tab'], label: 'Indent List' },
-      { keys: ['Shift', 'Tab'], label: 'Outdent List' }
-    ]
-  },
-  {
-    category: 'View',
-    items: [
-      { keys: ['Cmd', '1'], label: 'Edit Mode' },
-      { keys: ['Cmd', '2'], label: 'Code Mode' },
-      { keys: ['Cmd', '.'], label: 'Toggle Sidebar' },
-      { keys: ['Cmd', '+'], label: 'Zoom In' },
-      { keys: ['Cmd', '-'], label: 'Zoom Out' },
-      { keys: ['Cmd', '0'], label: 'Actual Size' }
-    ]
-  }
-]
+const isMac = navigator.platform.toUpperCase().includes('MAC')
+const MOD = isMac ? 'Cmd' : 'Ctrl'
+const ALT = isMac ? 'Option' : 'Alt'
+
+function getShortcuts(): { category: string; items: { keys: string[]; label: string }[] }[] {
+  return [
+    {
+      category: 'File',
+      items: [
+        { keys: [MOD, 'N'], label: 'New File' },
+        { keys: [MOD, 'Shift', 'N'], label: 'New Folder' },
+        { keys: [MOD, 'S'], label: 'Save' },
+        { keys: [MOD, 'Shift', 'P'], label: 'Export as PDF' },
+        { keys: [MOD, 'W'], label: 'Close File' }
+      ]
+    },
+    {
+      category: 'Edit',
+      items: [
+        { keys: [MOD, 'Z'], label: 'Undo' },
+        { keys: [MOD, 'Shift', 'Z'], label: 'Redo' },
+        { keys: [MOD, 'F'], label: 'Find' },
+        { keys: [MOD, 'Shift', 'F'], label: 'Find & Replace' },
+        { keys: [MOD, ALT, '0'], label: 'Normal Text' },
+        { keys: [MOD, ALT, '1'], label: 'Heading 1' },
+        { keys: [MOD, ALT, '2'], label: 'Heading 2' },
+        { keys: [MOD, ALT, '3'], label: 'Heading 3' },
+        { keys: [MOD, ALT, '4'], label: 'Heading 4' },
+        { keys: [MOD, ALT, '5'], label: 'Heading 5' },
+        { keys: [MOD, ALT, '6'], label: 'Heading 6' },
+        { keys: [MOD, 'B'], label: 'Bold' },
+        { keys: [MOD, 'I'], label: 'Italic' },
+        { keys: [MOD, 'Shift', 'X'], label: 'Strikethrough' },
+        { keys: [MOD, 'E'], label: 'Inline Code' },
+        { keys: [MOD, 'K'], label: 'Insert Link' },
+        { keys: [MOD, 'Shift', 'B'], label: 'Blockquote' },
+        { keys: [MOD, 'Shift', '8'], label: 'Bullet List' },
+        { keys: [MOD, 'Shift', '7'], label: 'Ordered List' },
+        { keys: [MOD, 'Shift', '9'], label: 'Task List' },
+        { keys: [MOD, 'Shift', 'C'], label: 'Code Block' },
+        { keys: ['Tab'], label: 'Indent List' },
+        { keys: ['Shift', 'Tab'], label: 'Outdent List' }
+      ]
+    },
+    {
+      category: 'View',
+      items: [
+        { keys: [MOD, '1'], label: 'Edit Mode' },
+        { keys: [MOD, '2'], label: 'Code Mode' },
+        { keys: [MOD, '.'], label: 'Toggle Sidebar' },
+        { keys: [MOD, '+'], label: 'Zoom In' },
+        { keys: [MOD, '-'], label: 'Zoom Out' },
+        { keys: [MOD, '0'], label: 'Actual Size' }
+      ]
+    }
+  ]
+}
 
 export function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps): React.JSX.Element | null {
+  const shortcuts = useMemo(() => getShortcuts(), [])
+
   if (!isOpen) return null
 
   return (

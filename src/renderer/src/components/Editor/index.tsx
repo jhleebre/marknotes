@@ -18,6 +18,7 @@ import { getTableMenuItems } from './contextMenus/tableMenu'
 import { useLinkHandlers } from './hooks/useLinkHandlers'
 import { useImageHandlers } from './hooks/useImageHandlers'
 import { useEditorEvents } from './hooks/useEditorEvents'
+import { useDropHandler } from './hooks/useDropHandler'
 import './Editor.css'
 
 interface EditorProps {
@@ -293,6 +294,9 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
 
   // Hook: editor events (TitleBar events, Cmd+K, preview link clicks)
   useEditorEvents(handleLinkButtonClick, handleImageButtonClick, insertTable, editor)
+
+  // Hook: drag-and-drop image insertion
+  useDropHandler(handleImageInsert, currentFilePath)
 
   // Listen for menu undo/redo
   useEffect(() => {
