@@ -11,8 +11,19 @@ interface MenuModals {
 }
 
 export function useMenuListeners(): MenuModals {
-  const { toggleSidebar, setIsDarkMode, setMode, currentFilePath, content, originalContent } =
-    useDocumentStore()
+  const {
+    toggleSidebar,
+    setIsDarkMode,
+    setMode,
+    currentFilePath,
+    content,
+    originalContent,
+    isSearchVisible,
+    isReplaceVisible,
+    setSearchVisible,
+    setReplaceVisible,
+    closeSearch
+  } = useDocumentStore()
   const { saveNow } = useAutoSave()
 
   // Apply dark mode class to document
@@ -64,6 +75,37 @@ export function useMenuListeners(): MenuModals {
       unsubscribe()
     }
   }, [setMode])
+
+  // Listen for find command (Cmd+F) - toggle search bar
+  useEffect(() => {
+    const unsubscribe = window.api.menu.onFind(() => {
+      if (isSearchVisible) {
+        closeSearch()
+      } else {
+        setSearchVisible(true)
+      }
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [isSearchVisible, setSearchVisible, closeSearch])
+
+  // Listen for replace command (Cmd+Alt+F) - toggle search bar with replace
+  useEffect(() => {
+    const unsubscribe = window.api.menu.onReplace(() => {
+      if (isSearchVisible && isReplaceVisible) {
+        closeSearch()
+      } else {
+        setSearchVisible(true)
+        setReplaceVisible(true)
+      }
+    })
+
+    return () => {
+      unsubscribe()
+    }
+  }, [isSearchVisible, isReplaceVisible, setSearchVisible, setReplaceVisible, closeSearch])
 
   // Listen for cleanup images menu command
   useEffect(() => {

@@ -38,6 +38,8 @@ export interface MenuAPI {
   onCleanupImages: (callback: () => void) => () => void
   onUndo: (callback: () => void) => () => void
   onRedo: (callback: () => void) => () => void
+  onFind: (callback: () => void) => () => void
+  onReplace: (callback: () => void) => () => void
 }
 
 export interface ThemeAPI {

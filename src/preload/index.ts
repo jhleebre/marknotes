@@ -98,6 +98,16 @@ const api = {
       const listener = (): void => callback()
       ipcRenderer.on('menu:redo', listener)
       return () => ipcRenderer.removeListener('menu:redo', listener)
+    },
+    onFind: (callback: () => void): (() => void) => {
+      const listener = (): void => callback()
+      ipcRenderer.on('menu:find', listener)
+      return () => ipcRenderer.removeListener('menu:find', listener)
+    },
+    onReplace: (callback: () => void): (() => void) => {
+      const listener = (): void => callback()
+      ipcRenderer.on('menu:replace', listener)
+      return () => ipcRenderer.removeListener('menu:replace', listener)
     }
   },
   theme: {

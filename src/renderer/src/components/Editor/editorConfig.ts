@@ -24,6 +24,7 @@ import {
   TableCellExtended,
   TableRow
 } from './extensions'
+import { SearchHighlight } from './extensions/SearchHighlight'
 
 const lowlight = createLowlight(common)
 
@@ -96,6 +97,7 @@ export function getEditorExtensions(): Extensions {
     TableRow,
     TableHeaderExtended,
     TableCellExtended,
-    TabHandling
+    TabHandling,
+    SearchHighlight
   ]
 }

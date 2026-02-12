@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.9.0</strong>
+  <strong>Version 1.9.1</strong>
 </p>
 
 ---
@@ -54,6 +54,7 @@ MarkNotes is a desktop markdown editor designed for writers who want a distracti
 - **Blockquotes** - Beautiful styled quotes for emphasis
 - **Code Blocks** - Syntax-highlighted code snippets
 - **Tables** - Full-featured tables with formatting inside cells
+- **Find & Replace** - Search text with `Cmd+F`, replace with `Cmd+Option+F`
 
 ### 📊 Professional Tables
 
@@ -199,6 +200,8 @@ Use the formatting buttons in the title bar or keyboard shortcuts:
 | ------------------ | ---------------- |
 | Undo               | `Cmd+Z`          |
 | Redo               | `Cmd+Shift+Z`    |
+| Find               | `Cmd+F`          |
+| Find & Replace     | `Cmd+Option+F`   |
 | Indent (in lists)  | `Tab`            |
 | Outdent (in lists) | `Shift+Tab`      |
 

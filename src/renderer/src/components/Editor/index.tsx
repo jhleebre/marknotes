@@ -6,6 +6,7 @@ import { LinkModal, type HeadingInfo } from '../modals/LinkModal'
 import { ImageModal } from '../modals/ImageModal'
 import { AltTextModal } from '../modals/AltTextModal'
 import { ContextMenu, type ContextMenuItem } from '../ContextMenu'
+import { SearchBar } from '../SearchBar'
 import { getEditorExtensions } from './editorConfig'
 import { marked, postProcessImageSizes, resolveAssetImages } from './markdown/markdownToHtml'
 import { processTaskListsForEditor, processTaskListsForPreview } from './markdown/taskListProcessor'
@@ -471,6 +472,7 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
 
   return (
     <div className="editor-container">
+      <SearchBar editor={editor} />
       {mode === 'wysiwyg' && (
         <div className="wysiwyg-mode">
           <EditorContent editor={editor} className="wysiwyg-editor" />

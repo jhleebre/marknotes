@@ -31,6 +31,13 @@ export interface DocumentState {
   isSidebarVisible: boolean
   isDarkMode: boolean
 
+  // Search state
+  isSearchVisible: boolean
+  searchQuery: string
+  replaceText: string
+  isReplaceVisible: boolean
+  caseSensitive: boolean
+
   // Actions
   setFiles: (files: FileEntry[]) => void
   setRootPath: (path: string) => void
@@ -49,6 +56,13 @@ export interface DocumentState {
 
   toggleSidebar: () => void
   setIsDarkMode: (isDark: boolean) => void
+
+  setSearchVisible: (visible: boolean) => void
+  setSearchQuery: (query: string) => void
+  setReplaceText: (text: string) => void
+  setReplaceVisible: (visible: boolean) => void
+  setCaseSensitive: (sensitive: boolean) => void
+  closeSearch: () => void
 
   // Computed
   hasUnsavedChanges: () => boolean
@@ -79,6 +93,13 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   // UI state
   isSidebarVisible: true,
   isDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
+
+  // Search state
+  isSearchVisible: false,
+  searchQuery: '',
+  replaceText: '',
+  isReplaceVisible: false,
+  caseSensitive: false,
 
   // Actions
   setFiles: (files): void => set({ files }),
@@ -136,6 +157,19 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   toggleSidebar: (): void => set((state) => ({ isSidebarVisible: !state.isSidebarVisible })),
 
   setIsDarkMode: (isDark): void => set({ isDarkMode: isDark }),
+
+  setSearchVisible: (visible): void => set({ isSearchVisible: visible }),
+  setSearchQuery: (query): void => set({ searchQuery: query }),
+  setReplaceText: (text): void => set({ replaceText: text }),
+  setReplaceVisible: (visible): void => set({ isReplaceVisible: visible }),
+  setCaseSensitive: (sensitive): void => set({ caseSensitive: sensitive }),
+  closeSearch: (): void =>
+    set({
+      isSearchVisible: false,
+      isReplaceVisible: false,
+      searchQuery: '',
+      replaceText: ''
+    }),
 
   // Computed
   hasUnsavedChanges: (): boolean => {

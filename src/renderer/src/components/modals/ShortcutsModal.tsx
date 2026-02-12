@@ -21,6 +21,8 @@ const shortcuts = [
     items: [
       { keys: ['Cmd', 'Z'], label: 'Undo' },
       { keys: ['Cmd', 'Shift', 'Z'], label: 'Redo' },
+      { keys: ['Cmd', 'F'], label: 'Find' },
+      { keys: ['Cmd', 'Alt', 'F'], label: 'Find & Replace' },
       { keys: ['Cmd', 'B'], label: 'Bold' },
       { keys: ['Cmd', 'I'], label: 'Italic' },
       { keys: ['Cmd', 'Shift', 'X'], label: 'Strikethrough' },

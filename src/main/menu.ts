@@ -94,6 +94,21 @@ export function setupMenu(mainWindow: BrowserWindow): void {
           }
         },
         { type: 'separator' as const },
+        {
+          label: 'Find',
+          accelerator: 'CmdOrCtrl+F',
+          click: (): void => {
+            mainWindow.webContents.send('menu:find')
+          }
+        },
+        {
+          label: 'Replace',
+          accelerator: 'CmdOrCtrl+Alt+F',
+          click: (): void => {
+            mainWindow.webContents.send('menu:replace')
+          }
+        },
+        { type: 'separator' as const },
         { role: 'cut' as const },
         { role: 'copy' as const },
         { role: 'paste' as const },
