@@ -106,17 +106,9 @@
 .error-message {
   margin-top: 12px;
   padding: 8px 12px;
-  background: #fee;
-  border: 1px solid #fcc;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-  color: #c33;
+  color: var(--text-secondary);
   font-size: 12px;
-}
-
-@media (prefers-color-scheme: dark) {
-  .error-message {
-    background: #4a1c1c;
-    border-color: #6b2828;
-    color: #ff9999;
-  }
 }

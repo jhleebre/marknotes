@@ -22,7 +22,7 @@ const shortcuts = [
       { keys: ['Cmd', 'Z'], label: 'Undo' },
       { keys: ['Cmd', 'Shift', 'Z'], label: 'Redo' },
       { keys: ['Cmd', 'F'], label: 'Find' },
-      { keys: ['Cmd', 'Alt', 'F'], label: 'Find & Replace' },
+      { keys: ['Cmd', 'Shift', 'F'], label: 'Find & Replace' },
       { keys: ['Cmd', 'B'], label: 'Bold' },
       { keys: ['Cmd', 'I'], label: 'Italic' },
       { keys: ['Cmd', 'Shift', 'X'], label: 'Strikethrough' },
@@ -32,7 +32,7 @@ const shortcuts = [
       { keys: ['Cmd', 'Shift', '8'], label: 'Bullet List' },
       { keys: ['Cmd', 'Shift', '7'], label: 'Ordered List' },
       { keys: ['Cmd', 'Shift', '9'], label: 'Task List' },
-      { keys: ['Cmd', 'Alt', 'C'], label: 'Code Block' },
+      { keys: ['Cmd', 'Shift', 'C'], label: 'Code Block' },
       { keys: ['Tab'], label: 'Indent List' },
       { keys: ['Shift', 'Tab'], label: 'Outdent List' }
     ]

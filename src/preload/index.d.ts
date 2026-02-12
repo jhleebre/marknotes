@@ -40,10 +40,12 @@ export interface MenuAPI {
   onRedo: (callback: () => void) => () => void
   onFind: (callback: () => void) => () => void
   onReplace: (callback: () => void) => () => void
+  onToggleDarkMode: (callback: () => void) => () => void
 }
 
 export interface ThemeAPI {
   onChanged: (callback: (isDark: boolean) => void) => () => void
+  update: (isDark: boolean) => void
 }
 
 export interface ShellAPI {

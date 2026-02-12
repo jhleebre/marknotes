@@ -127,9 +127,7 @@
 }
 
 .search-button.close:hover {
-  background-color: #ff4444;
-  border-color: #ff4444;
-  color: white;
+  background-color: var(--active-bg);
 }
 
 .search-divider {
@@ -163,6 +161,5 @@
 }
 
 :root.dark .search-button.close:hover {
-  background-color: #cc0000;
-  border-color: #cc0000;
+  background-color: var(--active-bg);
 }

@@ -1,6 +1,6 @@
 import { app, Menu, BrowserWindow, MenuItemConstructorOptions } from 'electron'
 
-export function setupMenu(mainWindow: BrowserWindow): void {
+export function setupMenu(mainWindow: BrowserWindow, isDark: boolean = false): void {
   const isMac = process.platform === 'darwin'
 
   const template: MenuItemConstructorOptions[] = [
@@ -103,7 +103,7 @@ export function setupMenu(mainWindow: BrowserWindow): void {
         },
         {
           label: 'Replace',
-          accelerator: 'CmdOrCtrl+Alt+F',
+          accelerator: 'CmdOrCtrl+Shift+F',
           click: (): void => {
             mainWindow.webContents.send('menu:replace')
           }
@@ -145,6 +145,12 @@ export function setupMenu(mainWindow: BrowserWindow): void {
           accelerator: 'CmdOrCtrl+.',
           click: (): void => {
             mainWindow.webContents.send('menu:toggleSidebar')
+          }
+        },
+        {
+          label: isDark ? 'Light Mode' : 'Dark Mode',
+          click: (): void => {
+            mainWindow.webContents.send('menu:toggleDarkMode')
           }
         },
         { type: 'separator' },

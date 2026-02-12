@@ -1,6 +1,6 @@
 {
   "name": "marknotes",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "description": "A local-first WYSIWYG markdown editor for macOS — just write, forget syntax",
   "main": "./out/main/index.js",
   "author": "MarkNotes",
@@ -19,7 +19,8 @@
     "build:win": "npm run build && electron-builder --win --x64",
     "build:win:arm64": "npm run build && electron-builder --win --arm64",
     "build:mac": "electron-vite build && electron-builder --mac",
-    "build:linux": "electron-vite build && electron-builder --linux"
+    "build:linux": "electron-vite build && electron-builder --linux",
+    "build:all": "npm run build && electron-builder --mac --win --x64"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",

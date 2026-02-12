@@ -360,7 +360,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
             className={`title-bar-btn ${editor?.isActive('codeBlock') ? 'active' : ''}`}
             onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
             disabled={isDisabled || editor?.isActive('heading')}
-            data-tooltip="Code Block (Cmd+Option+C)"
+            data-tooltip="Code Block (Cmd+Shift+C)"
           >
             <CodeBlockIcon className="icon" />
           </button>

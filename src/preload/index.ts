@@ -108,6 +108,11 @@ const api = {
       const listener = (): void => callback()
       ipcRenderer.on('menu:replace', listener)
       return () => ipcRenderer.removeListener('menu:replace', listener)
+    },
+    onToggleDarkMode: (callback: () => void): (() => void) => {
+      const listener = (): void => callback()
+      ipcRenderer.on('menu:toggleDarkMode', listener)
+      return () => ipcRenderer.removeListener('menu:toggleDarkMode', listener)
     }
   },
   theme: {
@@ -115,6 +120,9 @@ const api = {
       const listener = (_: unknown, isDark: boolean): void => callback(isDark)
       ipcRenderer.on('theme:changed', listener)
       return () => ipcRenderer.removeListener('theme:changed', listener)
+    },
+    update: (isDark: boolean): void => {
+      ipcRenderer.send('theme:update', isDark)
     }
   },
   shell: {

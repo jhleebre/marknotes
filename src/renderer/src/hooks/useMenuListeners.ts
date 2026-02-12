@@ -91,7 +91,7 @@ export function useMenuListeners(): MenuModals {
     }
   }, [isSearchVisible, setSearchVisible, closeSearch])
 
-  // Listen for replace command (Cmd+Alt+F) - toggle search bar with replace
+  // Listen for replace command (Cmd+Shift+F) - toggle search bar with replace
   useEffect(() => {
     const unsubscribe = window.api.menu.onReplace(() => {
       if (isSearchVisible && isReplaceVisible) {
@@ -106,6 +106,18 @@ export function useMenuListeners(): MenuModals {
       unsubscribe()
     }
   }, [isSearchVisible, isReplaceVisible, setSearchVisible, setReplaceVisible, closeSearch])
+
+  // Listen for toggle dark mode menu command
+  useEffect(() => {
+    const unsubscribe = window.api.menu.onToggleDarkMode(() => {
+      const newDark = !isDarkMode
+      setIsDarkMode(newDark)
+      window.api.theme.update(newDark)
+    })
+    return () => {
+      unsubscribe()
+    }
+  }, [isDarkMode, setIsDarkMode])
 
   // Listen for cleanup images menu command
   useEffect(() => {

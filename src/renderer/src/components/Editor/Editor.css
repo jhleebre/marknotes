@@ -331,11 +331,11 @@
 }
 
 .context-menu-item-danger {
-  color: #ff3b30;
+  color: var(--danger-color);
 }
 
 .context-menu-item-danger:hover {
-  background: rgba(255, 59, 48, 0.1);
+  background: var(--danger-bg);
 }
 
 .context-menu-divider {

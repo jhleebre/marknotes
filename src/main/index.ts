@@ -51,7 +51,7 @@ function createWindow(): void {
   setupFileHandlers(mainWindow)
 
   // Setup native menu
-  setupMenu(mainWindow)
+  setupMenu(mainWindow, nativeTheme.shouldUseDarkColors)
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
@@ -132,10 +132,19 @@ app.on('before-quit', (event) => {
   }
 })
 
-// Handle theme changes
+// Handle renderer theme updates (menu label sync)
+ipcMain.on('theme:update', (_, isDark: boolean) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    setupMenu(mainWindow, isDark)
+  }
+})
+
+// Handle system theme changes
 nativeTheme.on('updated', () => {
   if (mainWindow) {
-    mainWindow.webContents.send('theme:changed', nativeTheme.shouldUseDarkColors)
+    const isDark = nativeTheme.shouldUseDarkColors
+    mainWindow.webContents.send('theme:changed', isDark)
+    setupMenu(mainWindow, isDark)
   }
 })
 

@@ -141,7 +141,7 @@ export const TaskListExtended = TaskList.extend({
 export const CodeBlockLowlightExtended = CodeBlockLowlight.extend({
   addKeyboardShortcuts() {
     return {
-      'Mod-Alt-c': () => {
+      'Mod-Shift-c': () => {
         if (this.editor.isActive('heading')) {
           return true
         }

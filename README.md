@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.9.1</strong>
+  <strong>Version 1.9.2</strong>
 </p>
 
 ---
@@ -32,7 +32,7 @@ MarkNotes is a desktop markdown editor designed for writers who want a distracti
 
 📝 **Markdown Power** - Export to PDF, edit the raw markdown if needed, and use your notes anywhere markdown works.
 
-🎨 **Beautiful Design** - Clean interface with automatic dark mode that follows your system preferences.
+🎨 **Beautiful Design** - Clean grey monotone interface with dark mode support.
 
 ---
 
@@ -54,7 +54,7 @@ MarkNotes is a desktop markdown editor designed for writers who want a distracti
 - **Blockquotes** - Beautiful styled quotes for emphasis
 - **Code Blocks** - Syntax-highlighted code snippets
 - **Tables** - Full-featured tables with formatting inside cells
-- **Find & Replace** - Search text with `Cmd+F`, replace with `Cmd+Option+F`
+- **Find & Replace** - Search text with `Cmd+F`, replace with `Cmd+Shift+F`
 
 ### 📊 Professional Tables
 
@@ -84,7 +84,7 @@ MarkNotes is a desktop markdown editor designed for writers who want a distracti
 
 ### 🌓 Native macOS Experience
 
-- **System Integration** - Follows your dark/light mode preference automatically
+- **System Integration** - Follows your system dark/light mode, or toggle manually from the View menu
 - **Standard Menus** - Familiar File, Edit, and View menus
 - **Keyboard Shortcuts** - Full keyboard control for everything
 - **Fast Tooltips** - Hover over any button to see what it does
@@ -190,7 +190,7 @@ Use the formatting buttons in the title bar or keyboard shortcuts:
 | Bullet List       | `Cmd+Shift+8`        |
 | Task List         | `Cmd+Shift+9`        |
 | Blockquote        | `Cmd+Shift+B`        |
-| Code Block        | `Cmd+Option+C`       |
+| Code Block        | `Cmd+Shift+C`        |
 | Heading 1-6       | `Cmd+Option+1-6`     |
 | Normal Paragraph  | `Cmd+Option+0`       |
 
@@ -201,7 +201,7 @@ Use the formatting buttons in the title bar or keyboard shortcuts:
 | Undo               | `Cmd+Z`          |
 | Redo               | `Cmd+Shift+Z`    |
 | Find               | `Cmd+F`          |
-| Find & Replace     | `Cmd+Option+F`   |
+| Find & Replace     | `Cmd+Shift+F`    |
 | Indent (in lists)  | `Tab`            |
 | Outdent (in lists) | `Shift+Tab`      |
 
@@ -262,7 +262,7 @@ No, MarkNotes is local-only by design. This keeps your notes private and fast. I
 
 ### Can I customize the appearance?
 
-MarkNotes automatically follows your system dark/light mode. The interface uses standard macOS styling for a native feel.
+MarkNotes follows your system dark/light mode by default. You can also manually toggle between modes from **View > Dark Mode / Light Mode**. The sidebar width is adjustable by dragging the divider.
 
 ### What about Windows or Linux?
 
