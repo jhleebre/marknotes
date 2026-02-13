@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 
 const STORAGE_KEY = 'sidebar-width'
-const DEFAULT_WIDTH = 260
+const DEFAULT_WIDTH = 245
 const MIN_WIDTH = 200
 const MAX_WIDTH = 400
 const DIVIDER_WIDTH = 4

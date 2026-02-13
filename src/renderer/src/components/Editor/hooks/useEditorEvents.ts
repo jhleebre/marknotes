@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useDocumentStore } from '../../../store/useDocumentStore'
+import { saveCurrentPosition } from '../../../utils/cursorScrollCache'
 
 export function useEditorEvents(
   handleLinkButtonClick: () => void,
@@ -84,6 +85,7 @@ export function useEditorEvents(
             !href.startsWith('file://') &&
             !href.startsWith('/')
           ) {
+            saveCurrentPosition(currentFilePath)
             const loadRelativeFile = async (): Promise<void> => {
               try {
                 const decodedHref = decodeURIComponent(href)

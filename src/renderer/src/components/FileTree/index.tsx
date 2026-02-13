@@ -7,6 +7,7 @@ import { FileTreeItem } from './FileTreeItem'
 import { useFileTreeContextMenu } from './hooks/useFileTreeContextMenu'
 import { useDragAndDrop } from './hooks/useDragAndDrop'
 import { markWrite, getLastWriteTime } from '../../utils/writeTracker'
+import { saveCurrentPosition, removeCursorScroll } from '../../utils/cursorScrollCache'
 import './FileTree.css'
 
 export function FileTree(): React.JSX.Element {
@@ -79,6 +80,7 @@ export function FileTree(): React.JSX.Element {
 
   const handleFileSelect = useCallback(
     async (path: string, name: string): Promise<void> => {
+      saveCurrentPosition(currentFilePath)
       if (currentFilePath && content !== originalContent) {
         try {
           markWrite()
@@ -115,6 +117,7 @@ export function FileTree(): React.JSX.Element {
       try {
         const result = await window.api.file.delete(entry.path)
         if (result.success) {
+          removeCursorScroll(entry.path)
           if (entry.path === currentFilePath) {
             setCurrentFile(null, null)
             setContent('')

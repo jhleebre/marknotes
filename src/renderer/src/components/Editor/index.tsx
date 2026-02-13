@@ -19,6 +19,11 @@ import { useLinkHandlers } from './hooks/useLinkHandlers'
 import { useImageHandlers } from './hooks/useImageHandlers'
 import { useEditorEvents } from './hooks/useEditorEvents'
 import { useDropHandler } from './hooks/useDropHandler'
+import {
+  setEditorPositionGetter,
+  saveCurrentPosition,
+  getCursorScroll
+} from '../../utils/cursorScrollCache'
 import './Editor.css'
 
 interface EditorProps {
@@ -156,6 +161,7 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
                 !href.startsWith('file://') &&
                 !href.startsWith('/')
               ) {
+                saveCurrentPosition(currentFilePath)
                 const loadRelativeFile = async (): Promise<void> => {
                   try {
                     const decodedHref = decodeURIComponent(href)
@@ -298,6 +304,19 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
   // Hook: drag-and-drop image insertion
   useDropHandler(handleImageInsert, currentFilePath)
 
+  // Register position getter for cursor/scroll cache
+  useEffect(() => {
+    if (!editor) return
+    setEditorPositionGetter(() => {
+      const { from, to } = editor.state.selection
+      const editorEl = document.querySelector('.wysiwyg-editor') as HTMLElement | null
+      return { cursorFrom: from, cursorTo: to, scrollTop: editorEl?.scrollTop ?? 0 }
+    })
+    return () => {
+      setEditorPositionGetter(null)
+    }
+  }, [editor])
+
   // Listen for menu undo/redo
   useEffect(() => {
     const unsubUndo = window.api.menu.onUndo(() => {
@@ -356,6 +375,27 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
             plugins: state.plugins
           })
           editor.view.updateState(freshState)
+
+          // Restore cursor and scroll position if previously saved
+          if (currentFilePath) {
+            const saved = getCursorScroll(currentFilePath)
+            if (saved) {
+              try {
+                const docSize = editor.state.doc.content.size
+                const from = Math.min(saved.cursorFrom, docSize)
+                const to = Math.min(saved.cursorTo, docSize)
+                editor.commands.setTextSelection({ from, to })
+                requestAnimationFrame(() => {
+                  const editorEl = document.querySelector('.wysiwyg-editor') as HTMLElement | null
+                  if (editorEl) {
+                    editorEl.scrollTop = saved.scrollTop
+                  }
+                })
+              } catch {
+                // Position no longer valid (e.g. doc was externally modified) — ignore
+              }
+            }
+          }
         }
       }
       loadContent()
