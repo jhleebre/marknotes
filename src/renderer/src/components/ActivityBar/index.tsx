@@ -127,6 +127,15 @@ export function ActivityBar(): React.JSX.Element {
 
       <div className="activity-bar-divider" />
 
+      {/* Export */}
+      <Tooltip label="Export PDF (Cmd+Shift+P)">
+        <button className="activity-bar-btn" onClick={handleExportPdf} disabled={!hasFile}>
+          <PdfExportIcon className="icon" />
+        </button>
+      </Tooltip>
+
+      <div className="activity-bar-spacer" />
+
       {/* Zoom controls */}
       <Tooltip label="Zoom In (Cmd+=)">
         <button className="activity-bar-btn" onClick={handleZoomIn}>
@@ -143,17 +152,6 @@ export function ActivityBar(): React.JSX.Element {
           <ZoomResetIcon className="icon" />
         </button>
       </Tooltip>
-
-      <div className="activity-bar-divider" />
-
-      {/* Export */}
-      <Tooltip label="Export PDF (Cmd+Shift+P)">
-        <button className="activity-bar-btn" onClick={handleExportPdf} disabled={!hasFile}>
-          <PdfExportIcon className="icon" />
-        </button>
-      </Tooltip>
-
-      <div className="activity-bar-spacer" />
 
       <div className="activity-bar-divider" />
 
