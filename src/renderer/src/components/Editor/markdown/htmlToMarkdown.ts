@@ -9,6 +9,23 @@ const turndownService = new TurndownService({
   strongDelimiter: '**'
 })
 
+// Strip trailing newlines from code blocks to prevent accumulation on round-trip
+turndownService.addRule('fencedCodeBlock', {
+  filter: function (node) {
+    return node.nodeName === 'PRE' && !!node.querySelector('code')
+  },
+  replacement: function (_content, node) {
+    const codeNode = node.querySelector('code')
+    if (!codeNode) return ''
+
+    const className = codeNode.getAttribute('class') || ''
+    const language = (className.match(/language-(\S+)/) || [null, ''])[1] || ''
+    const code = (codeNode.textContent || '').replace(/\n+$/, '')
+
+    return '\n\n```' + language + '\n' + code + '\n```\n\n'
+  }
+})
+
 // Add strikethrough conversion rule
 turndownService.addRule('strikethrough', {
   filter: function (node) {

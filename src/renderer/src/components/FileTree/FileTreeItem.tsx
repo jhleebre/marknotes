@@ -218,7 +218,7 @@ export function FileTreeItem({
             onClick={(e) => e.stopPropagation()}
           />
         ) : (
-          <span className="file-name">{getDisplayName(entry.name, entry.isDirectory)}</span>
+          <span className={`file-name${entry.isDirectory ? ' folder-name' : ''}`}>{getDisplayName(entry.name, entry.isDirectory)}</span>
         )}
       </div>
       {entry.isDirectory && isExpanded && entry.children && (

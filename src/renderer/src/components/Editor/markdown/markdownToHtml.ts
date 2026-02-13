@@ -39,6 +39,14 @@ renderer.tablecell = function (token) {
   return `<${type}${style}>${parsedText}</${type}>\n`
 }
 
+// Strip trailing newline from code blocks to prevent extra empty line in editor
+renderer.code = function ({ text, lang }) {
+  const language = lang || ''
+  const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const classAttr = language ? ` class="language-${language}"` : ''
+  return `<pre><code${classAttr}>${escaped}</code></pre>\n`
+}
+
 // Custom image renderer to support size classes
 renderer.image = function ({ href, title, text }) {
   const alt = text || ''

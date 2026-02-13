@@ -48,8 +48,6 @@ export function FileTree(): React.JSX.Element {
 
       if (listResult.success && listResult.files) {
         setFiles(listResult.files)
-        const rootFolders = listResult.files.filter((f) => f.isDirectory).map((f) => f.path)
-        setExpandedFolders((prev) => new Set([...prev, ...rootFolders]))
       }
     } catch (error) {
       console.error('Failed to load files:', error)

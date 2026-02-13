@@ -12,6 +12,14 @@
   <strong>Version 1.9.3</strong>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/screenshot-lightmode.png" alt="MarkNotes - Light Mode" width="800" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/screenshot-darkmode.png" alt="MarkNotes - Dark Mode" width="800" />
+</p>
+
 ---
 
 ## What is MarkNotes?
