@@ -17,10 +17,7 @@ interface UseSearchResult {
   replaceAll: () => void
 }
 
-export function useSearch(
-  editor: Editor | null,
-  onScrollToMatch?: () => void
-): UseSearchResult {
+export function useSearch(editor: Editor | null, onScrollToMatch?: () => void): UseSearchResult {
   const { searchQuery, replaceText, caseSensitive, isSearchVisible } = useDocumentStore()
 
   const [matches, setMatches] = useState<SearchMatch[]>([])

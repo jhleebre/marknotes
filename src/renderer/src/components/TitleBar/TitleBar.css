@@ -22,7 +22,7 @@
 
 /* macOS: add left padding for traffic light buttons */
 .title-bar.darwin .title-bar-drag-region {
-  padding-left: 120px;
+  padding-left: 90px;
 }
 
 /* Windows/Linux: add right padding for window controls */

@@ -23,7 +23,7 @@ import {
   Copy,
   Clipboard,
   TextSelect,
-  File,
+  FileText,
   Folder,
   FolderPlus,
   Pencil,
@@ -42,7 +42,16 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   ChevronDown,
-  FolderRoot
+  FolderRoot,
+  Search,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  UnfoldVertical,
+  FoldVertical,
+  Sun,
+  Moon,
+  PanelRight
 } from 'lucide-react'
 
 // Export all icons with consistent naming
@@ -69,7 +78,7 @@ export const CutIcon = Scissors
 export const CopyIcon = Copy
 export const PasteIcon = Clipboard
 export const SelectAllIcon = TextSelect
-export const FileIcon = File
+export const FileIcon = FileText
 export const FolderIcon = Folder
 export const FolderPlusIcon = FolderPlus
 export const RenameIcon = Pencil
@@ -95,3 +104,14 @@ export const ChevronIcon = ChevronDown
 export const RootFolderIcon = FolderRoot
 export const CloseIcon = X
 export const FolderOpenIcon = Folder
+
+// ActivityBar icons
+export const SearchIcon = Search
+export const ZoomInIcon = ZoomIn
+export const ZoomOutIcon = ZoomOut
+export const ZoomResetIcon = RotateCcw
+export const ExpandAllIcon = UnfoldVertical
+export const CollapseAllIcon = FoldVertical
+export const SunIcon = Sun
+export const MoonIcon = Moon
+export const MetadataPanelIcon = PanelRight

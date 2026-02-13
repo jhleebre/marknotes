@@ -1,6 +1,11 @@
 import { create } from 'zustand'
 import type { FileEntry } from '../../../shared/types'
 
+export interface RecentFile {
+  path: string
+  name: string
+}
+
 export type EditorMode = 'wysiwyg' | 'split'
 
 export type SaveStatus = 'saved' | 'saving' | 'unsaved' | 'error'
@@ -30,6 +35,9 @@ export interface DocumentState {
   // UI state
   isSidebarVisible: boolean
   isDarkMode: boolean
+
+  // Recent files
+  recentFiles: RecentFile[]
 
   // Search state
   isSearchVisible: boolean
@@ -64,6 +72,8 @@ export interface DocumentState {
   setCaseSensitive: (sensitive: boolean) => void
   closeSearch: () => void
 
+  removeRecentFile: (path: string) => void
+
   // Computed
   hasUnsavedChanges: () => boolean
 }
@@ -94,6 +104,16 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   isSidebarVisible: true,
   isDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
 
+  // Recent files
+  recentFiles: (() => {
+    try {
+      const stored = localStorage.getItem('recentFiles')
+      return stored ? (JSON.parse(stored) as RecentFile[]) : []
+    } catch {
+      return []
+    }
+  })(),
+
   // Search state
   isSearchVisible: false,
   searchQuery: '',
@@ -106,12 +126,32 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   setRootPath: (path): void => set({ rootPath: path }),
   setIsLoadingFiles: (loading): void => set({ isLoadingFiles: loading }),
 
-  setCurrentFile: (path, name): void =>
-    set({
-      currentFilePath: path,
-      currentFileName: name,
-      saveStatus: 'saved'
-    }),
+  setCurrentFile: (path, name): void => {
+    if (path && name) {
+      const state = get()
+      const updated = [{ path, name }, ...state.recentFiles.filter((f) => f.path !== path)].slice(
+        0,
+        5
+      )
+      try {
+        localStorage.setItem('recentFiles', JSON.stringify(updated))
+      } catch {
+        // ignore storage errors
+      }
+      set({
+        currentFilePath: path,
+        currentFileName: name,
+        saveStatus: 'saved',
+        recentFiles: updated
+      })
+    } else {
+      set({
+        currentFilePath: path,
+        currentFileName: name,
+        saveStatus: 'saved'
+      })
+    }
+  },
 
   setContent: (content): void => {
     const state = get()
@@ -170,6 +210,17 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
       searchQuery: '',
       replaceText: ''
     }),
+
+  removeRecentFile: (path): void => {
+    const state = get()
+    const updated = state.recentFiles.filter((f) => f.path !== path)
+    try {
+      localStorage.setItem('recentFiles', JSON.stringify(updated))
+    } catch {
+      // ignore storage errors
+    }
+    set({ recentFiles: updated })
+  },
 
   // Computed
   hasUnsavedChanges: (): boolean => {

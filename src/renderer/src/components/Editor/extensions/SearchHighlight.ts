@@ -27,9 +27,7 @@ export const SearchHighlight = Extension.create({
           },
           apply(tr, oldState) {
             // Get search metadata from transaction
-            const meta = tr.getMeta(SearchHighlightPluginKey) as
-              | SearchHighlightOptions
-              | undefined
+            const meta = tr.getMeta(SearchHighlightPluginKey) as SearchHighlightOptions | undefined
 
             if (meta) {
               // Create decorations for all search results

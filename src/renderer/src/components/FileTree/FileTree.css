@@ -174,10 +174,11 @@
   color: var(--text-primary);
   transition: transform 0.2s ease;
   flex-shrink: 0;
+  transform: rotate(-90deg);
 }
 
 .chevron.expanded {
-  transform: rotate(90deg);
+  transform: rotate(0deg);
 }
 
 /* Rename input */

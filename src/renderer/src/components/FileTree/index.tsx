@@ -10,6 +10,17 @@ import { markWrite, getLastWriteTime } from '../../utils/writeTracker'
 import { saveCurrentPosition, removeCursorScroll } from '../../utils/cursorScrollCache'
 import './FileTree.css'
 
+function collectAllFolderPaths(entries: FileEntry[]): string[] {
+  const paths: string[] = []
+  for (const entry of entries) {
+    if (entry.isDirectory) {
+      paths.push(entry.path)
+      if (entry.children) paths.push(...collectAllFolderPaths(entry.children))
+    }
+  }
+  return paths
+}
+
 export function FileTree(): React.JSX.Element {
   const {
     files,
@@ -347,16 +358,27 @@ export function FileTree(): React.JSX.Element {
       openCreateFolderModal()
     }
 
+    const handleExpandAll = (): void => {
+      setExpandedFolders(new Set(collectAllFolderPaths(files)))
+    }
+    const handleCollapseAll = (): void => {
+      setExpandedFolders(new Set())
+    }
+
     document.addEventListener('request-new-file', handleRequestNewFile)
     document.addEventListener('request-new-folder', handleRequestNewFolder)
+    document.addEventListener('filetree-expand-all', handleExpandAll)
+    document.addEventListener('filetree-collapse-all', handleCollapseAll)
 
     return () => {
       unsubscribeNewFile()
       unsubscribeNewFolder()
       document.removeEventListener('request-new-file', handleRequestNewFile)
       document.removeEventListener('request-new-folder', handleRequestNewFolder)
+      document.removeEventListener('filetree-expand-all', handleExpandAll)
+      document.removeEventListener('filetree-collapse-all', handleCollapseAll)
     }
-  }, [openCreateFileModal, openCreateFolderModal])
+  }, [openCreateFileModal, openCreateFolderModal, files])
 
   const handleModalCreate = useCallback(
     (name: string, parentPath: string | null) => {

@@ -1,14 +1,18 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 
 const STORAGE_KEY = 'sidebar-width'
-const DEFAULT_WIDTH = 245
+const DEFAULT_WIDTH = 263
 const MIN_WIDTH = 200
 const MAX_WIDTH = 400
 const DIVIDER_WIDTH = 4
 const MIN_MAIN_CONTENT_WIDTH = 540
+const ACTIVITY_BAR_WIDTH = 41
 
 function getMaxAllowed(): number {
-  return Math.min(MAX_WIDTH, window.innerWidth - MIN_MAIN_CONTENT_WIDTH - DIVIDER_WIDTH)
+  return Math.min(
+    MAX_WIDTH,
+    window.innerWidth - MIN_MAIN_CONTENT_WIDTH - DIVIDER_WIDTH - ACTIVITY_BAR_WIDTH
+  )
 }
 
 interface SidebarResize {
@@ -60,7 +64,7 @@ export function useSidebarResize(): SidebarResize {
 
     const handleMouseMove = (e: MouseEvent): void => {
       const maxAllowed = getMaxAllowed()
-      const newWidth = Math.min(maxAllowed, Math.max(MIN_WIDTH, e.clientX))
+      const newWidth = Math.min(maxAllowed, Math.max(MIN_WIDTH, e.clientX - ACTIVITY_BAR_WIDTH))
       widthRef.current = newWidth
       setSidebarWidth(newWidth)
     }

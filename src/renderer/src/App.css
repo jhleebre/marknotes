@@ -164,6 +164,71 @@ body {
   margin-bottom: 32px;
 }
 
+.welcome-recent {
+  margin-bottom: 28px;
+  text-align: left;
+}
+
+.welcome-recent h3 {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+
+.recent-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+.recent-item:hover {
+  background: var(--hover-bg);
+}
+
+.recent-item:active {
+  background: var(--active-bg);
+}
+
+.recent-item .icon {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.recent-item-name {
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.recent-item-path {
+  color: var(--text-tertiary);
+  font-size: 12px;
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .welcome-shortcuts {
   display: flex;
   flex-direction: column;

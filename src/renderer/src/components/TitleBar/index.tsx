@@ -4,10 +4,6 @@ import { useAutoSave } from '../../hooks/useAutoSave'
 import { markWrite } from '../../utils/writeTracker'
 import type { Editor as TipTapEditor } from '@tiptap/react'
 import {
-  SidebarIcon,
-  SidebarHiddenIcon,
-  FilePlusIcon,
-  FolderPlusIcon,
   UndoIcon,
   RedoIcon,
   BoldIcon,
@@ -25,7 +21,6 @@ import {
   HRIcon,
   TableIcon,
   ImageIcon,
-  PdfExportIcon,
   CloseFileIcon
 } from '../../utils/icons'
 import './TitleBar.css'
@@ -36,8 +31,6 @@ interface TitleBarProps {
 
 export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
   const {
-    isSidebarVisible,
-    toggleSidebar,
     currentFilePath,
     currentFileName,
     content,
@@ -92,16 +85,6 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
     setOriginalContent('')
   }, [currentFilePath, content, originalContent, setCurrentFile, setContent, setOriginalContent])
 
-  const handleNewFile = useCallback(() => {
-    // Dispatch custom event that FileTree will listen to
-    document.dispatchEvent(new CustomEvent('request-new-file'))
-  }, [])
-
-  const handleNewFolder = useCallback(() => {
-    // Dispatch custom event that FileTree will listen to
-    document.dispatchEvent(new CustomEvent('request-new-folder'))
-  }, [])
-
   // Listen for menu commands
   useEffect(() => {
     const unsubscribeSave = window.api.menu.onSave(() => {
@@ -122,35 +105,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
   return (
     <div className={`title-bar ${platform}`}>
       <div className="title-bar-drag-region">
-        {/* Left section: Sidebar toggle, New file, New folder */}
         <div className="title-bar-section title-bar-left">
-          <button
-            className="title-bar-btn"
-            onClick={toggleSidebar}
-            data-tooltip={isSidebarVisible ? 'Hide Sidebar (Cmd+.)' : 'Show Sidebar (Cmd+.)'}
-          >
-            {isSidebarVisible ? (
-              <SidebarIcon className="icon" />
-            ) : (
-              <SidebarHiddenIcon className="icon" />
-            )}
-          </button>
-
-          <div className="title-bar-divider" />
-
-          <button className="title-bar-btn" onClick={handleNewFile} data-tooltip="New File (Cmd+N)">
-            <FilePlusIcon className="icon" />
-          </button>
-          <button
-            className="title-bar-btn"
-            onClick={handleNewFolder}
-            data-tooltip="New Folder (Cmd+Shift+N)"
-          >
-            <FolderPlusIcon className="icon" />
-          </button>
-
-          <div className="title-bar-divider" />
-
           {/* Undo, Redo */}
           <button
             className="title-bar-btn"
@@ -395,15 +350,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
 
           <div className="title-bar-divider" />
 
-          {/* Export and close */}
-          <button
-            className="title-bar-btn"
-            onClick={handleExportPdf}
-            disabled={isDisabled}
-            data-tooltip="Export as PDF (Cmd+Shift+P)"
-          >
-            <PdfExportIcon className="icon" />
-          </button>
+          {/* Close file */}
           <button
             className="title-bar-btn"
             onClick={handleCloseFile}

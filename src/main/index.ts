@@ -7,8 +7,22 @@ import { setupMenu } from './menu'
 // Set app name early for macOS menu bar
 app.name = 'MarkNotes'
 
+// Enforce single instance — if a second instance launches, focus the existing window
+const gotTheLock = app.requestSingleInstanceLock()
+
+if (!gotTheLock) {
+  app.quit()
+}
+
 let mainWindow: BrowserWindow | null = null
 let isQuitting = false
+
+app.on('second-instance', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.focus()
+  }
+})
 
 function createWindow(): void {
   // Create the browser window.
@@ -136,6 +150,23 @@ app.on('before-quit', (event) => {
 ipcMain.on('theme:update', (_, isDark: boolean) => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     setupMenu(mainWindow, isDark)
+  }
+})
+
+// Zoom controls
+ipcMain.handle('zoom:in', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.setZoomLevel(mainWindow.webContents.getZoomLevel() + 0.5)
+  }
+})
+ipcMain.handle('zoom:out', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.setZoomLevel(mainWindow.webContents.getZoomLevel() - 0.5)
+  }
+})
+ipcMain.handle('zoom:reset', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.setZoomLevel(0)
   }
 })
 

@@ -141,6 +141,11 @@ const api = {
       ipcRenderer.invoke('image:saveBase64', filename, base64Data),
     cleanup: (): Promise<FileResult> => ipcRenderer.invoke('image:cleanup')
   },
+  zoom: {
+    zoomIn: (): Promise<void> => ipcRenderer.invoke('zoom:in'),
+    zoomOut: (): Promise<void> => ipcRenderer.invoke('zoom:out'),
+    reset: (): Promise<void> => ipcRenderer.invoke('zoom:reset')
+  },
   app: {
     onSaveBeforeQuit: (callback: () => void): (() => void) => {
       const listener = (): void => callback()

@@ -62,6 +62,12 @@ export interface ImageAPI {
   cleanup: () => Promise<FileResult>
 }
 
+export interface ZoomAPI {
+  zoomIn: () => Promise<void>
+  zoomOut: () => Promise<void>
+  reset: () => Promise<void>
+}
+
 export interface AppAPI {
   onSaveBeforeQuit: (callback: () => void) => () => void
   saveComplete: () => void
@@ -74,6 +80,7 @@ export interface API {
   theme: ThemeAPI
   shell: ShellAPI
   image: ImageAPI
+  zoom: ZoomAPI
   app: AppAPI
 }
 

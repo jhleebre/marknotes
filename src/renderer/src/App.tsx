@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { FileTree } from './components/FileTree'
 import { TitleBar } from './components/TitleBar'
+import { ActivityBar } from './components/ActivityBar'
 import { Editor } from './components/Editor'
 import { StatusBar } from './components/StatusBar'
 import { WelcomeScreen } from './components/WelcomeScreen'
@@ -23,6 +24,7 @@ function App(): React.JSX.Element {
     <div className="app">
       <TitleBar editor={editor} />
       <div className="app-body">
+        <ActivityBar />
         {isSidebarVisible && (
           <>
             <div className="file-tree-wrapper" style={{ width: sidebarWidth }}>

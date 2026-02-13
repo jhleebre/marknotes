@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.9.4</strong>
+  <strong>Version 1.9.5</strong>
 </p>
 
 <p align="center">
@@ -91,12 +91,21 @@ MarkNotes is a desktop markdown editor designed for writers who want a distracti
 - **Formatted Output** - All your styles, images, and tables export perfectly
 - **Save Anywhere** - Choose where to save each export
 
+### 🔧 Activity Bar
+
+- **Always Visible** - Icon-only sidebar on the left for quick access to key actions
+- **File Tree Controls** - Toggle sidebar, expand/collapse all folders
+- **Quick Create** - New file and new folder buttons always within reach
+- **Zoom Controls** - Zoom in, zoom out, and reset zoom
+- **PDF Export** - One-click export without opening menus
+- **Dark Mode Toggle** - Switch between light and dark mode instantly
+
 ### 🌓 Native macOS Experience
 
-- **System Integration** - Follows your system dark/light mode, or toggle manually from the View menu
+- **System Integration** - Follows your system dark/light mode, or toggle from the Activity Bar
 - **Standard Menus** - Familiar File, Edit, and View menus
 - **Keyboard Shortcuts** - Full keyboard control for everything
-- **Fast Tooltips** - Hover over any button to see what it does
+- **Fast Tooltips** - Hover over any button to see what it does and its shortcut
 
 ---
 
@@ -123,13 +132,13 @@ On first launch, MarkNotes creates a `MarkNotes` folder in your Documents and ad
 ### Create Your First Note
 
 1. Launch MarkNotes
-2. Press `Cmd+N` or click "New File" in the title bar
+2. Press `Cmd+N` or click the new file button in the Activity Bar
 3. Choose a location and name for your note
 4. Start writing!
 
 ### Format Your Text
 
-Use the formatting buttons in the title bar or keyboard shortcuts:
+Use the formatting buttons in the toolbar or keyboard shortcuts:
 
 - **Bold** - Select text and press `Cmd+B`
 - **Italic** - Select text and press `Cmd+I`
@@ -138,7 +147,7 @@ Use the formatting buttons in the title bar or keyboard shortcuts:
 
 ### Add a Table
 
-1. Click the table icon in the title bar
+1. Click the table icon in the toolbar
 2. A 3×3 table appears at your cursor
 3. Click in cells to start typing
 4. Press Tab to move to the next cell
@@ -149,7 +158,8 @@ Use the formatting buttons in the title bar or keyboard shortcuts:
 **Drag & Drop** - Simply drag image files from Finder into the editor.
 
 **Or use the image button:**
-1. Click the image icon in the title bar
+
+1. Click the image icon in the toolbar
 2. Select an image file from your computer
 3. Optionally add alt text (description)
 4. Click "Insert Image"
@@ -164,7 +174,7 @@ Use the formatting buttons in the title bar or keyboard shortcuts:
 
 ### Export to PDF
 
-1. Press `Cmd+Shift+P` or click the PDF export button
+1. Press `Cmd+Shift+P` or click the PDF export button in the Activity Bar
 2. Choose where to save your PDF
 3. Done! Your formatted document is ready to share
 
@@ -174,48 +184,48 @@ Use the formatting buttons in the title bar or keyboard shortcuts:
 
 ### Files & Navigation
 
-| Action              | Shortcut            |
-| ------------------- | ------------------- |
-| New File            | `Cmd+N`             |
-| New Folder          | `Cmd+Shift+N`       |
-| Force Save          | `Cmd+S`             |
-| Close File          | `Cmd+W`             |
-| Toggle Sidebar      | `Cmd+.`             |
-| Switch to Edit Mode | `Cmd+1`             |
-| Switch to Code Mode | `Cmd+2`             |
-| Export as PDF       | `Cmd+Shift+P`       |
-| Zoom In             | `Cmd+=`             |
-| Zoom Out            | `Cmd+-`             |
-| Actual Size         | `Cmd+0`             |
-| Keyboard Shortcuts  | `Cmd+/`             |
+| Action              | Shortcut      |
+| ------------------- | ------------- |
+| New File            | `Cmd+N`       |
+| New Folder          | `Cmd+Shift+N` |
+| Force Save          | `Cmd+S`       |
+| Close File          | `Cmd+W`       |
+| Toggle Sidebar      | `Cmd+.`       |
+| Switch to Edit Mode | `Cmd+1`       |
+| Switch to Code Mode | `Cmd+2`       |
+| Export as PDF       | `Cmd+Shift+P` |
+| Zoom In             | `Cmd+=`       |
+| Zoom Out            | `Cmd+-`       |
+| Actual Size         | `Cmd+0`       |
+| Keyboard Shortcuts  | `Cmd+/`       |
 
 ### Text Formatting
 
-| Action            | Shortcut             |
-| ----------------- | -------------------- |
-| Bold              | `Cmd+B`              |
-| Italic            | `Cmd+I`              |
-| Strikethrough     | `Cmd+Shift+X`        |
-| Inline Code       | `Cmd+E`              |
-| Insert Link       | `Cmd+K`              |
-| Numbered List     | `Cmd+Shift+7`        |
-| Bullet List       | `Cmd+Shift+8`        |
-| Task List         | `Cmd+Shift+9`        |
-| Blockquote        | `Cmd+Shift+B`        |
-| Code Block        | `Cmd+Shift+C`        |
-| Heading 1-6       | `Cmd+Option+1-6`     |
-| Normal Paragraph  | `Cmd+Option+0`       |
+| Action           | Shortcut         |
+| ---------------- | ---------------- |
+| Bold             | `Cmd+B`          |
+| Italic           | `Cmd+I`          |
+| Strikethrough    | `Cmd+Shift+X`    |
+| Inline Code      | `Cmd+E`          |
+| Insert Link      | `Cmd+K`          |
+| Numbered List    | `Cmd+Shift+7`    |
+| Bullet List      | `Cmd+Shift+8`    |
+| Task List        | `Cmd+Shift+9`    |
+| Blockquote       | `Cmd+Shift+B`    |
+| Code Block       | `Cmd+Shift+C`    |
+| Heading 1-6      | `Cmd+Option+1-6` |
+| Normal Paragraph | `Cmd+Option+0`   |
 
 ### Editing
 
-| Action             | Shortcut         |
-| ------------------ | ---------------- |
-| Undo               | `Cmd+Z`          |
-| Redo               | `Cmd+Shift+Z`    |
-| Find               | `Cmd+F`          |
-| Find & Replace     | `Cmd+Shift+F`    |
-| Indent (in lists)  | `Tab`            |
-| Outdent (in lists) | `Shift+Tab`      |
+| Action             | Shortcut      |
+| ------------------ | ------------- |
+| Undo               | `Cmd+Z`       |
+| Redo               | `Cmd+Shift+Z` |
+| Find               | `Cmd+F`       |
+| Find & Replace     | `Cmd+Shift+F` |
+| Indent (in lists)  | `Tab`         |
+| Outdent (in lists) | `Shift+Tab`   |
 
 ---
 
@@ -268,13 +278,14 @@ Yes! MarkNotes uses standard markdown files. You can edit them in any text edito
 ### Does MarkNotes sync to the cloud?
 
 No, MarkNotes is local-only by design. This keeps your notes private and fast. If you want cloud backup, you can:
+
 - Use iCloud to sync your Documents folder
 - Copy the MarkNotes folder to Dropbox or similar
 - Use Git to version control your notes
 
 ### Can I customize the appearance?
 
-MarkNotes follows your system dark/light mode by default. You can also manually toggle between modes from **View > Dark Mode / Light Mode**. The sidebar width is adjustable by dragging the divider.
+MarkNotes follows your system dark/light mode by default. You can also toggle between modes from the Activity Bar or **View > Dark Mode / Light Mode**. The sidebar width is adjustable by dragging the divider.
 
 ### What about Windows or Linux?
 
@@ -283,6 +294,7 @@ MarkNotes is currently macOS-only, but the technology (Electron) supports other 
 ### How do I backup my notes?
 
 Your notes are just files in `~/Documents/MarkNotes/`. You can:
+
 - Use Time Machine (automatic on macOS)
 - Copy the folder to an external drive
 - Use cloud storage (Dropbox, Google Drive, etc.)
@@ -291,6 +303,7 @@ Your notes are just files in `~/Documents/MarkNotes/`. You can:
 ### Is my data safe?
 
 Yes! MarkNotes:
+
 - Never sends data anywhere (no internet connection needed)
 - Doesn't collect any analytics or telemetry
 - Auto-saves every 5 seconds to prevent data loss
@@ -309,7 +322,7 @@ Yes! MarkNotes:
 ### My files aren't showing up
 
 - Look in `~/Documents/MarkNotes/` in Finder to verify files exist
-- Click the sidebar toggle button (`Cmd+.`) if the sidebar is hidden
+- Click the sidebar toggle button in the Activity Bar (`Cmd+.`) if the sidebar is hidden
 - Only `.md` files are shown (other file types are filtered out)
 
 ### Auto-save isn't working

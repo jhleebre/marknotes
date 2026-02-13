@@ -1,0 +1,76 @@
+.activity-bar {
+  width: 40px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 4px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar */
+.activity-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.activity-bar-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.activity-bar-btn:hover:not(:disabled) {
+  background: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+.activity-bar-btn:active:not(:disabled) {
+  background: var(--active-bg);
+  transform: scale(0.95);
+}
+
+.activity-bar-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.activity-bar-divider {
+  width: 24px;
+  height: 1px;
+  background: var(--border-color);
+  flex-shrink: 0;
+  margin: 2px 0;
+}
+
+.activity-bar-spacer {
+  flex: 1;
+}
+
+/* Portal tooltip - appears to the right of buttons */
+.activity-bar-tooltip {
+  position: fixed;
+  transform: translateY(-50%);
+  padding: 4px 8px;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-text);
+  font-size: 11px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
