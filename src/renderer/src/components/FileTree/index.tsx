@@ -313,12 +313,13 @@ export function FileTree(): React.JSX.Element {
 
   // Close context menu on click outside
   useEffect(() => {
-    const handleClick = (): void => {
+    if (!contextMenu.visible) return undefined
+    const handleMouseDown = (): void => {
       closeContextMenu()
     }
-    document.addEventListener('click', handleClick)
-    return () => document.removeEventListener('click', handleClick)
-  }, [closeContextMenu])
+    document.addEventListener('mousedown', handleMouseDown)
+    return () => document.removeEventListener('mousedown', handleMouseDown)
+  }, [contextMenu.visible, closeContextMenu])
 
   // Initial load
   useEffect(() => {

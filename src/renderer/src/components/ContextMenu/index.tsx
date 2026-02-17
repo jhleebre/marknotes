@@ -137,6 +137,7 @@ export function ContextMenu({
         top: `${position.y}px`,
         zIndex
       }}
+      onMouseDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
       role="menu"
       aria-label="Context menu"
@@ -194,6 +195,7 @@ export function ContextMenu({
                   top: '0',
                   zIndex: zIndex + 1
                 }}
+                onMouseDown={(e) => e.stopPropagation()}
                 onClick={(e) => e.stopPropagation()}
               >
                 {item.submenu.map((subitem, subindex) => {
