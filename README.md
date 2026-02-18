@@ -107,7 +107,7 @@ MarkNotes is a desktop markdown editor designed for writers who want a distracti
 - **Auto Fields** - id, title, created, and updated are set automatically and read-only
 - **Editable Fields** - source, status, and tags can be edited directly in the panel
 - **Status Tracking** - Three-stage progression: draft, in-progress, stable
-- **Tags** - Add and remove tags as inline pills; tags display in the collapsed header
+- **Tags** - Add tags by pressing Enter, cancel input with Escape; tags display as inline pills in the collapsed header
 - **Custom Fields** - Add your own key-value metadata beyond the defaults
 - **YAML Frontmatter** - All metadata stored as standard YAML frontmatter in the markdown file
 - **Auto-Updated** - The updated date stamps automatically on every save

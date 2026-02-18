@@ -43,6 +43,7 @@ export function MetadataPanel(): React.JSX.Element | null {
   const [newFieldValue, setNewFieldValue] = useState('')
   const tagInputRef = useRef<HTMLInputElement>(null)
   const fieldKeyRef = useRef<HTMLInputElement>(null)
+  const tagCancelledRef = useRef(false)
   const defaultsAppliedRef = useRef<string | null>(null)
 
   const { data } = parseFrontmatter(content)
@@ -129,9 +130,14 @@ export function MetadataPanel(): React.JSX.Element | null {
 
   const handleTagKeyDown = useCallback(
     (e: React.KeyboardEvent): void => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
         e.preventDefault()
         handleAddTag()
+      } else if (e.key === 'Escape') {
+        e.preventDefault()
+        tagCancelledRef.current = true
+        setNewTag('')
+        tagInputRef.current?.blur()
       }
     },
     [handleAddTag]
@@ -308,7 +314,13 @@ export function MetadataPanel(): React.JSX.Element | null {
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
                 onKeyDown={handleTagKeyDown}
-                onBlur={handleAddTag}
+                onBlur={() => {
+                  if (tagCancelledRef.current) {
+                    tagCancelledRef.current = false
+                    return
+                  }
+                  handleAddTag()
+                }}
               />
             </div>
           </div>
