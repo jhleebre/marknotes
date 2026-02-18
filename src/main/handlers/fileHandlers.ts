@@ -10,7 +10,8 @@ import {
   renameFile,
   fileExists,
   moveFile,
-  duplicateFile
+  duplicateFile,
+  statFile
 } from '../services/fileOperations'
 import { startWatching, stopWatching } from '../services/fileWatcher'
 
@@ -57,6 +58,10 @@ export function registerFileHandlers(mainWindow: BrowserWindow): void {
 
   ipcMain.handle('file:duplicate', async (_, filePath: string) => {
     return duplicateFile(filePath)
+  })
+
+  ipcMain.handle('file:stat', async (_, filePath: string) => {
+    return statFile(filePath)
   })
 
   ipcMain.handle('file:watch', async () => {

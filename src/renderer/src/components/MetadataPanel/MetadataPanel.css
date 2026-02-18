@@ -1,0 +1,333 @@
+.metadata-panel {
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-primary);
+  flex-shrink: 0;
+}
+
+.metadata-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metadata-header:hover {
+  background: var(--hover-bg);
+}
+
+.metadata-chevron {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2;
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.metadata-chevron[data-expanded] {
+  transform: rotate(90deg);
+}
+
+.metadata-title {
+  flex: 1;
+  text-align: left;
+}
+
+.metadata-collapsed-tags {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.metadata-collapsed-tag {
+  font-size: 10px;
+  background: var(--active-bg);
+  color: var(--text-secondary);
+  padding: 1px 7px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.metadata-content {
+  padding: 0 12px 10px;
+  font-size: 12px;
+}
+
+/* Sections */
+.metadata-section {
+  padding-top: 6px;
+}
+
+.metadata-section + .metadata-section {
+  border-top: 1px solid var(--border-color);
+  margin-top: 6px;
+}
+
+.metadata-section-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 5px;
+}
+
+.metadata-section-icon {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2;
+  flex-shrink: 0;
+}
+
+/* Grid for rows */
+.metadata-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Row — shared */
+.metadata-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 22px;
+}
+
+.metadata-label {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  white-space: nowrap;
+  min-width: 60px;
+  flex-shrink: 0;
+}
+
+.metadata-value {
+  color: var(--text-secondary);
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Read-only rows */
+.metadata-row--readonly .metadata-value {
+  opacity: 0.85;
+  user-select: text;
+}
+
+.metadata-path {
+  font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  font-size: 10px;
+  direction: rtl;
+  text-align: left;
+}
+
+/* Editable field input */
+.metadata-field-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-primary);
+  font-size: 11px;
+  padding: 2px 6px;
+  outline: none;
+  font-family: inherit;
+}
+
+.metadata-field-input:hover {
+  border-color: var(--border-color);
+}
+
+.metadata-field-input:focus {
+  border-color: var(--border-hover);
+  background: var(--bg-secondary);
+}
+
+.metadata-field-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.metadata-field-key-input {
+  flex: 0 0 auto;
+  width: 70px;
+}
+
+/* Field remove */
+.metadata-field-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 2px;
+  color: var(--text-tertiary);
+  border-radius: 4px;
+  opacity: 0;
+  flex-shrink: 0;
+  transition: opacity 0.1s;
+}
+
+.metadata-row--editable:hover .metadata-field-remove {
+  opacity: 1;
+}
+
+.metadata-field-remove:hover {
+  color: var(--text-primary);
+  background: var(--hover-bg);
+}
+
+.metadata-field-remove-icon {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2;
+}
+
+/* Add field button */
+.metadata-add-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 1px;
+  color: var(--text-tertiary);
+  border-radius: 4px;
+}
+
+.metadata-add-btn:hover {
+  color: var(--text-primary);
+  background: var(--hover-bg);
+}
+
+.metadata-add-icon {
+  width: 13px;
+  height: 13px;
+  stroke-width: 2;
+}
+
+/* Status select dropdown */
+.metadata-field-select {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-primary);
+  font-size: 11px;
+  padding: 2px 4px;
+  outline: none;
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2386868b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  padding-right: 20px;
+}
+
+.metadata-field-select:hover {
+  border-color: var(--border-color);
+}
+
+.metadata-field-select:focus {
+  border-color: var(--border-hover);
+  background-color: var(--bg-secondary);
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2386868b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+}
+
+.metadata-field-select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.metadata-empty {
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-style: italic;
+  padding: 2px 0;
+}
+
+/* Tags */
+.metadata-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.metadata-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--active-bg);
+  color: var(--text-primary);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.metadata-tag-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--text-tertiary);
+  border-radius: 50%;
+}
+
+.metadata-tag-remove:hover {
+  color: var(--text-primary);
+  background: var(--hover-bg);
+}
+
+.metadata-tag-remove-icon {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2;
+}
+
+.metadata-tag-input {
+  border: 1px solid transparent;
+  background: none;
+  color: var(--text-primary);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  outline: none;
+  width: 80px;
+  min-width: 60px;
+}
+
+.metadata-tag-input:focus {
+  border-color: var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.metadata-tag-input::placeholder {
+  color: var(--text-tertiary);
+}

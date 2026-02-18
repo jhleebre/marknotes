@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useDocumentStore } from '../../store/useDocumentStore'
 import { useAutoSave } from '../../hooks/useAutoSave'
 import { markWrite } from '../../utils/writeTracker'
+import { extractBody } from '../../utils/frontmatter'
 import type { Editor as TipTapEditor } from '@tiptap/react'
 import {
   UndoIcon,
@@ -62,7 +63,7 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
   const handleExportPdf = useCallback(async (): Promise<void> => {
     if (!content || !currentFileName) return
     try {
-      await window.api.export.pdf(content, currentFileName)
+      await window.api.export.pdf(extractBody(content), currentFileName)
     } catch (error) {
       console.error('Failed to export PDF:', error)
     }

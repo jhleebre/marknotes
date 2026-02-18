@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useDocumentStore } from '../../store/useDocumentStore'
+import { extractBody } from '../../utils/frontmatter'
 import {
   SidebarIcon,
   SidebarHiddenIcon,
@@ -13,8 +14,7 @@ import {
   ZoomResetIcon,
   PdfExportIcon,
   SunIcon,
-  MoonIcon,
-  MetadataPanelIcon
+  MoonIcon
 } from '../../utils/icons'
 import { Tooltip } from './Tooltip'
 import './ActivityBar.css'
@@ -61,7 +61,7 @@ export function ActivityBar(): React.JSX.Element {
   const handleExportPdf = useCallback(async (): Promise<void> => {
     if (!content || !currentFileName) return
     try {
-      await window.api.export.pdf(content, currentFileName)
+      await window.api.export.pdf(extractBody(content), currentFileName)
     } catch (error) {
       console.error('Failed to export PDF:', error)
     }
@@ -159,11 +159,6 @@ export function ActivityBar(): React.JSX.Element {
       <Tooltip label={isDarkMode ? 'Light Mode' : 'Dark Mode'}>
         <button className="activity-bar-btn" onClick={handleToggleDarkMode}>
           {isDarkMode ? <SunIcon className="icon" /> : <MoonIcon className="icon" />}
-        </button>
-      </Tooltip>
-      <Tooltip label="Metadata (Coming Soon)">
-        <button className="activity-bar-btn" disabled>
-          <MetadataPanelIcon className="icon" />
         </button>
       </Tooltip>
     </div>

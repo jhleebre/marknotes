@@ -7,6 +7,7 @@ import { ImageModal } from '../modals/ImageModal'
 import { AltTextModal } from '../modals/AltTextModal'
 import { ContextMenu, type ContextMenuItem } from '../ContextMenu'
 import { SearchBar } from '../SearchBar'
+import { MetadataPanel } from '../MetadataPanel'
 import { getEditorExtensions } from './editorConfig'
 import { marked, postProcessImageSizes, resolveAssetImages } from './markdown/markdownToHtml'
 import { processTaskListsForEditor, processTaskListsForPreview } from './markdown/taskListProcessor'
@@ -24,6 +25,7 @@ import {
   saveCurrentPosition,
   getCursorScroll
 } from '../../utils/cursorScrollCache'
+import { extractBody, parseFrontmatter, buildContent } from '../../utils/frontmatter'
 import './Editor.css'
 
 interface EditorProps {
@@ -214,7 +216,10 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
 
       if (markdown !== lastMarkdownContent.current) {
         lastMarkdownContent.current = markdown
-        setContent(markdown)
+        // Re-attach frontmatter from current store content
+        const { data } = parseFrontmatter(useDocumentStore.getState().content)
+        const fullContent = buildContent(data, markdown)
+        setContent(fullContent)
         updateCounts(markdown)
       }
     },
@@ -354,17 +359,18 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
 
   // Load content into editor when content changes externally
   useEffect(() => {
-    if (editor && content !== lastMarkdownContent.current) {
+    const body = extractBody(content)
+    if (editor && body !== lastMarkdownContent.current) {
       isUpdatingFromMarkdown.current = true
       const isNewFile = currentFilePath !== lastLoadedFilePath.current
       lastLoadedFilePath.current = currentFilePath
       const loadContent = async (): Promise<void> => {
-        let html = marked.parse(content) as string
+        let html = marked.parse(body) as string
         html = postProcessImageSizes(html)
         html = processTaskListsForEditor(html)
         html = await resolveAssetImages(html)
         editor.commands.setContent(html, { emitUpdate: false })
-        lastMarkdownContent.current = content
+        lastMarkdownContent.current = body
         isUpdatingFromMarkdown.current = false
 
         // Clear undo history when loading a different file
@@ -417,7 +423,7 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
   // Calculate counts when content is first loaded
   useEffect(() => {
     if (currentFilePath && content) {
-      updateCounts(content)
+      updateCounts(extractBody(content))
     }
   }, [currentFilePath]) // Only run when file changes, not on every content update
 
@@ -456,13 +462,14 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
     (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
       const newContent = e.target.value
       setContent(newContent)
-      updateCounts(newContent)
-      lastMarkdownContent.current = newContent
+      const body = extractBody(newContent)
+      updateCounts(body)
+      lastMarkdownContent.current = body
 
       if (editor) {
         isUpdatingFromMarkdown.current = true
         const loadContent = async (): Promise<void> => {
-          let html = marked.parse(newContent) as string
+          let html = marked.parse(body) as string
           html = postProcessImageSizes(html)
           html = processTaskListsForEditor(html)
           html = await resolveAssetImages(html)
@@ -478,7 +485,8 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
   // Update preview HTML for code/split mode
   useEffect(() => {
     const updatePreview = async (): Promise<void> => {
-      let html = marked.parse(content) as string
+      const body = extractBody(content)
+      let html = marked.parse(body) as string
       html = postProcessImageSizes(html)
       html = processTaskListsForPreview(html)
       html = await resolveAssetImages(html)
@@ -517,6 +525,7 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
   return (
     <div className="editor-container">
       <SearchBar editor={editor} />
+      <MetadataPanel />
       {mode === 'wysiwyg' && (
         <div className="wysiwyg-mode">
           <EditorContent editor={editor} className="wysiwyg-editor" />

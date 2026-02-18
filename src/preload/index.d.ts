@@ -15,6 +15,7 @@ export interface FileAPI {
   exists: (path: string) => Promise<boolean>
   move: (sourcePath: string, targetDir: string) => Promise<FileResult>
   duplicate: (path: string) => Promise<FileResult>
+  stat: (path: string) => Promise<FileResult>
   watch: () => Promise<FileResult>
   unwatch: () => Promise<FileResult>
   onChanged: (callback: () => void) => () => void

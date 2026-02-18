@@ -35,6 +35,7 @@ export interface DocumentState {
   // UI state
   isSidebarVisible: boolean
   isDarkMode: boolean
+  isMetadataVisible: boolean
 
   // Recent files
   recentFiles: RecentFile[]
@@ -64,6 +65,7 @@ export interface DocumentState {
 
   toggleSidebar: () => void
   setIsDarkMode: (isDark: boolean) => void
+  toggleMetadata: () => void
 
   setSearchVisible: (visible: boolean) => void
   setSearchQuery: (query: string) => void
@@ -103,6 +105,7 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   // UI state
   isSidebarVisible: true,
   isDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
+  isMetadataVisible: false,
 
   // Recent files
   recentFiles: (() => {
@@ -197,6 +200,8 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   toggleSidebar: (): void => set((state) => ({ isSidebarVisible: !state.isSidebarVisible })),
 
   setIsDarkMode: (isDark): void => set({ isDarkMode: isDark }),
+
+  toggleMetadata: (): void => set((state) => ({ isMetadataVisible: !state.isMetadataVisible })),
 
   setSearchVisible: (visible): void => set({ isSearchVisible: visible }),
   setSearchQuery: (query): void => set({ searchQuery: query }),

@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.9.5</strong>
+  <strong>Version 1.9.6</strong>
 </p>
 
 <p align="center">
@@ -99,6 +99,18 @@ MarkNotes is a desktop markdown editor designed for writers who want a distracti
 - **Zoom Controls** - Zoom in, zoom out, and reset zoom
 - **PDF Export** - One-click export without opening menus
 - **Dark Mode Toggle** - Switch between light and dark mode instantly
+
+### 🏷️ Metadata Panel
+
+- **Properties Panel** - Collapsible panel above the editor showing file metadata and YAML frontmatter
+- **Default Fields** - Auto-populated id, title, created date, updated date, source, tags, and status
+- **Auto Fields** - id, title, created, and updated are set automatically and read-only
+- **Editable Fields** - source, status, and tags can be edited directly in the panel
+- **Status Tracking** - Three-stage progression: draft, in-progress, stable
+- **Tags** - Add and remove tags as inline pills; tags display in the collapsed header
+- **Custom Fields** - Add your own key-value metadata beyond the defaults
+- **YAML Frontmatter** - All metadata stored as standard YAML frontmatter in the markdown file
+- **Auto-Updated** - The updated date stamps automatically on every save
 
 ### 🌓 Native macOS Experience
 

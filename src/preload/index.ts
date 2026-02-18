@@ -21,6 +21,7 @@ const api = {
     move: (sourcePath: string, targetDir: string): Promise<FileResult> =>
       ipcRenderer.invoke('file:move', sourcePath, targetDir),
     duplicate: (path: string): Promise<FileResult> => ipcRenderer.invoke('file:duplicate', path),
+    stat: (path: string): Promise<FileResult> => ipcRenderer.invoke('file:stat', path),
     watch: (): Promise<FileResult> => ipcRenderer.invoke('file:watch'),
     unwatch: (): Promise<FileResult> => ipcRenderer.invoke('file:unwatch'),
     onChanged: (callback: () => void): (() => void) => {

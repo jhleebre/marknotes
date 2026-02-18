@@ -50,8 +50,7 @@ import {
   UnfoldVertical,
   FoldVertical,
   Sun,
-  Moon,
-  PanelRight
+  Moon
 } from 'lucide-react'
 
 // Export all icons with consistent naming
@@ -114,4 +113,3 @@ export const ExpandAllIcon = UnfoldVertical
 export const CollapseAllIcon = FoldVertical
 export const SunIcon = Sun
 export const MoonIcon = Moon
-export const MetadataPanelIcon = PanelRight

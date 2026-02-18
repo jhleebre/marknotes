@@ -228,6 +228,27 @@ export async function moveFile(sourcePath: string, targetDir: string): Promise<F
   }
 }
 
+export async function statFile(filePath: string): Promise<FileResult> {
+  try {
+    const resolvedPath = path.resolve(filePath)
+    if (!resolvedPath.startsWith(ROOT_PATH)) {
+      return { success: false, error: 'Access denied: path outside root directory' }
+    }
+
+    const stats = await fs.stat(resolvedPath)
+    return {
+      success: true,
+      content: JSON.stringify({
+        createdAt: stats.birthtime.toISOString(),
+        modifiedAt: stats.mtime.toISOString(),
+        size: stats.size
+      })
+    }
+  } catch (error) {
+    return { success: false, error: (error as Error).message }
+  }
+}
+
 export async function duplicateFile(filePath: string): Promise<FileResult> {
   try {
     const resolvedPath = path.resolve(filePath)

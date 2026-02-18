@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef, useMemo } from 'react'
 import debounce from 'lodash.debounce'
 import { useDocumentStore } from '../store/useDocumentStore'
 import { markWrite } from '../utils/writeTracker'
+import { stampUpdated } from '../utils/frontmatter'
 
 const AUTO_SAVE_DELAY = 5000 // 5 seconds
 
@@ -24,7 +25,7 @@ export function useAutoSave(): {
 
   const performSave = useCallback(async (): Promise<void> => {
     const filePath = pathRef.current
-    const fileContent = contentRef.current
+    let fileContent = contentRef.current
 
     if (!filePath) {
       return
@@ -34,6 +35,10 @@ export function useAutoSave(): {
     if (fileContent === originalContentRef.current) {
       return
     }
+
+    // Stamp the updated date in frontmatter (only if frontmatter exists)
+    fileContent = stampUpdated(fileContent)
+    contentRef.current = fileContent
 
     setSaveStatus('saving')
 
@@ -87,11 +92,15 @@ export function useAutoSave(): {
     debouncedSave.cancel()
 
     const filePath = pathRef.current
-    const fileContent = contentRef.current
+    let fileContent = contentRef.current
 
     if (!filePath) {
       return
     }
+
+    // Stamp the updated date in frontmatter (only if frontmatter exists)
+    fileContent = stampUpdated(fileContent)
+    contentRef.current = fileContent
 
     setSaveStatus('saving')
 
