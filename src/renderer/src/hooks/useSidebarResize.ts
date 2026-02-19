@@ -4,7 +4,7 @@ const STORAGE_KEY = 'sidebar-width'
 const DEFAULT_WIDTH = 263
 const MIN_WIDTH = 200
 const MAX_WIDTH = 400
-const DIVIDER_WIDTH = 4
+const DIVIDER_WIDTH = 1
 const MIN_MAIN_CONTENT_WIDTH = 540
 const ACTIVITY_BAR_WIDTH = 41
 

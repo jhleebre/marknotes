@@ -27,8 +27,21 @@ export function ActivityBar(): React.JSX.Element {
     currentFileName,
     content,
     isDarkMode,
-    setIsDarkMode
+    setIsDarkMode,
+    isGlobalSearchOpen,
+    closeGlobalSearchAndShowSidebar,
+    toggleGlobalSearch
   } = useDocumentStore()
+
+  // Sidebar button: if global search is open, close it and show sidebar;
+  // otherwise toggle sidebar normally
+  const handleToggleSidebar = useCallback((): void => {
+    if (isGlobalSearchOpen) {
+      closeGlobalSearchAndShowSidebar()
+    } else {
+      toggleSidebar()
+    }
+  }, [isGlobalSearchOpen, closeGlobalSearchAndShowSidebar, toggleSidebar])
 
   const handleExpandAll = useCallback(() => {
     document.dispatchEvent(new CustomEvent('filetree-expand-all'))
@@ -74,13 +87,14 @@ export function ActivityBar(): React.JSX.Element {
   }, [isDarkMode, setIsDarkMode])
 
   const hasFile = !!currentFilePath
+  const sidebarActive = isSidebarVisible && !isGlobalSearchOpen
 
   return (
     <div className="activity-bar">
       {/* File tree controls */}
-      <Tooltip label={isSidebarVisible ? 'Hide Sidebar (Cmd+.)' : 'Show Sidebar (Cmd+.)'}>
-        <button className="activity-bar-btn" onClick={toggleSidebar}>
-          {isSidebarVisible ? (
+      <Tooltip label={sidebarActive ? 'Hide Sidebar (Cmd+.)' : 'Show Sidebar (Cmd+.)'}>
+        <button className="activity-bar-btn" onClick={handleToggleSidebar}>
+          {sidebarActive ? (
             <SidebarIcon className="icon" />
           ) : (
             <SidebarHiddenIcon className="icon" />
@@ -88,7 +102,11 @@ export function ActivityBar(): React.JSX.Element {
         </button>
       </Tooltip>
       <Tooltip label="Expand All Folders">
-        <button className="activity-bar-btn" onClick={handleExpandAll} disabled={!isSidebarVisible}>
+        <button
+          className="activity-bar-btn"
+          onClick={handleExpandAll}
+          disabled={!isSidebarVisible || isGlobalSearchOpen}
+        >
           <ExpandAllIcon className="icon" />
         </button>
       </Tooltip>
@@ -96,7 +114,7 @@ export function ActivityBar(): React.JSX.Element {
         <button
           className="activity-bar-btn"
           onClick={handleCollapseAll}
-          disabled={!isSidebarVisible}
+          disabled={!isSidebarVisible || isGlobalSearchOpen}
         >
           <CollapseAllIcon className="icon" />
         </button>
@@ -106,21 +124,28 @@ export function ActivityBar(): React.JSX.Element {
 
       {/* File creation */}
       <Tooltip label="New Folder (Cmd+Shift+N)">
-        <button className="activity-bar-btn" onClick={handleNewFolder}>
+        <button
+          className="activity-bar-btn"
+          onClick={handleNewFolder}
+          disabled={isGlobalSearchOpen}
+        >
           <FolderPlusIcon className="icon" />
         </button>
       </Tooltip>
       <Tooltip label="New File (Cmd+N)">
-        <button className="activity-bar-btn" onClick={handleNewFile}>
+        <button className="activity-bar-btn" onClick={handleNewFile} disabled={isGlobalSearchOpen}>
           <FilePlusIcon className="icon" />
         </button>
       </Tooltip>
 
       <div className="activity-bar-divider" />
 
-      {/* Search placeholder */}
-      <Tooltip label="Search (Coming Soon)">
-        <button className="activity-bar-btn" disabled>
+      {/* Global search */}
+      <Tooltip label={isGlobalSearchOpen ? 'Close Search' : 'Search in Files (Cmd+Shift+H)'}>
+        <button
+          className={`activity-bar-btn${isGlobalSearchOpen ? ' activity-bar-btn-active' : ''}`}
+          onClick={toggleGlobalSearch}
+        >
           <SearchIcon className="icon" />
         </button>
       </Tooltip>

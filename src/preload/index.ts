@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import type { FileResult } from '../shared/types'
+import type { FileResult, SearchResult } from '../shared/types'
 
 // Custom APIs for renderer
 const api = {
@@ -114,6 +114,11 @@ const api = {
       const listener = (): void => callback()
       ipcRenderer.on('menu:toggleDarkMode', listener)
       return () => ipcRenderer.removeListener('menu:toggleDarkMode', listener)
+    },
+    onGlobalSearch: (callback: () => void): (() => void) => {
+      const listener = (): void => callback()
+      ipcRenderer.on('menu:globalSearch', listener)
+      return () => ipcRenderer.removeListener('menu:globalSearch', listener)
     }
   },
   theme: {
@@ -146,6 +151,15 @@ const api = {
     zoomIn: (): Promise<void> => ipcRenderer.invoke('zoom:in'),
     zoomOut: (): Promise<void> => ipcRenderer.invoke('zoom:out'),
     reset: (): Promise<void> => ipcRenderer.invoke('zoom:reset')
+  },
+  search: {
+    files: (
+      query: string,
+      targetPath: string,
+      caseSensitive: boolean,
+      mode: 'notes' | 'tags' = 'notes'
+    ): Promise<SearchResult> =>
+      ipcRenderer.invoke('search:files', query, targetPath, caseSensitive, mode)
   },
   app: {
     onSaveBeforeQuit: (callback: () => void): (() => void) => {

@@ -162,6 +162,7 @@
 .folder-toggle .chevron {
   display: flex;
   transition: transform 0.2s;
+  transform: rotate(0deg);
 }
 
 .folder-toggle .chevron.expanded {

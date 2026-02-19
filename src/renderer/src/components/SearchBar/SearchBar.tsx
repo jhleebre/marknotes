@@ -20,16 +20,16 @@ interface SearchBarProps {
 
 export function SearchBar({ editor }: SearchBarProps): React.JSX.Element | null {
   const {
-    isSearchVisible,
-    searchQuery,
+    isFindVisible,
+    findQuery,
     replaceText,
     isReplaceVisible,
     caseSensitive,
-    setSearchQuery,
+    setFindQuery,
     setReplaceText,
     setReplaceVisible,
     setCaseSensitive,
-    closeSearch
+    closeFind
   } = useDocumentStore()
 
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -51,37 +51,37 @@ export function SearchBar({ editor }: SearchBarProps): React.JSX.Element | null 
     restoreFocus
   )
 
-  // Focus editor when search is closed (handles both Esc and Cmd+F toggle)
+  // Focus editor when find is closed (handles both Esc and Cmd+F toggle)
   const [wasVisible, setWasVisible] = useState(false)
   useEffect(() => {
-    if (wasVisible && !isSearchVisible) {
+    if (wasVisible && !isFindVisible) {
       editor?.commands.focus()
     }
-    setWasVisible(isSearchVisible)
-  }, [isSearchVisible, editor])
+    setWasVisible(isFindVisible)
+  }, [isFindVisible, editor])
 
   // Auto-focus search input and fill with selected text when opened
   useEffect(() => {
-    if (isSearchVisible && editor && searchInputRef.current) {
+    if (isFindVisible && editor && searchInputRef.current) {
       // Get selected text from editor
       const { from, to } = editor.state.selection
       const selectedText = editor.state.doc.textBetween(from, to, ' ')
 
       // Fill search query with selected text if available
       if (selectedText && selectedText.trim()) {
-        setSearchQuery(selectedText.trim())
+        setFindQuery(selectedText.trim())
       }
 
       // Focus and select input
       searchInputRef.current.focus()
       searchInputRef.current.select()
     }
-  }, [isSearchVisible, editor, setSearchQuery])
+  }, [isFindVisible, editor, setFindQuery])
 
-  if (!isSearchVisible) return null
+  if (!isFindVisible) return null
 
   const handleClose = (): void => {
-    closeSearch()
+    closeFind()
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
@@ -128,11 +128,11 @@ export function SearchBar({ editor }: SearchBarProps): React.JSX.Element | null 
             type="text"
             className="search-input"
             placeholder="Find"
-            value={searchQuery}
-            onChange={(e): void => setSearchQuery(e.target.value)}
+            value={findQuery}
+            onChange={(e): void => setFindQuery(e.target.value)}
             onKeyDown={handleKeyDown}
           />
-          {searchQuery && (
+          {findQuery && (
             <span className="match-count">
               {totalMatches > 0 ? `${currentMatch}/${totalMatches}` : 'No results'}
             </span>

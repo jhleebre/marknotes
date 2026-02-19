@@ -109,6 +109,14 @@ export function setupMenu(mainWindow: BrowserWindow, isDark: boolean = false): v
           }
         },
         { type: 'separator' as const },
+        {
+          label: 'Search in Files',
+          accelerator: 'CmdOrCtrl+Shift+H',
+          click: (): void => {
+            mainWindow.webContents.send('menu:globalSearch')
+          }
+        },
+        { type: 'separator' as const },
         { role: 'cut' as const },
         { role: 'copy' as const },
         { role: 'paste' as const },

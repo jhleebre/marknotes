@@ -1,7 +1,7 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 
-export type { FileEntry, FileResult } from '../shared/types'
-import type { FileResult } from '../shared/types'
+export type { FileEntry, FileResult, SearchResult } from '../shared/types'
+import type { FileResult, SearchResult } from '../shared/types'
 
 export interface FileAPI {
   getRootPath: () => Promise<string>
@@ -42,6 +42,7 @@ export interface MenuAPI {
   onFind: (callback: () => void) => () => void
   onReplace: (callback: () => void) => () => void
   onToggleDarkMode: (callback: () => void) => () => void
+  onGlobalSearch: (callback: () => void) => () => void
 }
 
 export interface ThemeAPI {
@@ -69,6 +70,15 @@ export interface ZoomAPI {
   reset: () => Promise<void>
 }
 
+export interface SearchAPI {
+  files: (
+    query: string,
+    targetPath: string,
+    caseSensitive: boolean,
+    mode?: 'notes' | 'tags'
+  ) => Promise<SearchResult>
+}
+
 export interface AppAPI {
   onSaveBeforeQuit: (callback: () => void) => () => void
   saveComplete: () => void
@@ -82,6 +92,7 @@ export interface API {
   shell: ShellAPI
   image: ImageAPI
   zoom: ZoomAPI
+  search: SearchAPI
   app: AppAPI
 }
 

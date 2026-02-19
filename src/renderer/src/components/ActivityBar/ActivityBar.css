@@ -48,6 +48,16 @@
   cursor: not-allowed;
 }
 
+.activity-bar-btn-active {
+  background: var(--primary-color-alpha);
+  color: var(--primary-color);
+}
+
+.activity-bar-btn-active:hover {
+  background: var(--active-bg);
+  color: var(--primary-color);
+}
+
 .activity-bar-divider {
   width: 24px;
   height: 1px;

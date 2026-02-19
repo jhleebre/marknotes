@@ -34,7 +34,8 @@ export function FileTree(): React.JSX.Element {
     setContent,
     setOriginalContent,
     setIsLoadingContent,
-    setIsLoadingFiles
+    setIsLoadingFiles,
+    openGlobalSearch
   } = useDocumentStore()
 
   const currentFilePathRef = useRef(currentFilePath)
@@ -265,6 +266,13 @@ export function FileTree(): React.JSX.Element {
     setCreateModalOpen(true)
   }, [])
 
+  const handleSearchInFolder = useCallback(
+    (folderPath: string): void => {
+      openGlobalSearch(folderPath)
+    },
+    [openGlobalSearch]
+  )
+
   // Context menu hook
   const {
     contextMenu,
@@ -281,7 +289,8 @@ export function FileTree(): React.JSX.Element {
     handleStartRename,
     handleCopyPath,
     handleDuplicate,
-    handleDelete
+    handleDelete,
+    handleSearchInFolder
   )
 
   // Drag and drop hook

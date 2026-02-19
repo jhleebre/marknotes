@@ -8,7 +8,8 @@ import {
   TrashIcon,
   ShowInFinderIcon,
   CopyIcon,
-  DuplicateIcon
+  DuplicateIcon,
+  SearchIcon
 } from '../../../utils/icons'
 
 export interface ContextMenuState {
@@ -28,7 +29,8 @@ export function useFileTreeContextMenu(
   handleStartRename: (path: string) => void,
   handleCopyPath: (entry: FileEntry) => Promise<void>,
   handleDuplicate: (entry: FileEntry) => Promise<void>,
-  handleDelete: (entry: FileEntry) => Promise<void>
+  handleDelete: (entry: FileEntry) => Promise<void>,
+  handleSearchInFolder: (folderPath: string) => void
 ): {
   contextMenu: ContextMenuState
   handleContextMenu: (e: React.MouseEvent, entry: FileEntry) => void
@@ -119,6 +121,15 @@ export function useFileTreeContextMenu(
           },
           {
             type: 'divider'
+          },
+          {
+            type: 'item',
+            label: 'Search in Folder',
+            icon: <SearchIcon className="icon" />,
+            onClick: () => handleSearchInFolder(entry.path)
+          },
+          {
+            type: 'divider'
           }
         )
       }
@@ -190,7 +201,8 @@ export function useFileTreeContextMenu(
     handleStartRename,
     handleCopyPath,
     handleDuplicate,
-    handleDelete
+    handleDelete,
+    handleSearchInFolder
   ])
 
   return {

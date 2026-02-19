@@ -18,11 +18,12 @@ export function useMenuListeners(): MenuModals {
     currentFilePath,
     content,
     originalContent,
-    isSearchVisible,
+    isFindVisible,
     isReplaceVisible,
-    setSearchVisible,
+    setFindVisible,
     setReplaceVisible,
-    closeSearch
+    closeFind,
+    toggleGlobalSearch
   } = useDocumentStore()
   const { saveNow } = useAutoSave()
 
@@ -76,28 +77,28 @@ export function useMenuListeners(): MenuModals {
     }
   }, [setMode])
 
-  // Listen for find command (Cmd+F) - toggle search bar
+  // Listen for find command (Cmd+F) - toggle find bar
   useEffect(() => {
     const unsubscribe = window.api.menu.onFind(() => {
-      if (isSearchVisible) {
-        closeSearch()
+      if (isFindVisible) {
+        closeFind()
       } else {
-        setSearchVisible(true)
+        setFindVisible(true)
       }
     })
 
     return () => {
       unsubscribe()
     }
-  }, [isSearchVisible, setSearchVisible, closeSearch])
+  }, [isFindVisible, setFindVisible, closeFind])
 
-  // Listen for replace command (Cmd+Shift+F) - toggle search bar with replace
+  // Listen for replace command (Cmd+Shift+F) - toggle find bar with replace
   useEffect(() => {
     const unsubscribe = window.api.menu.onReplace(() => {
-      if (isSearchVisible && isReplaceVisible) {
-        closeSearch()
+      if (isFindVisible && isReplaceVisible) {
+        closeFind()
       } else {
-        setSearchVisible(true)
+        setFindVisible(true)
         setReplaceVisible(true)
       }
     })
@@ -105,7 +106,15 @@ export function useMenuListeners(): MenuModals {
     return () => {
       unsubscribe()
     }
-  }, [isSearchVisible, isReplaceVisible, setSearchVisible, setReplaceVisible, closeSearch])
+  }, [isFindVisible, isReplaceVisible, setFindVisible, setReplaceVisible, closeFind])
+
+  // Listen for global search menu command (Cmd+Shift+H) - toggle open/close
+  useEffect(() => {
+    const unsubscribe = window.api.menu.onGlobalSearch(() => toggleGlobalSearch())
+    return () => {
+      unsubscribe()
+    }
+  }, [toggleGlobalSearch])
 
   // Listen for toggle dark mode menu command
   useEffect(() => {

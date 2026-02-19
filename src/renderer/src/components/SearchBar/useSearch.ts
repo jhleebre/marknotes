@@ -18,7 +18,12 @@ interface UseSearchResult {
 }
 
 export function useSearch(editor: Editor | null, onScrollToMatch?: () => void): UseSearchResult {
-  const { searchQuery, replaceText, caseSensitive, isSearchVisible } = useDocumentStore()
+  const {
+    findQuery: searchQuery,
+    replaceText,
+    caseSensitive,
+    isFindVisible: isSearchVisible
+  } = useDocumentStore()
 
   const [matches, setMatches] = useState<SearchMatch[]>([])
   const [currentMatchIndex, setCurrentMatchIndex] = useState(0)

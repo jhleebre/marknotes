@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.9.6</strong>
+  <strong>Version 1.9.7</strong>
 </p>
 
 <p align="center">
@@ -63,6 +63,7 @@ MarkNotes is a desktop markdown editor designed for writers who want a distracti
 - **Code Blocks** - Syntax-highlighted code snippets
 - **Tables** - Full-featured tables with formatting inside cells
 - **Find & Replace** - Search text with `Cmd+F`, replace with `Cmd+Shift+F`
+- **Search in Files** - Full-text search across all notes with `Cmd+Shift+H`; supports tag search mode and click-to-jump to any match
 
 ### 📊 Professional Tables
 
@@ -96,6 +97,7 @@ MarkNotes is a desktop markdown editor designed for writers who want a distracti
 - **Always Visible** - Icon-only sidebar on the left for quick access to key actions
 - **File Tree Controls** - Toggle sidebar, expand/collapse all folders
 - **Quick Create** - New file and new folder buttons always within reach
+- **Search in Files** - Click the search icon to open global search across all notes
 - **Zoom Controls** - Zoom in, zoom out, and reset zoom
 - **PDF Export** - One-click export without opening menus
 - **Dark Mode Toggle** - Switch between light and dark mode instantly
@@ -236,6 +238,7 @@ Use the formatting buttons in the toolbar or keyboard shortcuts:
 | Redo               | `Cmd+Shift+Z` |
 | Find               | `Cmd+F`       |
 | Find & Replace     | `Cmd+Shift+F` |
+| Search in Files    | `Cmd+Shift+H` |
 | Indent (in lists)  | `Tab`         |
 | Outdent (in lists) | `Shift+Tab`   |
 

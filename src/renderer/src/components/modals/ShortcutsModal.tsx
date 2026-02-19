@@ -29,6 +29,7 @@ function getShortcuts(): { category: string; items: { keys: string[]; label: str
         { keys: [MOD, 'Shift', 'Z'], label: 'Redo' },
         { keys: [MOD, 'F'], label: 'Find' },
         { keys: [MOD, 'Shift', 'F'], label: 'Find & Replace' },
+        { keys: [MOD, 'Shift', 'H'], label: 'Search in Files' },
         { keys: [MOD, ALT, '0'], label: 'Normal Text' },
         { keys: [MOD, ALT, '1'], label: 'Heading 1' },
         { keys: [MOD, ALT, '2'], label: 'Heading 2' },

@@ -5,6 +5,7 @@ import { ActivityBar } from './components/ActivityBar'
 import { Editor } from './components/Editor'
 import { StatusBar } from './components/StatusBar'
 import { WelcomeScreen } from './components/WelcomeScreen'
+import { GlobalSearch } from './components/GlobalSearch'
 import { AboutModal } from './components/modals/AboutModal'
 import { ShortcutsModal } from './components/modals/ShortcutsModal'
 import { useDocumentStore } from './store/useDocumentStore'
@@ -14,7 +15,7 @@ import type { Editor as TipTapEditor } from '@tiptap/react'
 import './App.css'
 
 function App(): React.JSX.Element {
-  const { isSidebarVisible, currentFilePath } = useDocumentStore()
+  const { isSidebarVisible, currentFilePath, isGlobalSearchOpen } = useDocumentStore()
   const [editor, setEditor] = useState<TipTapEditor | null>(null)
 
   const { aboutOpen, shortcutsOpen, closeAbout, closeShortcuts } = useMenuListeners()
@@ -25,7 +26,18 @@ function App(): React.JSX.Element {
       <TitleBar editor={editor} />
       <div className="app-body">
         <ActivityBar />
-        {isSidebarVisible && (
+        {isGlobalSearchOpen && (
+          <>
+            <div className="file-tree-wrapper" style={{ width: sidebarWidth }}>
+              <GlobalSearch />
+            </div>
+            <div
+              className={`sidebar-divider${isDragging ? ' sidebar-divider-active' : ''}`}
+              onMouseDown={handleMouseDown}
+            />
+          </>
+        )}
+        {isSidebarVisible && !isGlobalSearchOpen && (
           <>
             <div className="file-tree-wrapper" style={{ width: sidebarWidth }}>
               <FileTree />

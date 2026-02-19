@@ -9,6 +9,7 @@ import { ContextMenu, type ContextMenuItem } from '../ContextMenu'
 import { SearchBar } from '../SearchBar'
 import { MetadataPanel } from '../MetadataPanel'
 import { getEditorExtensions } from './editorConfig'
+import { SearchHighlightPluginKey } from './extensions/SearchHighlight'
 import { marked, postProcessImageSizes, resolveAssetImages } from './markdown/markdownToHtml'
 import { processTaskListsForEditor, processTaskListsForPreview } from './markdown/taskListProcessor'
 import { turndownService } from './markdown/htmlToMarkdown'
@@ -47,6 +48,8 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
     setLineNumbers,
     bumpSelectionKey
   } = useDocumentStore()
+  const pendingGlobalJump = useDocumentStore((s) => s.pendingGlobalJump)
+  const clearPendingGlobalJump = useDocumentStore((s) => s.clearPendingGlobalJump)
   const isUpdatingFromMarkdown = useRef(false)
   const lastMarkdownContent = useRef('')
   const lastLoadedFilePath = useRef<string | null>(null)
@@ -336,6 +339,82 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
     }
   }, [editor])
 
+  // Scroll to and highlight a match after clicking a global search result (same-file case).
+  // When a different file is being loaded, the store content already reflects the new file
+  // body but lastMarkdownContent.current still holds the previous file's body.
+  // In that case we return early and let loadContent() execute the jump after the new
+  // content is fully rendered into the editor.
+  useEffect(() => {
+    if (!pendingGlobalJump || !editor) return
+
+    // Detect whether a new file is being loaded by comparing the store's current content
+    // body against what the editor currently shows (lastMarkdownContent.current).
+    const storeBody = extractBody(useDocumentStore.getState().content)
+    if (storeBody !== lastMarkdownContent.current) {
+      // New file is being loaded — loadContent() will execute the jump once ready
+      return
+    }
+
+    let cancelled = false
+    const timer = setTimeout(() => {
+      if (cancelled) return
+
+      const escapedQuery = pendingGlobalJump.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const flags = pendingGlobalJump.caseSensitive ? 'g' : 'gi'
+      let regex: RegExp
+      try {
+        regex = new RegExp(escapedQuery, flags)
+      } catch {
+        clearPendingGlobalJump()
+        return
+      }
+
+      const foundMatches: { from: number; to: number }[] = []
+      editor.state.doc.descendants((node, pos) => {
+        if (node.isText && node.text) {
+          const text = node.text
+          regex.lastIndex = 0
+          let match: RegExpExecArray | null
+          while ((match = regex.exec(text)) !== null) {
+            foundMatches.push({ from: pos + match.index, to: pos + match.index + match[0].length })
+            if (match[0].length === 0) regex.lastIndex++
+          }
+        }
+        return true
+      })
+
+      if (foundMatches.length > 0) {
+        const targetIdx = Math.min(pendingGlobalJump.matchIndex, foundMatches.length - 1)
+        const targetMatch = foundMatches[targetIdx]
+
+        editor.view.dispatch(
+          editor.state.tr.setMeta(SearchHighlightPluginKey, {
+            searchResults: foundMatches,
+            currentIndex: targetIdx + 1
+          })
+        )
+
+        requestAnimationFrame(() => {
+          if (cancelled) return
+          editor
+            .chain()
+            .focus()
+            .setTextSelection({ from: targetMatch.from, to: targetMatch.to })
+            .scrollIntoView()
+            .run()
+          clearPendingGlobalJump()
+        })
+      } else {
+        clearPendingGlobalJump()
+      }
+    }, 50)
+
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [pendingGlobalJump, editor, clearPendingGlobalJump])
+
   // Collect heading IDs from the editor document for link autocomplete
   const headings: HeadingInfo[] = useMemo(() => {
     if (!linkModalOpen || !editor) return []
@@ -382,6 +461,60 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
           })
           editor.view.updateState(freshState)
 
+          // Handle pending global jump from a search result click (different-file case).
+          // The same-file case is handled by the pendingGlobalJump effect above.
+          const pendingJump = useDocumentStore.getState().pendingGlobalJump
+          if (pendingJump) {
+            const escapedJumpQuery = pendingJump.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            const jumpFlags = pendingJump.caseSensitive ? 'g' : 'gi'
+            let jumpRegex: RegExp
+            try {
+              jumpRegex = new RegExp(escapedJumpQuery, jumpFlags)
+            } catch {
+              clearPendingGlobalJump()
+              return
+            }
+
+            const jumpMatches: { from: number; to: number }[] = []
+            editor.state.doc.descendants((node, pos) => {
+              if (node.isText && node.text) {
+                const text = node.text
+                jumpRegex.lastIndex = 0
+                let m: RegExpExecArray | null
+                while ((m = jumpRegex.exec(text)) !== null) {
+                  jumpMatches.push({ from: pos + m.index, to: pos + m.index + m[0].length })
+                  if (m[0].length === 0) jumpRegex.lastIndex++
+                }
+              }
+              return true
+            })
+
+            if (jumpMatches.length > 0) {
+              const targetIdx = Math.min(pendingJump.matchIndex, jumpMatches.length - 1)
+              const targetMatch = jumpMatches[targetIdx]
+
+              editor.view.dispatch(
+                editor.state.tr.setMeta(SearchHighlightPluginKey, {
+                  searchResults: jumpMatches,
+                  currentIndex: targetIdx + 1
+                })
+              )
+
+              requestAnimationFrame(() => {
+                editor
+                  .chain()
+                  .focus()
+                  .setTextSelection({ from: targetMatch.from, to: targetMatch.to })
+                  .scrollIntoView()
+                  .run()
+                clearPendingGlobalJump()
+              })
+            } else {
+              clearPendingGlobalJump()
+            }
+            return // Skip cursor-position restore
+          }
+
           // Restore cursor and scroll position if previously saved
           if (currentFilePath) {
             const saved = getCursorScroll(currentFilePath)
@@ -406,7 +539,7 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
       }
       loadContent()
     }
-  }, [editor, content, currentFilePath])
+  }, [editor, content, currentFilePath, clearPendingGlobalJump])
 
   // Notify when editor is ready
   useEffect(() => {

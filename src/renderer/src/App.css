@@ -110,6 +110,17 @@ body {
   cursor: col-resize;
   background: var(--border-color);
   transition: background 0.15s ease;
+  position: relative;
+}
+
+.sidebar-divider::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -4px;
+  right: -4px;
+  cursor: col-resize;
 }
 
 .sidebar-divider:hover,
