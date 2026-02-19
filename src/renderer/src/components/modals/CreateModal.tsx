@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import type { FileEntry } from '../../../../shared/types'
+import { ChevronRight } from 'lucide-react'
 import {
-  ChevronIcon,
   FolderIcon,
   FolderOpenIcon,
   RootFolderIcon,
@@ -106,7 +106,7 @@ export function CreateModal({
                 }}
               >
                 <span className={`chevron ${isExpanded ? 'expanded' : ''}`}>
-                  <ChevronIcon className="icon" />
+                  <ChevronRight size={12} />
                 </span>
               </button>
               <span className="folder-icon">

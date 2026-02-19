@@ -202,9 +202,12 @@ export async function moveFile(sourcePath: string, targetDir: string): Promise<F
       return { success: false, error: 'Access denied: target path outside root directory' }
     }
 
-    // Prevent moving a folder into itself
-    if (resolvedTarget.startsWith(resolvedSource + path.sep)) {
-      return { success: false, error: 'Cannot move a folder into itself' }
+    // Prevent moving a folder into itself or its subfolders
+    if (
+      resolvedTarget === resolvedSource ||
+      resolvedTarget.startsWith(resolvedSource + path.sep)
+    ) {
+      return { success: false, error: 'A folder cannot be moved into itself or its subfolders' }
     }
 
     const fileName = path.basename(resolvedSource)

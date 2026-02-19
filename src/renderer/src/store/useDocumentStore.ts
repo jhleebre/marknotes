@@ -134,7 +134,11 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   // UI state
   isSidebarVisible: true,
   previousSidebarVisible: true,
-  isDarkMode: window.matchMedia('(prefers-color-scheme: dark)').matches,
+  isDarkMode: (() => {
+    const stored = localStorage.getItem('darkMode')
+    if (stored !== null) return stored === 'true'
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  })(),
   isMetadataVisible: false,
 
   // Recent files
@@ -239,7 +243,10 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
 
   toggleSidebar: (): void => set((state) => ({ isSidebarVisible: !state.isSidebarVisible })),
 
-  setIsDarkMode: (isDark): void => set({ isDarkMode: isDark }),
+  setIsDarkMode: (isDark): void => {
+    localStorage.setItem('darkMode', String(isDark))
+    set({ isDarkMode: isDark })
+  },
 
   toggleMetadata: (): void => set((state) => ({ isMetadataVisible: !state.isMetadataVisible })),
 

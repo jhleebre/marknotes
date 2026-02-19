@@ -23,6 +23,8 @@ export function useMenuListeners(): MenuModals {
     setFindVisible,
     setReplaceVisible,
     closeFind,
+    isGlobalSearchOpen,
+    closeGlobalSearchAndShowSidebar,
     toggleGlobalSearch
   } = useDocumentStore()
   const { saveNow } = useAutoSave()
@@ -58,13 +60,17 @@ export function useMenuListeners(): MenuModals {
   // Listen for toggle sidebar menu command
   useEffect(() => {
     const unsubscribe = window.api.menu.onToggleSidebar(() => {
-      toggleSidebar()
+      if (isGlobalSearchOpen) {
+        closeGlobalSearchAndShowSidebar()
+      } else {
+        toggleSidebar()
+      }
     })
 
     return () => {
       unsubscribe()
     }
-  }, [toggleSidebar])
+  }, [isGlobalSearchOpen, closeGlobalSearchAndShowSidebar, toggleSidebar])
 
   // Listen for mode change menu command (Cmd+1 / Cmd+2)
   useEffect(() => {

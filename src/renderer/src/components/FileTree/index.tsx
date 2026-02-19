@@ -6,6 +6,8 @@ import { ContextMenu } from '../ContextMenu'
 import { FileTreeItem } from './FileTreeItem'
 import { useFileTreeContextMenu } from './hooks/useFileTreeContextMenu'
 import { useDragAndDrop } from './hooks/useDragAndDrop'
+import { useAutoSave } from '../../hooks/useAutoSave'
+import { parseFrontmatter, updateField } from '../../utils/frontmatter'
 import { markWrite, getLastWriteTime } from '../../utils/writeTracker'
 import { saveCurrentPosition, removeCursorScroll } from '../../utils/cursorScrollCache'
 import './FileTree.css'
@@ -37,6 +39,8 @@ export function FileTree(): React.JSX.Element {
     setIsLoadingFiles,
     openGlobalSearch
   } = useDocumentStore()
+
+  const { saveNow } = useAutoSave()
 
   const currentFilePathRef = useRef(currentFilePath)
   useEffect(() => {
@@ -171,6 +175,10 @@ export function FileTree(): React.JSX.Element {
   const handleDuplicate = useCallback(
     async (entry: FileEntry): Promise<void> => {
       try {
+        // Save unsaved changes before duplicating the currently open file
+        if (!entry.isDirectory && entry.path === currentFilePath && content !== originalContent) {
+          await saveNow()
+        }
         const result = await window.api.file.duplicate(entry.path)
         if (result.success) {
           loadFiles()
@@ -185,7 +193,7 @@ export function FileTree(): React.JSX.Element {
         console.error('Failed to duplicate:', error)
       }
     },
-    [loadFiles, loadFileContent]
+    [loadFiles, loadFileContent, currentFilePath, content, originalContent, saveNow]
   )
 
   const handleCreateFile = useCallback(
@@ -238,6 +246,13 @@ export function FileTree(): React.JSX.Element {
         if (result.success && result.content) {
           if (oldPath === currentFilePath) {
             setCurrentFile(result.content, newName)
+            // Sync frontmatter title if it matches the old filename
+            const oldBaseName = (oldPath.split('/').pop() || '').replace(/\.md$/i, '')
+            const newBaseName = newName.replace(/\.md$/i, '')
+            const { data } = parseFrontmatter(content)
+            if (typeof data.title === 'string' && data.title === oldBaseName) {
+              setContent(updateField(content, 'title', newBaseName))
+            }
           }
           loadFiles()
         } else {
@@ -247,7 +262,7 @@ export function FileTree(): React.JSX.Element {
         console.error('Failed to rename:', error)
       }
     },
-    [currentFilePath, setCurrentFile, loadFiles]
+    [currentFilePath, setCurrentFile, loadFiles, content, setContent]
   )
 
   const handleCancelRename = useCallback((): void => {
