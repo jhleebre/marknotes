@@ -14,6 +14,7 @@ import {
   statFile
 } from '../services/fileOperations'
 import { startWatching, stopWatching } from '../services/fileWatcher'
+import { updateLinksAfterMove } from '../services/linkUpdater'
 
 export function registerFileHandlers(mainWindow: BrowserWindow): void {
   ipcMain.handle('file:getRootPath', () => {
@@ -45,7 +46,21 @@ export function registerFileHandlers(mainWindow: BrowserWindow): void {
   })
 
   ipcMain.handle('file:rename', async (_, oldPath: string, newName: string) => {
-    return renameFile(oldPath, newName)
+    const result = await renameFile(oldPath, newName)
+    if (result.success && result.content) {
+      const newPath = result.content
+      mainWindow.webContents.send('file:itemMoved', { oldPath, newPath })
+      updateLinksAfterMove(oldPath, newPath)
+        .then((changedPaths) => {
+          if (changedPaths.length > 0) {
+            mainWindow.webContents.send('file:linksUpdated', changedPaths)
+          }
+        })
+        .catch((err) => {
+          console.error('[linkUpdater] renameFile link update failed:', err)
+        })
+    }
+    return result
   })
 
   ipcMain.handle('file:exists', async (_, filePath: string) => {
@@ -53,7 +68,21 @@ export function registerFileHandlers(mainWindow: BrowserWindow): void {
   })
 
   ipcMain.handle('file:move', async (_, sourcePath: string, targetDir: string) => {
-    return moveFile(sourcePath, targetDir)
+    const result = await moveFile(sourcePath, targetDir)
+    if (result.success && result.content) {
+      const newPath = result.content
+      mainWindow.webContents.send('file:itemMoved', { oldPath: sourcePath, newPath })
+      updateLinksAfterMove(sourcePath, newPath)
+        .then((changedPaths) => {
+          if (changedPaths.length > 0) {
+            mainWindow.webContents.send('file:linksUpdated', changedPaths)
+          }
+        })
+        .catch((err) => {
+          console.error('[linkUpdater] moveFile link update failed:', err)
+        })
+    }
+    return result
   })
 
   ipcMain.handle('file:duplicate', async (_, filePath: string) => {

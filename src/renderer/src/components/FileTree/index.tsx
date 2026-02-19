@@ -161,17 +161,6 @@ export function FileTree(): React.JSX.Element {
     }
   }, [])
 
-  const handleCopyPath = useCallback(async (entry: FileEntry): Promise<void> => {
-    try {
-      const result = await window.api.shell.copyPath(entry.path)
-      if (!result.success) {
-        alert(result.error || 'Failed to copy path')
-      }
-    } catch (error) {
-      console.error('Failed to copy path:', error)
-    }
-  }, [])
-
   const handleDuplicate = useCallback(
     async (entry: FileEntry): Promise<void> => {
       try {
@@ -302,7 +291,6 @@ export function FileTree(): React.JSX.Element {
     handleFileSelect,
     handleShowInFinder,
     handleStartRename,
-    handleCopyPath,
     handleDuplicate,
     handleDelete,
     handleSearchInFolder
@@ -364,12 +352,41 @@ export function FileTree(): React.JSX.Element {
       }
     })
 
+    const unsubscribeLinksUpdated = window.api.file.onLinksUpdated((changedPaths) => {
+      const currentPath = currentFilePathRef.current
+      if (currentPath && changedPaths.includes(currentPath)) {
+        // Reload current file unconditionally — link updater changes must always be reflected
+        loadFileContent(currentPath, currentPath.split('/').pop() || '')
+      }
+    })
+
+    const unsubscribeItemMoved = window.api.file.onItemMoved(({ oldPath, newPath }) => {
+      const currentPath = currentFilePathRef.current
+      if (!currentPath) return
+
+      let resolvedNewPath: string | null = null
+      if (currentPath === oldPath) {
+        // The open file itself was renamed/moved
+        resolvedNewPath = newPath
+      } else if (currentPath.startsWith(oldPath + '/')) {
+        // The open file is inside a moved/renamed folder
+        resolvedNewPath = newPath + currentPath.slice(oldPath.length)
+      }
+
+      if (resolvedNewPath) {
+        setCurrentFile(resolvedNewPath, resolvedNewPath.split('/').pop() || '')
+        loadFileContent(resolvedNewPath, resolvedNewPath.split('/').pop() || '')
+      }
+    })
+
     return () => {
       unsubscribe()
       unsubscribeExternal()
+      unsubscribeLinksUpdated()
+      unsubscribeItemMoved()
       window.api.file.unwatch()
     }
-  }, [loadFiles, loadFileContent])
+  }, [loadFiles, loadFileContent, setCurrentFile])
 
   // Listen for menu commands and custom events from TitleBar
   useEffect(() => {

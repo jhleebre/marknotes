@@ -20,6 +20,8 @@ export interface FileAPI {
   unwatch: () => Promise<FileResult>
   onChanged: (callback: () => void) => () => void
   onExternalChange: (callback: (path: string) => void) => () => void
+  onLinksUpdated: (callback: (paths: string[]) => void) => () => void
+  onItemMoved: (callback: (payload: { oldPath: string; newPath: string }) => void) => () => void
 }
 
 export interface ExportAPI {

@@ -33,6 +33,21 @@ const api = {
       const listener = (_: unknown, path: string): void => callback(path)
       ipcRenderer.on('file:externalChange', listener)
       return () => ipcRenderer.removeListener('file:externalChange', listener)
+    },
+    onLinksUpdated: (callback: (paths: string[]) => void): (() => void) => {
+      const listener = (_: unknown, paths: string[]): void => callback(paths)
+      ipcRenderer.on('file:linksUpdated', listener)
+      return () => ipcRenderer.removeListener('file:linksUpdated', listener)
+    },
+    onItemMoved: (
+      callback: (payload: { oldPath: string; newPath: string }) => void
+    ): (() => void) => {
+      const listener = (
+        _: unknown,
+        payload: { oldPath: string; newPath: string }
+      ): void => callback(payload)
+      ipcRenderer.on('file:itemMoved', listener)
+      return () => ipcRenderer.removeListener('file:itemMoved', listener)
     }
   },
   export: {

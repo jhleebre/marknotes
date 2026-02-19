@@ -237,7 +237,7 @@
 
 /* Links */
 .wysiwyg-editor .ProseMirror a {
-  color: var(--accent-color);
+  color: var(--link-color);
   text-decoration: none;
 }
 
@@ -247,18 +247,18 @@
 
 .wysiwyg-editor .ProseMirror a:active,
 .wysiwyg-editor .ProseMirror a:focus {
-  color: var(--accent-color);
+  color: var(--link-color);
   text-decoration: underline;
 }
 
 /* Ensure editor-link class maintains visibility */
 .editor-link {
-  color: var(--accent-color) !important;
+  color: var(--link-color) !important;
 }
 
 .editor-link:active,
 .editor-link:focus {
-  color: var(--accent-color) !important;
+  color: var(--link-color) !important;
   opacity: 1 !important;
 }
 
@@ -544,7 +544,7 @@
 }
 
 .preview-content a {
-  color: var(--accent-color);
+  color: var(--link-color);
   text-decoration: none;
 }
 

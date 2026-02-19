@@ -7,7 +7,6 @@ import {
   RenameIcon,
   TrashIcon,
   ShowInFinderIcon,
-  CopyIcon,
   DuplicateIcon,
   SearchIcon
 } from '../../../utils/icons'
@@ -27,7 +26,6 @@ export function useFileTreeContextMenu(
   handleFileSelect: (path: string, name: string) => Promise<void>,
   handleShowInFinder: (entry: FileEntry) => Promise<void>,
   handleStartRename: (path: string) => void,
-  handleCopyPath: (entry: FileEntry) => Promise<void>,
   handleDuplicate: (entry: FileEntry) => Promise<void>,
   handleDelete: (entry: FileEntry) => Promise<void>,
   handleSearchInFolder: (folderPath: string) => void
@@ -158,12 +156,6 @@ export function useFileTreeContextMenu(
           label: 'Rename',
           icon: <RenameIcon className="icon" />,
           onClick: () => handleStartRename(entry.path)
-        },
-        {
-          type: 'item',
-          label: entry.isDirectory ? 'Copy Folder Path' : 'Copy File Path',
-          icon: <CopyIcon className="icon" />,
-          onClick: () => handleCopyPath(entry)
         }
       )
 
@@ -199,7 +191,6 @@ export function useFileTreeContextMenu(
     handleFileSelect,
     handleShowInFinder,
     handleStartRename,
-    handleCopyPath,
     handleDuplicate,
     handleDelete,
     handleSearchInFolder

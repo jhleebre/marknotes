@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.9.8</strong>
+  <strong>Version 1.9.9</strong>
 </p>
 
 <p align="center">
@@ -58,7 +58,7 @@ MarkNotes is a desktop markdown editor designed for writers who want a distracti
 - **Headings** - Six levels with a simple dropdown selector
 - **Text Styles** - Bold (`Cmd+B`), Italic (`Cmd+I`), Strikethrough, Code
 - **Lists** - Bullet lists, numbered lists, and interactive checkboxes
-- **Links** - Insert links with `Cmd+K`, including internal document links
+- **Links** - Insert links with `Cmd+K`; choose URL, heading anchor, or browse the file tree to insert relative internal links with auto-computed paths
 - **Blockquotes** - Beautiful styled quotes for emphasis
 - **Code Blocks** - Syntax-highlighted code snippets
 - **Tables** - Full-featured tables with formatting inside cells
@@ -85,6 +85,7 @@ MarkNotes is a desktop markdown editor designed for writers who want a distracti
 - **Sidebar** - Browse all your notes in the collapsible file tree
 - **Quick Actions** - `Cmd+N` for new file, `Cmd+Shift+N` for new folder
 - **Drag & Drop** - Move files between folders easily
+- **Auto-Update Links** - When you move or rename a file/folder, all markdown links pointing to it are automatically updated throughout your notes
 
 ### 📤 Export Your Work
 
@@ -426,7 +427,7 @@ Or use the shell script:
 ./scripts/run-tests.sh [--coverage] [--main] [--renderer] [--watch]
 ```
 
-**Test coverage (v1.9.8):** 86% overall — covering path security, file CRUD, search, markdown conversion (HTML↔MD), YAML frontmatter processing, and Zustand store.
+**Test coverage (v1.9.9):** 86% overall — covering path security, file CRUD, link auto-update, relative path calculation, search, markdown conversion (HTML↔MD), YAML frontmatter processing, and Zustand store.
 
 See [`docs/QA_TEST_GUIDE.md`](docs/QA_TEST_GUIDE.md) for the full test breakdown and manual QA checklist.
 

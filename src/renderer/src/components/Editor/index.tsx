@@ -21,6 +21,7 @@ import { useLinkHandlers } from './hooks/useLinkHandlers'
 import { useImageHandlers } from './hooks/useImageHandlers'
 import { useEditorEvents } from './hooks/useEditorEvents'
 import { useDropHandler } from './hooks/useDropHandler'
+import { useAutoSave } from '../../hooks/useAutoSave'
 import {
   setEditorPositionGetter,
   saveCurrentPosition,
@@ -38,6 +39,7 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
   const {
     mode,
     content,
+    files,
     setContent,
     updateCounts,
     isLoadingContent,
@@ -50,6 +52,7 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
   } = useDocumentStore()
   const pendingGlobalJump = useDocumentStore((s) => s.pendingGlobalJump)
   const clearPendingGlobalJump = useDocumentStore((s) => s.clearPendingGlobalJump)
+  const { saveNow } = useAutoSave()
   const isUpdatingFromMarkdown = useRef(false)
   const lastMarkdownContent = useRef('')
   const lastLoadedFilePath = useRef<string | null>(null)
@@ -169,6 +172,7 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
                 saveCurrentPosition(currentFilePath)
                 const loadRelativeFile = async (): Promise<void> => {
                   try {
+                    await saveNow()
                     const decodedHref = decodeURIComponent(href)
                     const currentPath = currentFilePath
                     if (!currentPath) return
@@ -677,6 +681,8 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
             initialUrl={linkModalData.url}
             isEditing={linkModalData.isEditing}
             headings={headings}
+            files={files}
+            currentFilePath={currentFilePath}
             onClose={() => setLinkModalOpen(false)}
             onInsert={handleLinkInsert}
             onDelete={handleLinkDelete}

@@ -115,3 +115,121 @@
 .btn-danger:hover:not(:disabled) {
   background: var(--active-bg);
 }
+
+/* Mode tabs */
+.link-mode-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0;
+}
+
+.link-mode-tab {
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  border-radius: 0;
+  margin-bottom: -1px;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.link-mode-tab:hover {
+  color: var(--text-primary);
+  background: none;
+}
+
+.link-mode-tab.active {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+}
+
+/* File browser */
+.link-file-browser {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-primary);
+  padding: 4px 0;
+}
+
+.link-file-empty {
+  padding: 12px;
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.link-file-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.link-file-item:hover {
+  background: var(--hover-bg);
+}
+
+.link-md-item.selected {
+  background: var(--active-bg);
+  color: var(--accent-color);
+}
+
+.link-folder-item {
+  color: var(--text-primary);
+}
+
+.link-file-chevron {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+  transition: transform 0.15s ease;
+}
+
+.link-file-chevron.expanded {
+  transform: rotate(90deg);
+}
+
+.link-file-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.link-file-icon .icon {
+  width: 14px;
+  height: 14px;
+}
+
+.link-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.link-file-path-hint {
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.link-file-path-hint code {
+  font-family: monospace;
+  color: var(--accent-color);
+  font-size: 11px;
+}

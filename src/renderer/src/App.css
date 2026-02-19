@@ -21,6 +21,7 @@
   --scrollbar-thumb-hover: rgba(0, 0, 0, 0.3);
   --tooltip-bg: rgba(0, 0, 0, 0.85);
   --tooltip-text: #ffffff;
+  --link-color: #2558b8;
 }
 
 /* CSS Variables - Dark Mode */
@@ -46,6 +47,7 @@
   --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
   --tooltip-bg: rgba(0, 0, 0, 0.9);
   --tooltip-text: #ffffff;
+  --link-color: #6baee6;
 }
 
 /* Global Styles */

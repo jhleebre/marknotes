@@ -258,7 +258,7 @@ describe('moveFile', () => {
     const dst = path.join(ROOT_PATH, 'myFolder', 'sub')
     const result = await moveFile(src, dst)
     expect(result.success).toBe(false)
-    expect(result.error).toContain('Cannot move a folder into itself')
+    expect(result.error).toContain('A folder cannot be moved into itself')
   })
 
   it('소스 경로가 ROOT_PATH 외부면 거부한다', async () => {
