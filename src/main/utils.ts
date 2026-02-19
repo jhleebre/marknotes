@@ -9,7 +9,7 @@ export const METADATA_PATH = path.join(ASSETS_PATH, '.metadata.json')
 
 export function validatePath(filePath: string): boolean {
   const resolvedPath = path.resolve(filePath)
-  return resolvedPath.startsWith(ROOT_PATH)
+  return resolvedPath === ROOT_PATH || resolvedPath.startsWith(ROOT_PATH + path.sep)
 }
 
 export async function ensureRootDirectory(): Promise<void> {

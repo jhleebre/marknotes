@@ -399,6 +399,37 @@ npm run dev
 npm run build:mac
 ```
 
+### Testing
+
+MarkNotes uses [Vitest](https://vitest.dev/) for unit testing with separate environments for the main (Node.js) and renderer (jsdom) processes.
+
+```bash
+# Run all tests (204 tests)
+npm test
+
+# Watch mode
+npm run test:watch
+
+# With coverage report
+npm run test:coverage
+
+# Main process only
+npm run test:main
+
+# Renderer process only
+npm run test:renderer
+```
+
+Or use the shell script:
+
+```bash
+./scripts/run-tests.sh [--coverage] [--main] [--renderer] [--watch]
+```
+
+**Test coverage (v1.9.7):** 86% overall — covering path security, file CRUD, search, markdown conversion (HTML↔MD), YAML frontmatter processing, and Zustand store.
+
+See [`docs/QA_TEST_GUIDE.md`](docs/QA_TEST_GUIDE.md) for the full test breakdown and manual QA checklist.
+
 ---
 
 ## License
