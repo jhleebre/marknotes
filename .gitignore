@@ -1,10 +1,12 @@
+# Local development context (not for version control)
+_local-dev/
+
 # Dependencies
 node_modules
 
 # Build outputs
 dist
 out
-build/icon.icns
 *.dmg
 *.zip
 *.AppImage
