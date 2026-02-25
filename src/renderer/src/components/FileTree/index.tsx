@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useDocumentStore } from '../../store/useDocumentStore'
 import type { FileEntry } from '../../../../shared/types'
 import { CreateModal } from '../modals/CreateModal'
@@ -37,7 +37,11 @@ export function FileTree(): React.JSX.Element {
     setOriginalContent,
     setIsLoadingContent,
     setIsLoadingFiles,
-    openGlobalSearch
+    openGlobalSearch,
+    expandedFolders,
+    setExpandedFolders,
+    toggleExpandedFolder,
+    updateExpandedFolderOnMove
   } = useDocumentStore()
 
   const { saveNow } = useAutoSave()
@@ -47,7 +51,7 @@ export function FileTree(): React.JSX.Element {
     currentFilePathRef.current = currentFilePath
   }, [currentFilePath])
 
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
+  const expandedFoldersSet = useMemo(() => new Set(expandedFolders), [expandedFolders])
   const [editingPath, setEditingPath] = useState<string | null>(null)
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [createModalType, setCreateModalType] = useState<'file' | 'folder'>('file')
@@ -110,17 +114,12 @@ export function FileTree(): React.JSX.Element {
     [loadFileContent, currentFilePath, content, originalContent]
   )
 
-  const handleToggleExpand = useCallback((path: string): void => {
-    setExpandedFolders((prev) => {
-      const next = new Set(prev)
-      if (next.has(path)) {
-        next.delete(path)
-      } else {
-        next.add(path)
-      }
-      return next
-    })
-  }, [])
+  const handleToggleExpand = useCallback(
+    (path: string): void => {
+      toggleExpandedFolder(path)
+    },
+    [toggleExpandedFolder]
+  )
 
   const handleDelete = useCallback(
     async (entry: FileEntry): Promise<void> => {
@@ -209,10 +208,11 @@ export function FileTree(): React.JSX.Element {
         const result = await window.api.file.createFolder(name.trim(), parentPath || undefined)
         if (result.success && result.content) {
           loadFiles()
-          if (parentPath) {
-            setExpandedFolders((prev) => new Set([...prev, parentPath]))
-          }
-          setExpandedFolders((prev) => new Set([...prev, result.content!]))
+          const toAdd = parentPath
+            ? [parentPath, result.content!]
+            : [result.content!]
+          const next = [...new Set([...expandedFolders, ...toAdd])]
+          setExpandedFolders(next)
         } else {
           alert(result.error || 'Failed to create folder')
         }
@@ -220,7 +220,7 @@ export function FileTree(): React.JSX.Element {
         console.error('Failed to create folder:', error)
       }
     },
-    [loadFiles]
+    [loadFiles, expandedFolders, setExpandedFolders]
   )
 
   const handleStartRename = useCallback((path: string): void => {
@@ -361,6 +361,9 @@ export function FileTree(): React.JSX.Element {
     })
 
     const unsubscribeItemMoved = window.api.file.onItemMoved(({ oldPath, newPath }) => {
+      // Update expanded folder paths when a folder is moved/renamed
+      updateExpandedFolderOnMove(oldPath, newPath)
+
       const currentPath = currentFilePathRef.current
       if (!currentPath) return
 
@@ -386,7 +389,7 @@ export function FileTree(): React.JSX.Element {
       unsubscribeItemMoved()
       window.api.file.unwatch()
     }
-  }, [loadFiles, loadFileContent, setCurrentFile])
+  }, [loadFiles, loadFileContent, setCurrentFile, updateExpandedFolderOnMove])
 
   // Listen for menu commands and custom events from TitleBar
   useEffect(() => {
@@ -401,10 +404,10 @@ export function FileTree(): React.JSX.Element {
     }
 
     const handleExpandAll = (): void => {
-      setExpandedFolders(new Set(collectAllFolderPaths(files)))
+      setExpandedFolders(collectAllFolderPaths(files))
     }
     const handleCollapseAll = (): void => {
-      setExpandedFolders(new Set())
+      setExpandedFolders([])
     }
 
     document.addEventListener('request-new-file', handleRequestNewFile)
@@ -453,7 +456,7 @@ export function FileTree(): React.JSX.Element {
               entry={entry}
               depth={0}
               selectedPath={currentFilePath}
-              expandedFolders={expandedFolders}
+              expandedFolders={expandedFoldersSet}
               editingPath={editingPath}
               dragState={dragState}
               onFileSelect={handleFileSelect}

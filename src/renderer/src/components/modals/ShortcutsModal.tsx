@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useEffect } from 'react'
 import './ShortcutsModal.css'
 
 interface ShortcutsModalProps {
@@ -59,7 +59,8 @@ function getShortcuts(): { category: string; items: { keys: string[]; label: str
         { keys: [MOD, '.'], label: 'Toggle Sidebar' },
         { keys: [MOD, '+'], label: 'Zoom In' },
         { keys: [MOD, '-'], label: 'Zoom Out' },
-        { keys: [MOD, '0'], label: 'Actual Size' }
+        { keys: [MOD, '0'], label: 'Actual Size' },
+        { keys: [MOD, '/'], label: 'Keyboard Shortcuts' }
       ]
     }
   ]
@@ -67,6 +68,15 @@ function getShortcuts(): { category: string; items: { keys: string[]; label: str
 
 export function ShortcutsModal({ isOpen, onClose }: ShortcutsModalProps): React.JSX.Element | null {
   const shortcuts = useMemo(() => getShortcuts(), [])
+
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') onClose()
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
 
   if (!isOpen) return null
 

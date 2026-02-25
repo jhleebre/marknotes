@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { FileText } from 'lucide-react'
 import appIcon from '../assets/app-icon.png'
 import { useDocumentStore } from '../store/useDocumentStore'
@@ -16,6 +16,15 @@ export function WelcomeScreen(): React.JSX.Element {
   const setOriginalContent = useDocumentStore((s) => s.setOriginalContent)
   const setIsLoadingContent = useDocumentStore((s) => s.setIsLoadingContent)
   const removeRecentFile = useDocumentStore((s) => s.removeRecentFile)
+
+  useEffect(() => {
+    if (recentFiles.length === 0) return
+    Promise.all(recentFiles.map((f) => window.api.file.exists(f.path))).then((results) => {
+      recentFiles.forEach((f, i) => {
+        if (!results[i]) removeRecentFile(f.path)
+      })
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const openRecentFile = useCallback(
     async (path: string, name: string) => {
@@ -70,16 +79,16 @@ export function WelcomeScreen(): React.JSX.Element {
             <span>New Folder</span>
           </div>
           <div className="shortcut">
-            <kbd>Cmd</kbd> + <kbd>S</kbd>
-            <span>Force Save</span>
+            <kbd>Cmd</kbd> + <kbd>F</kbd>
+            <span>Find</span>
           </div>
           <div className="shortcut">
-            <kbd>Cmd</kbd> + <kbd>.</kbd>
-            <span>Toggle Sidebar</span>
+            <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd>
+            <span>Search in Files</span>
           </div>
           <div className="shortcut">
-            <kbd>Cmd</kbd> + <kbd>1/2</kbd>
-            <span>Switch Mode</span>
+            <kbd>Cmd</kbd> + <kbd>/</kbd>
+            <span>All Shortcuts</span>
           </div>
         </div>
       </div>

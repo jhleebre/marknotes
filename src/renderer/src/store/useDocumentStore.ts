@@ -21,6 +21,7 @@ export interface DocumentState {
   files: FileEntry[]
   rootPath: string
   isLoadingFiles: boolean
+  expandedFolders: string[]
 
   // Current document
   currentFilePath: string | null
@@ -68,6 +69,9 @@ export interface DocumentState {
   setFiles: (files: FileEntry[]) => void
   setRootPath: (path: string) => void
   setIsLoadingFiles: (loading: boolean) => void
+  setExpandedFolders: (folders: string[]) => void
+  toggleExpandedFolder: (path: string) => void
+  updateExpandedFolderOnMove: (oldPath: string, newPath: string) => void
 
   setCurrentFile: (path: string | null, name: string | null) => void
   setContent: (content: string) => void
@@ -114,6 +118,14 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   files: [],
   rootPath: '',
   isLoadingFiles: false,
+  expandedFolders: (() => {
+    try {
+      const stored = localStorage.getItem('expandedFolders')
+      return stored ? (JSON.parse(stored) as string[]) : []
+    } catch {
+      return []
+    }
+  })(),
 
   // Current document
   currentFilePath: null,
@@ -172,6 +184,43 @@ export const useDocumentStore = create<DocumentState>((set, get) => ({
   setFiles: (files): void => set({ files }),
   setRootPath: (path): void => set({ rootPath: path }),
   setIsLoadingFiles: (loading): void => set({ isLoadingFiles: loading }),
+
+  setExpandedFolders: (folders): void => {
+    try {
+      localStorage.setItem('expandedFolders', JSON.stringify(folders))
+    } catch {
+      // ignore storage errors
+    }
+    set({ expandedFolders: folders })
+  },
+
+  toggleExpandedFolder: (path): void => {
+    const state = get()
+    const next = state.expandedFolders.includes(path)
+      ? state.expandedFolders.filter((p) => p !== path)
+      : [...state.expandedFolders, path]
+    try {
+      localStorage.setItem('expandedFolders', JSON.stringify(next))
+    } catch {
+      // ignore storage errors
+    }
+    set({ expandedFolders: next })
+  },
+
+  updateExpandedFolderOnMove: (oldPath, newPath): void => {
+    const state = get()
+    const updated = state.expandedFolders.map((p) => {
+      if (p === oldPath) return newPath
+      if (p.startsWith(oldPath + '/')) return newPath + p.slice(oldPath.length)
+      return p
+    })
+    try {
+      localStorage.setItem('expandedFolders', JSON.stringify(updated))
+    } catch {
+      // ignore storage errors
+    }
+    set({ expandedFolders: updated })
+  },
 
   setCurrentFile: (path, name): void => {
     if (path && name) {
