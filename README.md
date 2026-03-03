@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.9.10</strong>
+  <strong>Version 1.9.11</strong>
 </p>
 
 <p align="center">
@@ -427,7 +427,7 @@ Or use the shell script:
 ./scripts/run-tests.sh [--coverage] [--main] [--renderer] [--watch]
 ```
 
-**Test coverage (v1.9.10):** 86% overall — covering path security, file CRUD, link auto-update, relative path calculation, search, markdown conversion (HTML↔MD), YAML frontmatter processing, and Zustand store.
+**Test coverage (v1.9.11):** 86% overall — covering path security, file CRUD, link auto-update, relative path calculation, search, markdown conversion (HTML↔MD), YAML frontmatter processing, and Zustand store.
 
 See [`docs/QA_TEST_GUIDE.md`](docs/QA_TEST_GUIDE.md) for the full test breakdown and manual QA checklist.
 
