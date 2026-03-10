@@ -201,12 +201,10 @@ export function useSearch(editor: Editor | null, onScrollToMatch?: () => void): 
     const match = matches[currentMatchIndex - 1]
     const savedIndex = currentMatchIndex // Save current index to restore after re-search
 
-    // Replace the text
-    editor.commands.setTextSelection({
-      from: match.from,
-      to: match.to
-    })
-    editor.commands.insertContent(replaceText)
+    // Replace the text using insertText for reliable plain text replacement
+    // (insertContent parses as HTML and can wrap text in block nodes, deleting surrounding content)
+    const { tr } = editor.state
+    editor.view.dispatch(tr.insertText(replaceText, match.from, match.to))
 
     // Re-search to update matches and move to next match (same index)
     setTimeout(() => {
@@ -286,21 +284,16 @@ export function useSearch(editor: Editor | null, onScrollToMatch?: () => void): 
   const replaceAll = useCallback(() => {
     if (!editor || matches.length === 0) return
 
-    // Replace from end to start to maintain positions
+    // Replace from end to start in a single transaction to maintain positions
+    // (insertContent parses as HTML and can wrap text in block nodes, deleting surrounding content)
     const sortedMatches = [...matches].sort((a, b) => b.from - a.from)
-
-    editor.chain().focus()
+    const tr = editor.state.tr
 
     for (const match of sortedMatches) {
-      editor
-        .chain()
-        .setTextSelection({
-          from: match.from,
-          to: match.to
-        })
-        .insertContent(replaceText)
-        .run()
+      tr.insertText(replaceText, match.from, match.to)
     }
+
+    editor.view.dispatch(tr)
 
     // Re-search to update matches (no scroll needed)
     setTimeout(() => findMatches(), 10)

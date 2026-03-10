@@ -102,6 +102,8 @@ export function SearchBar({ editor }: SearchBarProps): React.JSX.Element | null 
   }
 
   const handleReplaceKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    // Skip while IME is composing (Korean/CJK input) — let composition commit first
+    if (e.nativeEvent.isComposing) return
     if (e.key === 'Enter') {
       e.preventDefault()
       if (e.shiftKey) {
