@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <strong>Version 1.9.13</strong>
+  <strong>Version 1.9.14</strong>
 </p>
 
 <p align="center">
@@ -89,7 +89,7 @@ MarkNotes is a desktop markdown editor designed for writers who want a distracti
 
 ### 📤 Export Your Work
 
-- **PDF Export** - Create professional PDFs with one click (`Cmd+Shift+P`)
+- **PDF Export** - Create professional PDFs with one click (`Cmd+Shift+P`) — editorial print layout with refined typography, clean tables, and page numbers
 - **Formatted Output** - All your styles, images, and tables export perfectly
 - **Save Anywhere** - Choose where to save each export
 
