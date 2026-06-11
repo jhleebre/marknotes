@@ -60,3 +60,4 @@ coverage
 # User data (for testing)
 # Uncomment if you want to ignore test note directories
 # ~/Documents/MarkNotes
+tsconfig.node.tsbuildinfo
