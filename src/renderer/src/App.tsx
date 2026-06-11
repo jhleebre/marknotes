@@ -10,6 +10,7 @@ import { AboutModal } from './components/modals/AboutModal'
 import { ShortcutsModal } from './components/modals/ShortcutsModal'
 import { useDocumentStore } from './store/useDocumentStore'
 import { useMenuListeners } from './hooks/useMenuListeners'
+import { useAutoSave } from './hooks/useAutoSave'
 import { useSidebarResize } from './hooks/useSidebarResize'
 import type { Editor as TipTapEditor } from '@tiptap/react'
 import './App.css'
@@ -20,6 +21,9 @@ function App(): React.JSX.Element {
 
   const { aboutOpen, shortcutsOpen, closeAbout, closeShortcuts } = useMenuListeners()
   const { sidebarWidth, isDragging, handleMouseDown } = useSidebarResize()
+
+  // Single app-wide auto-save scheduler
+  useAutoSave()
 
   return (
     <div className="app">

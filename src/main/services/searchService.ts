@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 import path from 'path'
-import { ROOT_PATH } from '../utils'
+import { ROOT_PATH, validatePath } from '../utils'
 import type { FileSearchResult, SearchResult } from '../../shared/types'
 
 const MAX_TOTAL_MATCHES = 500
@@ -26,7 +26,10 @@ function extractTagsFromFrontmatter(content: string): string[] {
 
     if (inTagsBlock) {
       if (trimmed.startsWith('- ')) {
-        const tag = trimmed.slice(2).trim().replace(/^['"]|['"]$/g, '')
+        const tag = trimmed
+          .slice(2)
+          .trim()
+          .replace(/^['"]|['"]$/g, '')
         if (tag) tags.push(tag)
       } else if (trimmed === '-' || trimmed === '' || trimmed.startsWith('#')) {
         // empty item / blank / comment — skip
@@ -98,7 +101,7 @@ export async function searchFiles(
   }
 
   const resolvedTarget = path.resolve(targetPath)
-  if (!resolvedTarget.startsWith(ROOT_PATH)) {
+  if (!validatePath(resolvedTarget)) {
     return { success: false, error: 'Access denied: path outside root directory' }
   }
 
@@ -186,7 +189,7 @@ export async function searchTags(
   }
 
   const resolvedTarget = path.resolve(targetPath)
-  if (!resolvedTarget.startsWith(ROOT_PATH)) {
+  if (!validatePath(resolvedTarget)) {
     return { success: false, error: 'Access denied: path outside root directory' }
   }
 

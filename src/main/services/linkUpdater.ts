@@ -36,6 +36,16 @@ function relativePathToTarget(fromFile: string, toAbsPath: string): string {
 }
 
 /**
+ * Minimally percent-encode a decoded path for use as a markdown link destination.
+ * Spaces and parentheses break `[text](dest)` syntax, so only those (plus '%'
+ * itself, to keep decoding reversible) are encoded — other characters such as
+ * Korean filenames stay readable.
+ */
+function encodeMdHrefPath(p: string): string {
+  return p.replace(/%/g, '%25').replace(/ /g, '%20').replace(/\(/g, '%28').replace(/\)/g, '%29')
+}
+
+/**
  * After a file or folder is moved/renamed, scan all .md files and update links.
  *
  * Two kinds of links are fixed:
@@ -135,7 +145,7 @@ export async function updateLinksAfterMove(
 
         // Compute new relative path from this file's CURRENT (new) location
         const newRel = relativePathToTarget(mdFile, finalTarget)
-        const newHref = `${newRel}${fragment}`
+        const newHref = `${encodeMdHrefPath(newRel)}${fragment}`
 
         // Skip if nothing actually changed (e.g. intra-folder links after a folder move)
         if (newHref === href) return match

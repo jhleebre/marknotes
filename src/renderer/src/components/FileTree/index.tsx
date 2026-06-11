@@ -6,9 +6,9 @@ import { ContextMenu } from '../ContextMenu'
 import { FileTreeItem } from './FileTreeItem'
 import { useFileTreeContextMenu } from './hooks/useFileTreeContextMenu'
 import { useDragAndDrop } from './hooks/useDragAndDrop'
-import { useAutoSave } from '../../hooks/useAutoSave'
+import { saveDocument } from '../../utils/saveDocument'
 import { parseFrontmatter, updateField } from '../../utils/frontmatter'
-import { markWrite, getLastWriteTime } from '../../utils/writeTracker'
+import { getLastWriteTime } from '../../utils/writeTracker'
 import { saveCurrentPosition, removeCursorScroll } from '../../utils/cursorScrollCache'
 import './FileTree.css'
 
@@ -32,7 +32,6 @@ export function FileTree(): React.JSX.Element {
     currentFilePath,
     setCurrentFile,
     content,
-    originalContent,
     setContent,
     setOriginalContent,
     setIsLoadingContent,
@@ -43,8 +42,6 @@ export function FileTree(): React.JSX.Element {
     toggleExpandedFolder,
     updateExpandedFolderOnMove
   } = useDocumentStore()
-
-  const { saveNow } = useAutoSave()
 
   const currentFilePathRef = useRef(currentFilePath)
   useEffect(() => {
@@ -101,17 +98,14 @@ export function FileTree(): React.JSX.Element {
   const handleFileSelect = useCallback(
     async (path: string, name: string): Promise<void> => {
       saveCurrentPosition(currentFilePath)
-      if (currentFilePath && content !== originalContent) {
-        try {
-          markWrite()
-          await window.api.file.write(currentFilePath, content)
-        } catch (error) {
-          console.error('Failed to save before switching files:', error)
-        }
+      try {
+        await saveDocument()
+      } catch (error) {
+        console.error('Failed to save before switching files:', error)
       }
       loadFileContent(path, name)
     },
-    [loadFileContent, currentFilePath, content, originalContent]
+    [loadFileContent, currentFilePath]
   )
 
   const handleToggleExpand = useCallback(
@@ -164,8 +158,8 @@ export function FileTree(): React.JSX.Element {
     async (entry: FileEntry): Promise<void> => {
       try {
         // Save unsaved changes before duplicating the currently open file
-        if (!entry.isDirectory && entry.path === currentFilePath && content !== originalContent) {
-          await saveNow()
+        if (!entry.isDirectory && entry.path === currentFilePath) {
+          await saveDocument()
         }
         const result = await window.api.file.duplicate(entry.path)
         if (result.success) {
@@ -181,7 +175,7 @@ export function FileTree(): React.JSX.Element {
         console.error('Failed to duplicate:', error)
       }
     },
-    [loadFiles, loadFileContent, currentFilePath, content, originalContent, saveNow]
+    [loadFiles, loadFileContent, currentFilePath]
   )
 
   const handleCreateFile = useCallback(
@@ -208,9 +202,7 @@ export function FileTree(): React.JSX.Element {
         const result = await window.api.file.createFolder(name.trim(), parentPath || undefined)
         if (result.success && result.content) {
           loadFiles()
-          const toAdd = parentPath
-            ? [parentPath, result.content!]
-            : [result.content!]
+          const toAdd = parentPath ? [parentPath, result.content!] : [result.content!]
           const next = [...new Set([...expandedFolders, ...toAdd])]
           setExpandedFolders(next)
         } else {

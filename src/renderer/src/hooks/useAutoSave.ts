@@ -1,82 +1,29 @@
-import { useEffect, useCallback, useRef, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import debounce from 'lodash.debounce'
 import { useDocumentStore } from '../store/useDocumentStore'
-import { markWrite } from '../utils/writeTracker'
-import { stampUpdated } from '../utils/frontmatter'
+import { saveDocument } from '../utils/saveDocument'
 
 const AUTO_SAVE_DELAY = 5000 // 5 seconds
 
-export function useAutoSave(): {
-  saveNow: () => Promise<void>
-} {
-  const { currentFilePath, content, originalContent, setSaveStatus, setOriginalContent } =
-    useDocumentStore()
+// Debounced auto-save scheduler. Mount exactly once (in App) — actual saving
+// lives in saveDocument(), which other call sites use directly.
+export function useAutoSave(): void {
+  const content = useDocumentStore((s) => s.content)
+  const originalContent = useDocumentStore((s) => s.originalContent)
+  const currentFilePath = useDocumentStore((s) => s.currentFilePath)
 
-  const contentRef = useRef(content)
-  const pathRef = useRef(currentFilePath)
-  const originalContentRef = useRef(originalContent)
-
-  // Keep refs updated
-  useEffect(() => {
-    contentRef.current = content
-    pathRef.current = currentFilePath
-    originalContentRef.current = originalContent
-  }, [content, currentFilePath, originalContent])
-
-  const performSave = useCallback(async (): Promise<void> => {
-    const filePath = pathRef.current
-    let fileContent = contentRef.current
-
-    if (!filePath) {
-      return
-    }
-
-    // For auto-save, check if content changed
-    if (fileContent === originalContentRef.current) {
-      return
-    }
-
-    // Stamp the updated date in frontmatter (only if frontmatter exists)
-    fileContent = stampUpdated(fileContent)
-    contentRef.current = fileContent
-
-    setSaveStatus('saving')
-
-    try {
-      markWrite()
-      const result = await window.api.file.write(filePath, fileContent)
-      if (result.success) {
-        setOriginalContent(fileContent)
-        originalContentRef.current = fileContent
-        setSaveStatus('saved')
-      } else {
-        console.error('Save failed:', result.error)
-        setSaveStatus('error')
-      }
-    } catch (error) {
-      console.error('Save error:', error)
-      setSaveStatus('error')
-    }
-  }, [setSaveStatus, setOriginalContent])
-
-  // Debounced auto-save
   const debouncedSave = useMemo(
     () =>
-      // eslint-disable-next-line react-hooks/refs
       debounce(() => {
-        performSave()
+        saveDocument()
       }, AUTO_SAVE_DELAY),
-    [performSave]
+    []
   )
 
   // Trigger debounced save when content changes
   useEffect(() => {
     if (currentFilePath && content !== originalContent) {
       debouncedSave()
-    }
-
-    return () => {
-      debouncedSave.cancel()
     }
   }, [content, currentFilePath, originalContent, debouncedSave])
 
@@ -86,40 +33,4 @@ export function useAutoSave(): {
       debouncedSave.cancel()
     }
   }, [debouncedSave])
-
-  // Manual save function - force save without checking if content changed
-  const saveNow = useCallback(async (): Promise<void> => {
-    debouncedSave.cancel()
-
-    const filePath = pathRef.current
-    let fileContent = contentRef.current
-
-    if (!filePath) {
-      return
-    }
-
-    // Stamp the updated date in frontmatter (only if frontmatter exists)
-    fileContent = stampUpdated(fileContent)
-    contentRef.current = fileContent
-
-    setSaveStatus('saving')
-
-    try {
-      markWrite()
-      const result = await window.api.file.write(filePath, fileContent)
-      if (result.success) {
-        setOriginalContent(fileContent)
-        originalContentRef.current = fileContent
-        setSaveStatus('saved')
-      } else {
-        console.error('Save failed:', result.error)
-        setSaveStatus('error')
-      }
-    } catch (error) {
-      console.error('Save error:', error)
-      setSaveStatus('error')
-    }
-  }, [debouncedSave, setSaveStatus, setOriginalContent])
-
-  return { saveNow }
 }

@@ -26,10 +26,19 @@ renderer.heading = function ({ text, depth, tokens }) {
   return `<h${depth} id="${id}">${text}</h${depth}>\n`
 }
 
+// marked passes href/title/text through unescaped — escape them for attribute context
+function escapeAttr(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
 renderer.image = function ({ href, title, text }) {
-  const alt = text || ''
-  const src = href || ''
-  const titleAttr = title ? ` title="${title}"` : ''
+  const alt = escapeAttr(text || '')
+  const src = escapeAttr(href || '')
+  const titleAttr = title ? ` title="${escapeAttr(title)}"` : ''
 
   return `<img src="${src}" alt="${alt}"${titleAttr}>`
 }

@@ -91,8 +91,9 @@ export function useSearch(editor: Editor | null, onScrollToMatch?: () => void): 
 
     const foundMatches: SearchMatch[] = []
 
-    // Build regex pattern
-    const pattern = searchQuery
+    // Build regex pattern — escape so the query is matched literally,
+    // consistent with global search (searchService)
+    const pattern = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const flags = caseSensitive ? 'g' : 'gi'
     let regex: RegExp
 
@@ -215,7 +216,7 @@ export function useSearch(editor: Editor | null, onScrollToMatch?: () => void): 
       }
 
       const foundMatches: SearchMatch[] = []
-      const pattern = searchQuery
+      const pattern = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
       const flags = caseSensitive ? 'g' : 'gi'
       let regex: RegExp
 

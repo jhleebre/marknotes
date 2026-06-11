@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { marked, postProcessImageSizes } from '../../../src/renderer/src/components/Editor/markdown/markdownToHtml'
+import {
+  marked,
+  postProcessImageSizes
+} from '../../../src/renderer/src/components/Editor/markdown/markdownToHtml'
 import { processTaskListsForEditor } from '../../../src/renderer/src/components/Editor/markdown/taskListProcessor'
 
 // marked.parse()만 사용 (기본 HTML)
@@ -237,9 +240,8 @@ describe('마크다운 왕복 변환 (Roundtrip)', () => {
   // MD → HTML (marked.parse + processTaskListsForEditor) → MD (turndownService) 왕복 변환
   // Editor에서 실제로 사용하는 전체 파이프라인 시뮬레이션
   const toMdRoundtrip = async (md: string): Promise<string> => {
-    const { turndownService: ts } = await import(
-      '../../../src/renderer/src/components/Editor/markdown/htmlToMarkdown'
-    )
+    const { turndownService: ts } =
+      await import('../../../src/renderer/src/components/Editor/markdown/htmlToMarkdown')
     const html = toHtmlFull(md) // marked.parse + processTaskListsForEditor
     return ts.turndown(html).trim()
   }

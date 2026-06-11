@@ -28,7 +28,7 @@ const tablePasteFixPlugin = new Plugin({
       let { content, openStart, openEnd } = slice
       while (
         content.childCount === 1 &&
-        (openStart > 0 && openEnd > 0 ||
+        ((openStart > 0 && openEnd > 0) ||
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (content.child(0).type.spec as any).tableRole === 'table')
       ) {

@@ -433,11 +433,7 @@ export function GlobalSearch(): React.JSX.Element {
       <div className="gs-results">
         {globalSearchResults.map((result) =>
           mode === 'tags' ? (
-            <TagFileResult
-              key={result.filePath}
-              result={result}
-              onClick={handleTagFileClick}
-            />
+            <TagFileResult key={result.filePath} result={result} onClick={handleTagFileClick} />
           ) : (
             <FileResultGroup
               key={result.filePath}

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useDocumentStore } from '../../store/useDocumentStore'
-import { useAutoSave } from '../../hooks/useAutoSave'
-import { markWrite } from '../../utils/writeTracker'
+import { saveDocument } from '../../utils/saveDocument'
 import { extractBody } from '../../utils/frontmatter'
 import type { Editor as TipTapEditor } from '@tiptap/react'
 import {
@@ -35,7 +34,6 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
     currentFilePath,
     currentFileName,
     content,
-    originalContent,
     setCurrentFile,
     setContent,
     setOriginalContent
@@ -43,7 +41,6 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
 
   // Subscribe to selection changes so toolbar buttons reflect current formatting
   useDocumentStore((s) => s.editorSelectionKey)
-  const { saveNow } = useAutoSave()
 
   const [platform, setPlatform] = useState<'darwin' | 'win32' | 'linux'>('darwin')
 
@@ -71,35 +68,28 @@ export function TitleBar({ editor }: TitleBarProps): React.JSX.Element {
 
   const handleCloseFile = useCallback(async (): Promise<void> => {
     // Save current file if there are unsaved changes
-    if (currentFilePath && content !== originalContent) {
-      try {
-        markWrite()
-        await window.api.file.write(currentFilePath, content)
-      } catch (error) {
-        console.error('Failed to save before closing file:', error)
-      }
+    try {
+      await saveDocument()
+    } catch (error) {
+      console.error('Failed to save before closing file:', error)
     }
 
     // Close the file
     setCurrentFile(null, null)
     setContent('')
     setOriginalContent('')
-  }, [currentFilePath, content, originalContent, setCurrentFile, setContent, setOriginalContent])
+  }, [setCurrentFile, setContent, setOriginalContent])
 
-  // Listen for menu commands
+  // Listen for menu commands (Cmd+S is handled in useMenuListeners)
   useEffect(() => {
-    const unsubscribeSave = window.api.menu.onSave(() => {
-      saveNow()
-    })
     const unsubscribeExportPdf = window.api.menu.onExportPdf(handleExportPdf)
     const unsubscribeCloseFile = window.api.menu.onCloseFile(handleCloseFile)
 
     return () => {
-      unsubscribeSave()
       unsubscribeExportPdf()
       unsubscribeCloseFile()
     }
-  }, [saveNow, handleExportPdf, handleCloseFile])
+  }, [handleExportPdf, handleCloseFile])
 
   const isDisabled = !currentFilePath || !editor
 

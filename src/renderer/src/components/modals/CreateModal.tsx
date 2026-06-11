@@ -1,12 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import type { FileEntry } from '../../../../shared/types'
 import { ChevronRight } from 'lucide-react'
-import {
-  FolderIcon,
-  FolderOpenIcon,
-  RootFolderIcon,
-  CloseIcon
-} from '../../utils/icons'
+import { FolderIcon, FolderOpenIcon, RootFolderIcon, CloseIcon } from '../../utils/icons'
 import './CreateModal.css'
 
 interface CreateModalProps {

@@ -26,6 +26,22 @@ describe('제목 변환', () => {
   it('H6을 ###### 로 변환한다', () => {
     expect(toMd('<h6>Tiny</h6>')).toBe('###### Tiny')
   })
+
+  it('제목 안의 굵게 서식을 보존한다', () => {
+    expect(toMd('<h1>My <strong>bold</strong> title</h1>')).toBe('# My **bold** title')
+  })
+
+  it('제목 안의 기울임/코드 서식을 보존한다', () => {
+    expect(toMd('<h2>An <em>italic</em> and <code>code</code> title</h2>')).toBe(
+      '## An *italic* and `code` title'
+    )
+  })
+
+  it('id 속성이 있는 제목도 인라인 서식을 보존한다', () => {
+    expect(toMd('<h2 id="my-title">My <strong>bold</strong> title</h2>')).toBe(
+      '## My **bold** title'
+    )
+  })
 })
 
 // ─────────────────────────────────────────────
@@ -56,9 +72,7 @@ describe('인라인 서식 변환', () => {
   })
 
   it('<a>를 [text](url) 링크로 변환한다', () => {
-    expect(toMd('<a href="https://example.com">Example</a>')).toBe(
-      '[Example](https://example.com)'
-    )
+    expect(toMd('<a href="https://example.com">Example</a>')).toBe('[Example](https://example.com)')
   })
 
   it('앵커 링크 (#heading)를 [text](#id) 로 변환한다', () => {
@@ -211,8 +225,7 @@ describe('이미지 변환', () => {
   })
 
   it('alt가 없는 이미지는 ![]() 형식으로 변환한다', () => {
-    const html =
-      '<img src="data:image/png;base64,abc" data-asset-path=".assets/no-alt.png">'
+    const html = '<img src="data:image/png;base64,abc" data-asset-path=".assets/no-alt.png">'
     const md = toMd(html)
     expect(md).toContain('![](.assets/no-alt.png)')
   })

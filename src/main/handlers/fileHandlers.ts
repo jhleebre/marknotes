@@ -15,8 +15,9 @@ import {
 } from '../services/fileOperations'
 import { startWatching, stopWatching } from '../services/fileWatcher'
 import { updateLinksAfterMove } from '../services/linkUpdater'
+import { updateReferencesAfterMove } from '../services/imageManager'
 
-export function registerFileHandlers(mainWindow: BrowserWindow): void {
+export function registerFileHandlers(): void {
   ipcMain.handle('file:getRootPath', () => {
     return ROOT_PATH
   })
@@ -45,15 +46,19 @@ export function registerFileHandlers(mainWindow: BrowserWindow): void {
     return deleteFile(filePath)
   })
 
-  ipcMain.handle('file:rename', async (_, oldPath: string, newName: string) => {
+  ipcMain.handle('file:rename', async (event, oldPath: string, newName: string) => {
     const result = await renameFile(oldPath, newName)
     if (result.success && result.content) {
+      const win = BrowserWindow.fromWebContents(event.sender)
       const newPath = result.content
-      mainWindow.webContents.send('file:itemMoved', { oldPath, newPath })
+      win?.webContents.send('file:itemMoved', { oldPath, newPath })
+      updateReferencesAfterMove(oldPath, newPath).catch((err) => {
+        console.error('[imageManager] renameFile reference update failed:', err)
+      })
       updateLinksAfterMove(oldPath, newPath)
         .then((changedPaths) => {
-          if (changedPaths.length > 0) {
-            mainWindow.webContents.send('file:linksUpdated', changedPaths)
+          if (changedPaths.length > 0 && win && !win.isDestroyed()) {
+            win.webContents.send('file:linksUpdated', changedPaths)
           }
         })
         .catch((err) => {
@@ -67,15 +72,19 @@ export function registerFileHandlers(mainWindow: BrowserWindow): void {
     return fileExists(filePath)
   })
 
-  ipcMain.handle('file:move', async (_, sourcePath: string, targetDir: string) => {
+  ipcMain.handle('file:move', async (event, sourcePath: string, targetDir: string) => {
     const result = await moveFile(sourcePath, targetDir)
     if (result.success && result.content) {
+      const win = BrowserWindow.fromWebContents(event.sender)
       const newPath = result.content
-      mainWindow.webContents.send('file:itemMoved', { oldPath: sourcePath, newPath })
+      win?.webContents.send('file:itemMoved', { oldPath: sourcePath, newPath })
+      updateReferencesAfterMove(sourcePath, newPath).catch((err) => {
+        console.error('[imageManager] moveFile reference update failed:', err)
+      })
       updateLinksAfterMove(sourcePath, newPath)
         .then((changedPaths) => {
-          if (changedPaths.length > 0) {
-            mainWindow.webContents.send('file:linksUpdated', changedPaths)
+          if (changedPaths.length > 0 && win && !win.isDestroyed()) {
+            win.webContents.send('file:linksUpdated', changedPaths)
           }
         })
         .catch((err) => {
@@ -93,8 +102,12 @@ export function registerFileHandlers(mainWindow: BrowserWindow): void {
     return statFile(filePath)
   })
 
-  ipcMain.handle('file:watch', async () => {
-    return startWatching(mainWindow)
+  ipcMain.handle('file:watch', async (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender)
+    if (!win) {
+      return { success: false, error: 'No window associated with this request' }
+    }
+    return startWatching(win)
   })
 
   ipcMain.handle('file:unwatch', async () => {

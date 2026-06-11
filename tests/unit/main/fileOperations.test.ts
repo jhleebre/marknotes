@@ -119,9 +119,8 @@ describe('writeFile', () => {
   })
 
   it('.md 파일 저장 시 이미지 레퍼런스를 업데이트한다', async () => {
-    const { updateDocumentImageReferences } = await import(
-      '../../../src/main/services/imageManager'
-    )
+    const { updateDocumentImageReferences } =
+      await import('../../../src/main/services/imageManager')
     await writeFile(path.join(ROOT_PATH, 'note.md'), '# With image\n![img](.assets/img.png)')
     expect(updateDocumentImageReferences).toHaveBeenCalled()
   })
@@ -159,6 +158,18 @@ describe('createFile', () => {
     const result = await createFile('note', '/tmp')
     expect(result.success).toBe(false)
     expect(result.error).toContain('Access denied')
+  })
+
+  it('ROOT_PATH와 접두사만 같은 형제 경로를 거부한다', async () => {
+    const result = await createFile('note', `${ROOT_PATH}Evil`)
+    expect(result.success).toBe(false)
+    expect(result.error).toContain('Access denied')
+  })
+
+  it('경로 구분자가 포함된 파일명을 거부한다', async () => {
+    const result = await createFile('../escape', ROOT_PATH)
+    expect(result.success).toBe(false)
+    expect(result.error).toContain('Invalid file name')
   })
 
   it('dirPath를 생략하면 ROOT_PATH에 생성한다', async () => {
@@ -226,6 +237,7 @@ describe('deleteFile', () => {
 // ─────────────────────────────────────────────
 describe('renameFile', () => {
   it('파일 이름을 변경한다', async () => {
+    vi.mocked(fs.access).mockRejectedValue(new Error('ENOENT') as never) // target doesn't exist
     vi.mocked(fs.rename).mockResolvedValue(undefined as never)
     const oldPath = path.join(ROOT_PATH, 'old.md')
     const result = await renameFile(oldPath, 'new.md')
@@ -237,6 +249,29 @@ describe('renameFile', () => {
     const result = await renameFile('/etc/hosts', 'evil')
     expect(result.success).toBe(false)
     expect(result.error).toContain('Access denied')
+  })
+
+  it('경로 구분자가 포함된 새 이름을 거부한다 (경로 순회 방지)', async () => {
+    const result = await renameFile(path.join(ROOT_PATH, 'note.md'), '../escape.md')
+    expect(result.success).toBe(false)
+    expect(result.error).toContain('Invalid name')
+    expect(fs.rename).not.toHaveBeenCalled()
+  })
+
+  it('같은 이름의 파일이 이미 존재하면 덮어쓰지 않는다', async () => {
+    vi.mocked(fs.access).mockResolvedValue(undefined as never) // target exists
+    const result = await renameFile(path.join(ROOT_PATH, 'note.md'), 'existing.md')
+    expect(result.success).toBe(false)
+    expect(result.error).toContain('already exists')
+    expect(fs.rename).not.toHaveBeenCalled()
+  })
+
+  it('대소문자만 바꾸는 이름 변경은 허용한다', async () => {
+    vi.mocked(fs.access).mockResolvedValue(undefined as never) // 자기 자신이 검색됨
+    vi.mocked(fs.rename).mockResolvedValue(undefined as never)
+    const result = await renameFile(path.join(ROOT_PATH, 'readme.md'), 'README.md')
+    expect(result.success).toBe(true)
+    expect(fs.rename).toHaveBeenCalled()
   })
 })
 
@@ -275,10 +310,7 @@ describe('moveFile', () => {
 
   it('같은 이름의 파일이 대상에 이미 존재하면 에러를 반환한다', async () => {
     vi.mocked(fs.access).mockResolvedValue(undefined as never) // target exists
-    const result = await moveFile(
-      path.join(ROOT_PATH, 'note.md'),
-      path.join(ROOT_PATH, 'folder')
-    )
+    const result = await moveFile(path.join(ROOT_PATH, 'note.md'), path.join(ROOT_PATH, 'folder'))
     expect(result.success).toBe(false)
     expect(result.error).toContain('already exists')
   })

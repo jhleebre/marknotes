@@ -109,12 +109,62 @@ describe('updateLinksAfterMove — 단일 파일 이동', () => {
 
     const changed = await updateLinksAfterMove(`${ROOT}/A.md`, `${ROOT}/sub/A.md`)
 
-    const call = vi.mocked(fs.writeFile).mock.calls.find(
-      ([p]) => p === `${ROOT}/sub/A.md`
-    )
+    const call = vi.mocked(fs.writeFile).mock.calls.find(([p]) => p === `${ROOT}/sub/A.md`)
     expect(call).toBeDefined()
     expect(call![1]).toBe('[link](../B.md)')
     expect(changed).toContain(`${ROOT}/sub/A.md`)
+  })
+
+  it('퍼센트 인코딩된 링크는 이동과 무관하면 그대로 둔다', async () => {
+    // B.md 에 [link](my%20note.md) — 'my note.md'는 이동하지 않음 → 변경 없어야 함
+    vi.mocked(fs.stat).mockResolvedValue({ isDirectory: () => false } as never)
+
+    vi.mocked(fs.readdir).mockImplementation(async (dirPath: unknown) => {
+      if (dirPath === ROOT)
+        return [
+          makeEntry('B.md', false),
+          makeEntry('my note.md', false),
+          makeEntry('sub', true)
+        ] as never
+      if (dirPath === `${ROOT}/sub`) return [makeEntry('A.md', false)] as never
+      return [] as never
+    })
+
+    vi.mocked(fs.readFile).mockImplementation(async (filePath: unknown) => {
+      if (filePath === `${ROOT}/B.md`) return '[link](my%20note.md)' as never
+      return '# content' as never
+    })
+
+    const changed = await updateLinksAfterMove(`${ROOT}/A.md`, `${ROOT}/sub/A.md`)
+
+    expect(fs.writeFile).not.toHaveBeenCalled()
+    expect(changed).toEqual([])
+  })
+
+  it('공백이 있는 파일이 이동하면 링크를 퍼센트 인코딩으로 갱신한다', async () => {
+    // 'my note.md': ROOT/my note.md → ROOT/sub/my note.md
+    // B.md 의 [link](my%20note.md) → [link](sub/my%20note.md)
+    vi.mocked(fs.stat).mockResolvedValue({ isDirectory: () => false } as never)
+
+    vi.mocked(fs.readdir).mockImplementation(async (dirPath: unknown) => {
+      if (dirPath === ROOT) return [makeEntry('B.md', false), makeEntry('sub', true)] as never
+      if (dirPath === `${ROOT}/sub`) return [makeEntry('my note.md', false)] as never
+      return [] as never
+    })
+
+    vi.mocked(fs.readFile).mockImplementation(async (filePath: unknown) => {
+      if (filePath === `${ROOT}/B.md`) return '[link](my%20note.md)' as never
+      return '# content' as never
+    })
+
+    vi.mocked(fs.writeFile).mockResolvedValue(undefined as never)
+
+    const changed = await updateLinksAfterMove(`${ROOT}/my note.md`, `${ROOT}/sub/my note.md`)
+
+    const call = vi.mocked(fs.writeFile).mock.calls.find(([p]) => p === `${ROOT}/B.md`)
+    expect(call).toBeDefined()
+    expect(call![1]).toBe('[link](sub/my%20note.md)')
+    expect(changed).toContain(`${ROOT}/B.md`)
   })
 
   it('외부 URL 링크는 수정하지 않는다', async () => {
@@ -167,7 +217,8 @@ describe('updateLinksAfterMove — 단일 파일 이동', () => {
 
     vi.mocked(fs.readdir).mockImplementation(async (dirPath: unknown) => {
       if (dirPath === ROOT) return [makeEntry('sub', true)] as never
-      if (dirPath === `${ROOT}/sub`) return [makeEntry('A.md', false), makeEntry('B.md', false)] as never
+      if (dirPath === `${ROOT}/sub`)
+        return [makeEntry('A.md', false), makeEntry('B.md', false)] as never
       return [] as never
     })
 
@@ -200,8 +251,7 @@ describe('updateLinksAfterMove — 폴더 이동', () => {
       // collectMdFiles(archive/folder) — 이동된 폴더 스캔 (pathMap 빌드)
       if (dirPath === `${ROOT}/archive/folder`) return [makeEntry('A.md', false)] as never
       // collectMdFiles(ROOT) — 전체 스캔
-      if (dirPath === ROOT)
-        return [makeEntry('B.md', false), makeEntry('archive', true)] as never
+      if (dirPath === ROOT) return [makeEntry('B.md', false), makeEntry('archive', true)] as never
       if (dirPath === `${ROOT}/archive`) return [makeEntry('folder', true)] as never
       return [] as never
     })
@@ -229,8 +279,7 @@ describe('updateLinksAfterMove — 폴더 이동', () => {
 
     vi.mocked(fs.readdir).mockImplementation(async (dirPath: unknown) => {
       if (dirPath === `${ROOT}/archive/folder`) return [makeEntry('A.md', false)] as never
-      if (dirPath === ROOT)
-        return [makeEntry('B.md', false), makeEntry('archive', true)] as never
+      if (dirPath === ROOT) return [makeEntry('B.md', false), makeEntry('archive', true)] as never
       if (dirPath === `${ROOT}/archive`) return [makeEntry('folder', true)] as never
       return [] as never
     })
@@ -245,9 +294,9 @@ describe('updateLinksAfterMove — 폴더 이동', () => {
 
     const changed = await updateLinksAfterMove(`${ROOT}/folder`, `${ROOT}/archive/folder`)
 
-    const call = vi.mocked(fs.writeFile).mock.calls.find(
-      ([p]) => p === `${ROOT}/archive/folder/A.md`
-    )
+    const call = vi
+      .mocked(fs.writeFile)
+      .mock.calls.find(([p]) => p === `${ROOT}/archive/folder/A.md`)
     expect(call).toBeDefined()
     expect(call![1]).toBe('[link](../../B.md)')
     expect(changed).toContain(`${ROOT}/archive/folder/A.md`)
@@ -275,9 +324,7 @@ describe('updateLinksAfterMove — 에러 처리', () => {
     vi.mocked(fs.stat).mockRejectedValue(new Error('ENOENT') as never)
     vi.mocked(fs.readdir).mockRejectedValue(new Error('Permission denied') as never)
 
-    await expect(
-      updateLinksAfterMove(`${ROOT}/A.md`, `${ROOT}/sub/A.md`)
-    ).resolves.toEqual([])
+    await expect(updateLinksAfterMove(`${ROOT}/A.md`, `${ROOT}/sub/A.md`)).resolves.toEqual([])
   })
 
   it('개별 파일 읽기 실패는 건너뛰고 나머지를 처리한다', async () => {
@@ -285,7 +332,11 @@ describe('updateLinksAfterMove — 에러 처리', () => {
 
     vi.mocked(fs.readdir).mockImplementation(async (dirPath: unknown) => {
       if (dirPath === ROOT)
-        return [makeEntry('bad.md', false), makeEntry('good.md', false), makeEntry('sub', true)] as never
+        return [
+          makeEntry('bad.md', false),
+          makeEntry('good.md', false),
+          makeEntry('sub', true)
+        ] as never
       if (dirPath === `${ROOT}/sub`) return [makeEntry('A.md', false)] as never
       return [] as never
     })

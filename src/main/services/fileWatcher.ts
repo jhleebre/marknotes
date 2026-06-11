@@ -19,14 +19,18 @@ export async function startWatching(mainWindow: BrowserWindow): Promise<FileResu
       ignoreInitial: true
     })
 
+    const send = (channel: string, ...args: unknown[]): void => {
+      if (!mainWindow.isDestroyed()) {
+        mainWindow.webContents.send(channel, ...args)
+      }
+    }
+
     watcher
-      .on('add', () => mainWindow.webContents.send('file:changed'))
-      .on('unlink', () => mainWindow.webContents.send('file:changed'))
-      .on('addDir', () => mainWindow.webContents.send('file:changed'))
-      .on('unlinkDir', () => mainWindow.webContents.send('file:changed'))
-      .on('change', (changedPath) =>
-        mainWindow.webContents.send('file:externalChange', changedPath)
-      )
+      .on('add', () => send('file:changed'))
+      .on('unlink', () => send('file:changed'))
+      .on('addDir', () => send('file:changed'))
+      .on('unlinkDir', () => send('file:changed'))
+      .on('change', (changedPath) => send('file:externalChange', changedPath))
 
     return { success: true }
   } catch (error) {

@@ -89,27 +89,18 @@ describe('computeRelativePath', () => {
     })
 
     it('폴더 A → 폴더 B (형제)', () => {
-      const result = computeRelativePath(
-        `${ROOT}/work/meeting.md`,
-        `${ROOT}/personal/diary.md`
-      )
+      const result = computeRelativePath(`${ROOT}/work/meeting.md`, `${ROOT}/personal/diary.md`)
       expect(result).toBe('../personal/diary.md')
     })
 
     it('깊은 중첩 → 다른 깊은 중첩', () => {
-      const result = computeRelativePath(
-        `${ROOT}/a/b/c/from.md`,
-        `${ROOT}/x/y/z/to.md`
-      )
+      const result = computeRelativePath(`${ROOT}/a/b/c/from.md`, `${ROOT}/x/y/z/to.md`)
       expect(result).toBe('../../../x/y/z/to.md')
     })
 
     it('같은 폴더 내 이름 변경 시나리오', () => {
       // LinkModal에서 파일 선택 후 상대경로 계산
-      const result = computeRelativePath(
-        `${ROOT}/folder/note-a.md`,
-        `${ROOT}/folder/note-b.md`
-      )
+      const result = computeRelativePath(`${ROOT}/folder/note-a.md`, `${ROOT}/folder/note-b.md`)
       expect(result).toBe('note-b.md')
     })
   })

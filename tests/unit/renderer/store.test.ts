@@ -213,7 +213,9 @@ describe('전역 검색 상태', () => {
 
   it('closeGlobalSearch가 검색 결과를 초기화한다', () => {
     useDocumentStore.setState({
-      globalSearchResults: [{ filePath: '/a.md', relativePath: 'a.md', fileName: 'a.md', matches: [] }],
+      globalSearchResults: [
+        { filePath: '/a.md', relativePath: 'a.md', fileName: 'a.md', matches: [] }
+      ],
       globalSearchTotalMatches: 5,
       isSearching: true
     })
@@ -287,7 +289,9 @@ describe('pendingGlobalJump', () => {
   })
 
   it('clearPendingGlobalJump로 초기화한다', () => {
-    useDocumentStore.setState({ pendingGlobalJump: { query: 'x', matchIndex: 0, caseSensitive: false } })
+    useDocumentStore.setState({
+      pendingGlobalJump: { query: 'x', matchIndex: 0, caseSensitive: false }
+    })
     useDocumentStore.getState().clearPendingGlobalJump()
     expect(useDocumentStore.getState().pendingGlobalJump).toBeNull()
   })

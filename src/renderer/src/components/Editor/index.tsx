@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useRef, useState, useMemo } from 'react'
+import DOMPurify from 'dompurify'
 import { useEditor, EditorContent, Editor as TipTapEditor } from '@tiptap/react'
 import { EditorState } from '@tiptap/pm/state'
 import { useDocumentStore } from '../../store/useDocumentStore'
@@ -9,7 +10,7 @@ import { ContextMenu, type ContextMenuItem } from '../ContextMenu'
 import { SearchBar } from '../SearchBar'
 import { MetadataPanel } from '../MetadataPanel'
 import { getEditorExtensions } from './editorConfig'
-import { SearchHighlightPluginKey } from './extensions/SearchHighlight'
+import { executeGlobalJump } from './globalJump'
 import { marked, postProcessImageSizes, resolveAssetImages } from './markdown/markdownToHtml'
 import { processTaskListsForEditor, processTaskListsForPreview } from './markdown/taskListProcessor'
 import { turndownService } from './markdown/htmlToMarkdown'
@@ -21,7 +22,7 @@ import { useLinkHandlers } from './hooks/useLinkHandlers'
 import { useImageHandlers } from './hooks/useImageHandlers'
 import { useEditorEvents } from './hooks/useEditorEvents'
 import { useDropHandler } from './hooks/useDropHandler'
-import { useAutoSave } from '../../hooks/useAutoSave'
+import { saveDocument } from '../../utils/saveDocument'
 import {
   setEditorPositionGetter,
   saveCurrentPosition,
@@ -52,7 +53,6 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
   } = useDocumentStore()
   const pendingGlobalJump = useDocumentStore((s) => s.pendingGlobalJump)
   const clearPendingGlobalJump = useDocumentStore((s) => s.clearPendingGlobalJump)
-  const { saveNow } = useAutoSave()
   const isUpdatingFromMarkdown = useRef(false)
   const lastMarkdownContent = useRef('')
   const lastLoadedFilePath = useRef<string | null>(null)
@@ -172,7 +172,7 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
                 saveCurrentPosition(currentFilePath)
                 const loadRelativeFile = async (): Promise<void> => {
                   try {
-                    await saveNow()
+                    await saveDocument()
                     const decodedHref = decodeURIComponent(href)
                     const currentPath = currentFilePath
                     if (!currentPath) return
@@ -362,55 +362,7 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
     let cancelled = false
     const timer = setTimeout(() => {
       if (cancelled) return
-
-      const escapedQuery = pendingGlobalJump.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      const flags = pendingGlobalJump.caseSensitive ? 'g' : 'gi'
-      let regex: RegExp
-      try {
-        regex = new RegExp(escapedQuery, flags)
-      } catch {
-        clearPendingGlobalJump()
-        return
-      }
-
-      const foundMatches: { from: number; to: number }[] = []
-      editor.state.doc.descendants((node, pos) => {
-        if (node.isText && node.text) {
-          const text = node.text
-          regex.lastIndex = 0
-          let match: RegExpExecArray | null
-          while ((match = regex.exec(text)) !== null) {
-            foundMatches.push({ from: pos + match.index, to: pos + match.index + match[0].length })
-            if (match[0].length === 0) regex.lastIndex++
-          }
-        }
-        return true
-      })
-
-      if (foundMatches.length > 0) {
-        const targetIdx = Math.min(pendingGlobalJump.matchIndex, foundMatches.length - 1)
-        const targetMatch = foundMatches[targetIdx]
-
-        editor.view.dispatch(
-          editor.state.tr.setMeta(SearchHighlightPluginKey, {
-            searchResults: foundMatches,
-            currentIndex: targetIdx + 1
-          })
-        )
-
-        requestAnimationFrame(() => {
-          if (cancelled) return
-          editor
-            .chain()
-            .focus()
-            .setTextSelection({ from: targetMatch.from, to: targetMatch.to })
-            .scrollIntoView()
-            .run()
-          clearPendingGlobalJump()
-        })
-      } else {
-        clearPendingGlobalJump()
-      }
+      executeGlobalJump(editor, pendingGlobalJump, clearPendingGlobalJump, () => cancelled)
     }, 50)
 
     return () => {
@@ -443,105 +395,76 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
   // Load content into editor when content changes externally
   useEffect(() => {
     const body = extractBody(content)
-    if (editor && body !== lastMarkdownContent.current) {
-      isUpdatingFromMarkdown.current = true
-      const isNewFile = currentFilePath !== lastLoadedFilePath.current
+    if (!editor) return
+    if (body === lastMarkdownContent.current) {
+      // Editor already shows this content; any in-flight load was cancelled by
+      // this effect's cleanup, so lift the onUpdate suppression
+      isUpdatingFromMarkdown.current = false
+      return
+    }
+
+    // Suppress onUpdate for the whole load window so keystrokes against the
+    // outgoing document can't leak into the store under the new file's path
+    isUpdatingFromMarkdown.current = true
+    const isNewFile = currentFilePath !== lastLoadedFilePath.current
+    let cancelled = false
+
+    const loadContent = async (): Promise<void> => {
+      let html = marked.parse(body) as string
+      html = postProcessImageSizes(html)
+      html = processTaskListsForEditor(html)
+      html = await resolveAssetImages(html)
+      // A newer load may have started while images were resolving — let it win
+      if (cancelled) return
+
+      editor.commands.setContent(html, { emitUpdate: false })
+      lastMarkdownContent.current = body
       lastLoadedFilePath.current = currentFilePath
-      const loadContent = async (): Promise<void> => {
-        let html = marked.parse(body) as string
-        html = postProcessImageSizes(html)
-        html = processTaskListsForEditor(html)
-        html = await resolveAssetImages(html)
-        editor.commands.setContent(html, { emitUpdate: false })
-        lastMarkdownContent.current = body
-        isUpdatingFromMarkdown.current = false
+      isUpdatingFromMarkdown.current = false
 
-        // Clear undo history when loading a different file
-        if (isNewFile) {
-          const { state } = editor
-          const freshState = EditorState.create({
-            doc: state.doc,
-            plugins: state.plugins
-          })
-          editor.view.updateState(freshState)
+      // Clear undo history when loading a different file
+      if (isNewFile) {
+        const { state } = editor
+        const freshState = EditorState.create({
+          doc: state.doc,
+          plugins: state.plugins
+        })
+        editor.view.updateState(freshState)
 
-          // Handle pending global jump from a search result click (different-file case).
-          // The same-file case is handled by the pendingGlobalJump effect above.
-          const pendingJump = useDocumentStore.getState().pendingGlobalJump
-          if (pendingJump) {
-            const escapedJumpQuery = pendingJump.query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-            const jumpFlags = pendingJump.caseSensitive ? 'g' : 'gi'
-            let jumpRegex: RegExp
+        // Handle pending global jump from a search result click (different-file case).
+        // The same-file case is handled by the pendingGlobalJump effect above.
+        const pendingJump = useDocumentStore.getState().pendingGlobalJump
+        if (pendingJump) {
+          executeGlobalJump(editor, pendingJump, clearPendingGlobalJump, () => cancelled)
+          return // Skip cursor-position restore
+        }
+
+        // Restore cursor and scroll position if previously saved
+        if (currentFilePath) {
+          const saved = getCursorScroll(currentFilePath)
+          if (saved) {
             try {
-              jumpRegex = new RegExp(escapedJumpQuery, jumpFlags)
-            } catch {
-              clearPendingGlobalJump()
-              return
-            }
-
-            const jumpMatches: { from: number; to: number }[] = []
-            editor.state.doc.descendants((node, pos) => {
-              if (node.isText && node.text) {
-                const text = node.text
-                jumpRegex.lastIndex = 0
-                let m: RegExpExecArray | null
-                while ((m = jumpRegex.exec(text)) !== null) {
-                  jumpMatches.push({ from: pos + m.index, to: pos + m.index + m[0].length })
-                  if (m[0].length === 0) jumpRegex.lastIndex++
-                }
-              }
-              return true
-            })
-
-            if (jumpMatches.length > 0) {
-              const targetIdx = Math.min(pendingJump.matchIndex, jumpMatches.length - 1)
-              const targetMatch = jumpMatches[targetIdx]
-
-              editor.view.dispatch(
-                editor.state.tr.setMeta(SearchHighlightPluginKey, {
-                  searchResults: jumpMatches,
-                  currentIndex: targetIdx + 1
-                })
-              )
-
+              const docSize = editor.state.doc.content.size
+              const from = Math.min(saved.cursorFrom, docSize)
+              const to = Math.min(saved.cursorTo, docSize)
+              editor.commands.setTextSelection({ from, to })
               requestAnimationFrame(() => {
-                editor
-                  .chain()
-                  .focus()
-                  .setTextSelection({ from: targetMatch.from, to: targetMatch.to })
-                  .scrollIntoView()
-                  .run()
-                clearPendingGlobalJump()
+                const editorEl = document.querySelector('.wysiwyg-editor') as HTMLElement | null
+                if (editorEl) {
+                  editorEl.scrollTop = saved.scrollTop
+                }
               })
-            } else {
-              clearPendingGlobalJump()
-            }
-            return // Skip cursor-position restore
-          }
-
-          // Restore cursor and scroll position if previously saved
-          if (currentFilePath) {
-            const saved = getCursorScroll(currentFilePath)
-            if (saved) {
-              try {
-                const docSize = editor.state.doc.content.size
-                const from = Math.min(saved.cursorFrom, docSize)
-                const to = Math.min(saved.cursorTo, docSize)
-                editor.commands.setTextSelection({ from, to })
-                requestAnimationFrame(() => {
-                  const editorEl = document.querySelector('.wysiwyg-editor') as HTMLElement | null
-                  if (editorEl) {
-                    editorEl.scrollTop = saved.scrollTop
-                  }
-                })
-              } catch {
-                // Position no longer valid (e.g. doc was externally modified) — ignore
-              }
+            } catch {
+              // Position no longer valid (e.g. doc was externally modified) — ignore
             }
           }
         }
       }
-      loadContent()
+    }
+    loadContent()
+
+    return () => {
+      cancelled = true
     }
   }, [editor, content, currentFilePath, clearPendingGlobalJump])
 
@@ -595,6 +518,7 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
   }, [contextMenu.show])
 
   // Handle markdown mode changes
+  const markdownEditRequestId = useRef(0)
   const handleMarkdownChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>): void => {
       const newContent = e.target.value
@@ -605,11 +529,14 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
 
       if (editor) {
         isUpdatingFromMarkdown.current = true
+        const requestId = ++markdownEditRequestId.current
         const loadContent = async (): Promise<void> => {
           let html = marked.parse(body) as string
           html = postProcessImageSizes(html)
           html = processTaskListsForEditor(html)
           html = await resolveAssetImages(html)
+          // Only the latest keystroke's conversion may update the editor
+          if (requestId !== markdownEditRequestId.current) return
           editor.commands.setContent(html, { emitUpdate: false })
           isUpdatingFromMarkdown.current = false
         }
@@ -621,15 +548,22 @@ export function Editor({ onReady, onEditorReady }: EditorProps): React.JSX.Eleme
 
   // Update preview HTML for code/split mode
   useEffect(() => {
+    let cancelled = false
     const updatePreview = async (): Promise<void> => {
       const body = extractBody(content)
       let html = marked.parse(body) as string
       html = postProcessImageSizes(html)
       html = processTaskListsForPreview(html)
       html = await resolveAssetImages(html)
-      setPreviewHtml(html)
+      if (cancelled) return
+      // Markdown can contain raw HTML (scripts, event handlers) — sanitize before
+      // injecting into the DOM, since window.api is reachable from this context
+      setPreviewHtml(DOMPurify.sanitize(html))
     }
     updatePreview()
+    return () => {
+      cancelled = true
+    }
   }, [content])
 
   // Get context menu items based on type

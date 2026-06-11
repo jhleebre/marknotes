@@ -36,13 +36,13 @@ turndownService.addRule('strikethrough', {
   }
 })
 
-// Keep heading IDs when converting HTML to markdown
+// Always emit ATX headings on a single line, preserving inline marks (bold, code, ...)
 turndownService.addRule('headingWithId', {
   filter: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-  replacement: function (_content, node) {
+  replacement: function (content, node) {
     const level = Number(node.nodeName.charAt(1))
     const hashes = '#'.repeat(level)
-    const text = node.textContent || ''
+    const text = content.replace(/\n+/g, ' ').trim()
     return '\n\n' + hashes + ' ' + text + '\n\n'
   }
 })

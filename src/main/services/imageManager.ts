@@ -2,7 +2,7 @@ import fs from 'fs/promises'
 import path from 'path'
 import type { FileResult } from '../../shared/types'
 import { ALLOWED_IMAGE_EXTENSIONS, MAX_IMAGE_SIZE } from '../../shared/constants'
-import { ROOT_PATH, ASSETS_PATH, METADATA_PATH, ensureRootDirectory } from '../utils'
+import { ROOT_PATH, ASSETS_PATH, METADATA_PATH, ensureRootDirectory, validatePath } from '../utils'
 
 interface ImageMetadata {
   references: string[] // Array of document paths that use this image
@@ -29,77 +29,8 @@ async function saveMetadata(metadata: AssetsMetadata): Promise<void> {
   await fs.writeFile(METADATA_PATH, JSON.stringify(metadata, null, 2), 'utf-8')
 }
 
-// Add image reference to metadata
-export async function addImageReference(imagePath: string, documentPath: string): Promise<void> {
-  const metadata = await loadMetadata()
-  const imageFilename = path.basename(imagePath)
-
-  console.log(`[addImageReference] Image: ${imageFilename}, Document: ${documentPath}`)
-
-  if (!metadata.images[imageFilename]) {
-    // Image not in metadata yet, check if file exists
-    const imageFilePath = path.join(ASSETS_PATH, imageFilename)
-    try {
-      const stats = await fs.stat(imageFilePath)
-      metadata.images[imageFilename] = {
-        references: [documentPath],
-        uploadedAt: new Date().toISOString(),
-        size: stats.size
-      }
-      console.log(`[addImageReference] New image entry created`)
-    } catch {
-      console.log(`[addImageReference] Image file does not exist: ${imageFilename}, skipping`)
-      return // File doesn't exist, don't add to metadata
-    }
-  } else {
-    // Add reference if not already present
-    if (!metadata.images[imageFilename].references.includes(documentPath)) {
-      metadata.images[imageFilename].references.push(documentPath)
-      console.log(
-        `[addImageReference] Reference added, total refs: ${metadata.images[imageFilename].references.length}`
-      )
-    } else {
-      console.log(`[addImageReference] Reference already exists, skipping`)
-    }
-  }
-
-  await saveMetadata(metadata)
-}
-
-// Remove image reference from metadata
-export async function removeImageReference(imagePath: string, documentPath: string): Promise<void> {
-  const metadata = await loadMetadata()
-  const imageFilename = path.basename(imagePath)
-
-  console.log(`[removeImageReference] Image: ${imageFilename}, Document: ${documentPath}`)
-
-  if (metadata.images[imageFilename]) {
-    const beforeLength = metadata.images[imageFilename].references.length
-    // Remove this document from references
-    metadata.images[imageFilename].references = metadata.images[imageFilename].references.filter(
-      (ref) => ref !== documentPath
-    )
-    const afterLength = metadata.images[imageFilename].references.length
-
-    console.log(
-      `[removeImageReference] References before: ${beforeLength}, after: ${afterLength}, refs: ${JSON.stringify(metadata.images[imageFilename].references)}`
-    )
-
-    if (metadata.images[imageFilename].references.length === 0) {
-      console.log(
-        `[removeImageReference] No more references for ${imageFilename}, will be cleaned up later`
-      )
-    } else {
-      console.log(
-        `[removeImageReference] Still has ${metadata.images[imageFilename].references.length} reference(s)`
-      )
-    }
-
-    await saveMetadata(metadata)
-  }
-}
-
 // Update image references for a document based on its content
+// (single read-modify-write to avoid redundant I/O and lost updates)
 export async function updateDocumentImageReferences(
   documentPath: string,
   content: string
@@ -115,41 +46,90 @@ export async function updateDocumentImageReferences(
     referencedImages.add(match[2]) // filename
   }
 
-  // Check existing metadata entries for removed references
+  let changed = false
+
+  // Sync references on existing metadata entries
   for (const [imageFilename, imageData] of Object.entries(metadata.images)) {
     const wasReferenced = imageData.references.includes(documentPath)
     const isReferenced = referencedImages.has(imageFilename)
 
     if (wasReferenced && !isReferenced) {
-      await removeImageReference(`.assets/${imageFilename}`, documentPath)
+      imageData.references = imageData.references.filter((ref) => ref !== documentPath)
+      changed = true
     } else if (!wasReferenced && isReferenced) {
-      await addImageReference(`.assets/${imageFilename}`, documentPath)
+      imageData.references.push(documentPath)
+      changed = true
     }
   }
 
   // Add new images that are referenced but not yet in metadata
   for (const imageFilename of referencedImages) {
     if (!metadata.images[imageFilename]) {
-      await addImageReference(`.assets/${imageFilename}`, documentPath)
+      const imageFilePath = path.join(ASSETS_PATH, imageFilename)
+      try {
+        const stats = await fs.stat(imageFilePath)
+        metadata.images[imageFilename] = {
+          references: [documentPath],
+          uploadedAt: new Date().toISOString(),
+          size: stats.size
+        }
+        changed = true
+      } catch {
+        // Image file doesn't exist on disk — don't add to metadata
+      }
     }
+  }
+
+  if (changed) {
+    await saveMetadata(metadata)
   }
 }
 
 // Clean up all image references for a deleted document
 export async function cleanupDocumentImages(documentPath: string): Promise<void> {
   const metadata = await loadMetadata()
-  const imagesToCleanup: string[] = []
+  let changed = false
 
-  // Find all images referenced by this document
-  for (const [imageFilename, imageData] of Object.entries(metadata.images)) {
+  for (const imageData of Object.values(metadata.images)) {
     if (imageData.references.includes(documentPath)) {
-      imagesToCleanup.push(imageFilename)
+      imageData.references = imageData.references.filter((ref) => ref !== documentPath)
+      changed = true
     }
   }
 
-  // Remove references
-  for (const imageFilename of imagesToCleanup) {
-    await removeImageReference(`.assets/${imageFilename}`, documentPath)
+  if (changed) {
+    await saveMetadata(metadata)
+  }
+}
+
+// Remap document reference paths after a file or folder is moved/renamed,
+// so references keep pointing at the document's current relative path.
+export async function updateReferencesAfterMove(
+  oldAbsPath: string,
+  newAbsPath: string
+): Promise<void> {
+  const metadata = await loadMetadata()
+  const oldRel = path.relative(ROOT_PATH, oldAbsPath)
+  const newRel = path.relative(ROOT_PATH, newAbsPath)
+  let changed = false
+
+  for (const imageData of Object.values(metadata.images)) {
+    imageData.references = imageData.references.map((ref) => {
+      if (ref === oldRel) {
+        changed = true
+        return newRel
+      }
+      // Document inside a moved/renamed folder
+      if (ref.startsWith(oldRel + path.sep)) {
+        changed = true
+        return newRel + ref.slice(oldRel.length)
+      }
+      return ref
+    })
+  }
+
+  if (changed) {
+    await saveMetadata(metadata)
   }
 }
 
@@ -314,7 +294,7 @@ export async function embedImageBase64(imagePath: string): Promise<FileResult> {
       fullPath = path.resolve(imagePath)
     }
 
-    if (!fullPath.startsWith(ASSETS_PATH) && !fullPath.startsWith(ROOT_PATH)) {
+    if (!validatePath(fullPath)) {
       return { success: false, error: 'Access denied: path outside root directory' }
     }
 
@@ -354,7 +334,7 @@ export async function resolveAssetPath(imagePath: string): Promise<FileResult> {
 
     const fullPath = path.join(ROOT_PATH, imagePath)
 
-    if (!fullPath.startsWith(ASSETS_PATH)) {
+    if (!fullPath.startsWith(ASSETS_PATH + path.sep)) {
       return { success: false, error: 'Access denied: path outside assets directory' }
     }
 

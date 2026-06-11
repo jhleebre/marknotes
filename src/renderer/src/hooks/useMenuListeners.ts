@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useDocumentStore } from '../store/useDocumentStore'
-import { useAutoSave } from './useAutoSave'
-import { markWrite } from '../utils/writeTracker'
+import { saveDocument } from '../utils/saveDocument'
 
 interface MenuModals {
   aboutOpen: boolean
@@ -15,9 +14,6 @@ export function useMenuListeners(): MenuModals {
     toggleSidebar,
     setIsDarkMode,
     setMode,
-    currentFilePath,
-    content,
-    originalContent,
     isFindVisible,
     isReplaceVisible,
     setFindVisible,
@@ -27,7 +23,6 @@ export function useMenuListeners(): MenuModals {
     closeGlobalSearchAndShowSidebar,
     toggleGlobalSearch
   } = useDocumentStore()
-  const { saveNow } = useAutoSave()
 
   // Apply dark mode class to document
   const isDarkMode = useDocumentStore((s) => s.isDarkMode)
@@ -49,13 +44,13 @@ export function useMenuListeners(): MenuModals {
   // Listen for save command (Cmd+S)
   useEffect(() => {
     const unsubscribe = window.api.menu.onSave(() => {
-      saveNow()
+      saveDocument({ force: true })
     })
 
     return () => {
       unsubscribe()
     }
-  }, [saveNow])
+  }, [])
 
   // Listen for toggle sidebar menu command
   useEffect(() => {
@@ -180,24 +175,20 @@ export function useMenuListeners(): MenuModals {
   // Listen for app quit - save before quitting
   useEffect(() => {
     const unsubscribe = window.api.app.onSaveBeforeQuit(async () => {
-      // Save if there are unsaved changes
-      if (currentFilePath && content !== originalContent) {
-        try {
-          markWrite()
-          await window.api.file.write(currentFilePath, content)
-        } catch (error) {
-          console.error('Failed to save before quit:', error)
-        }
+      try {
+        await saveDocument()
+      } catch (error) {
+        console.error('Failed to save before quit:', error)
       }
 
-      // Notify main process that save is complete
+      // Always notify main process so the quit sequence can proceed
       window.api.app.saveComplete()
     })
 
     return () => {
       unsubscribe()
     }
-  }, [currentFilePath, content, originalContent])
+  }, [])
 
   return { aboutOpen, shortcutsOpen, closeAbout, closeShortcuts }
 }

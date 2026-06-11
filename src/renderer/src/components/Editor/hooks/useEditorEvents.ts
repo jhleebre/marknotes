@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useDocumentStore } from '../../../store/useDocumentStore'
-import { useAutoSave } from '../../../hooks/useAutoSave'
+import { saveDocument } from '../../../utils/saveDocument'
 import { saveCurrentPosition } from '../../../utils/cursorScrollCache'
 
 export function useEditorEvents(
@@ -59,7 +59,6 @@ export function useEditorEvents(
     setOriginalContent,
     setIsLoadingContent
   } = useDocumentStore()
-  const { saveNow } = useAutoSave()
 
   useEffect(() => {
     const handlePreviewLinkClick = (e: Event): void => {
@@ -90,7 +89,7 @@ export function useEditorEvents(
             saveCurrentPosition(currentFilePath)
             const loadRelativeFile = async (): Promise<void> => {
               try {
-                await saveNow()
+                await saveDocument()
                 const decodedHref = decodeURIComponent(href)
 
                 const currentPath = currentFilePath
@@ -139,5 +138,5 @@ export function useEditorEvents(
       }
     }
     return undefined
-  }, [mode, currentFilePath, setCurrentFile, setContent, setOriginalContent, setIsLoadingContent, saveNow])
+  }, [mode, currentFilePath, setCurrentFile, setContent, setOriginalContent, setIsLoadingContent])
 }

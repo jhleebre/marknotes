@@ -1,7 +1,8 @@
-import { app, shell, BrowserWindow, nativeTheme, clipboard, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, nativeTheme, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { setupFileHandlers, cleanupOnQuit } from './setupHandlers'
+import { isAllowedExternalUrl } from './handlers/shellHandlers'
 import { setupMenu } from './menu'
 
 // Set app name early for macOS menu bar
@@ -48,7 +49,9 @@ function createWindow(): void {
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
+    if (isAllowedExternalUrl(details.url)) {
+      shell.openExternal(details.url)
+    }
     return { action: 'deny' }
   })
 
@@ -60,9 +63,6 @@ function createWindow(): void {
       event.preventDefault()
     }
   })
-
-  // Setup file system handlers
-  setupFileHandlers(mainWindow)
 
   // Setup native menu
   setupMenu(mainWindow, nativeTheme.shouldUseDarkColors)
@@ -90,6 +90,10 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  // Register IPC handlers once — ipcMain.handle throws if a channel is
+  // registered twice, so this must not live inside createWindow()
+  setupFileHandlers()
+
   createWindow()
 
   app.on('activate', function () {
@@ -110,10 +114,6 @@ ipcMain.on('app:save-complete', async () => {
   if (!isQuitting) return
 
   console.log('[Quit] Received save-complete from renderer')
-
-  // Clear clipboard to prevent pasting deleted images after app restart
-  clipboard.clear()
-  console.log('[Cleanup] Clipboard cleared')
 
   // Cleanup unreferenced image files
   await cleanupOnQuit()

@@ -47,11 +47,20 @@ renderer.code = function ({ text, lang }) {
   return `<pre><code${classAttr}>${escaped}</code></pre>\n`
 }
 
+// marked passes href/title/text through unescaped — escape them for attribute context
+function escapeAttr(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
 // Custom image renderer to support size classes
 renderer.image = function ({ href, title, text }) {
-  const alt = text || ''
-  const src = href || ''
-  const titleAttr = title ? ` title="${title}"` : ''
+  const alt = escapeAttr(text || '')
+  const src = escapeAttr(href || '')
+  const titleAttr = title ? ` title="${escapeAttr(title)}"` : ''
 
   return `<div class="image-wrapper image-size-original" data-size="original"><img src="${src}" alt="${alt}"${titleAttr} /></div>`
 }

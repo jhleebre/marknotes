@@ -52,7 +52,11 @@ ${bodyHtml}
 </html>`
 }
 
-export async function exportToPdf(markdown: string, defaultName: string): Promise<FileResult> {
+export async function exportToPdf(
+  markdown: string,
+  defaultName: string,
+  parentWindow?: BrowserWindow
+): Promise<FileResult> {
   try {
     let html = await marked(markdown)
     html = postProcessImageSizes(html)
@@ -62,10 +66,13 @@ export async function exportToPdf(markdown: string, defaultName: string): Promis
     const title = defaultName.replace(/\.md$/, '')
     const template = buildDocument(html, title)
 
-    const { filePath, canceled } = await dialog.showSaveDialog({
+    const saveDialogOptions = {
       defaultPath: `${title}.pdf`,
       filters: [{ name: 'PDF', extensions: ['pdf'] }]
-    })
+    }
+    const { filePath, canceled } = parentWindow
+      ? await dialog.showSaveDialog(parentWindow, saveDialogOptions)
+      : await dialog.showSaveDialog(saveDialogOptions)
 
     if (canceled || !filePath) {
       return { success: false, error: 'Export cancelled' }
@@ -80,20 +87,25 @@ export async function exportToPdf(markdown: string, defaultName: string): Promis
       }
     })
 
-    await pdfWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(template)}`)
+    try {
+      await pdfWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(template)}`)
 
-    const pdfBuffer = await pdfWindow.webContents.printToPDF({
-      pageSize: 'A4',
-      printBackground: true,
-      displayHeaderFooter: true,
-      headerTemplate: '<div></div>',
-      footerTemplate: FOOTER_TEMPLATE,
-      margins: PDF_MARGINS
-    })
+      const pdfBuffer = await pdfWindow.webContents.printToPDF({
+        pageSize: 'A4',
+        printBackground: true,
+        displayHeaderFooter: true,
+        headerTemplate: '<div></div>',
+        footerTemplate: FOOTER_TEMPLATE,
+        margins: PDF_MARGINS
+      })
 
-    pdfWindow.close()
+      await fs.writeFile(filePath, pdfBuffer)
+    } finally {
+      if (!pdfWindow.isDestroyed()) {
+        pdfWindow.close()
+      }
+    }
 
-    await fs.writeFile(filePath, pdfBuffer)
     return { success: true, content: filePath }
   } catch (error) {
     return { success: false, error: (error as Error).message }

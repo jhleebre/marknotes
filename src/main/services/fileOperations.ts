@@ -1,7 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 import type { FileEntry, FileResult } from '../../shared/types'
-import { ROOT_PATH, ensureRootDirectory } from '../utils'
+import { ROOT_PATH, ensureRootDirectory, validatePath } from '../utils'
 import {
   updateDocumentImageReferences,
   cleanupDocumentImages,
@@ -45,7 +45,7 @@ export async function buildFileTree(dirPath: string): Promise<FileEntry[]> {
 export async function readFile(filePath: string): Promise<FileResult> {
   try {
     const resolvedPath = path.resolve(filePath)
-    if (!resolvedPath.startsWith(ROOT_PATH)) {
+    if (!validatePath(resolvedPath)) {
       return { success: false, error: 'Access denied: path outside root directory' }
     }
 
@@ -59,7 +59,7 @@ export async function readFile(filePath: string): Promise<FileResult> {
 export async function writeFile(filePath: string, content: string): Promise<FileResult> {
   try {
     const resolvedPath = path.resolve(filePath)
-    if (!resolvedPath.startsWith(ROOT_PATH)) {
+    if (!validatePath(resolvedPath)) {
       return { success: false, error: 'Access denied: path outside root directory' }
     }
 
@@ -93,11 +93,18 @@ export async function createFile(fileName: string, dirPath?: string): Promise<Fi
   try {
     const targetDir = dirPath || ROOT_PATH
     const resolvedDir = path.resolve(targetDir)
-    if (!resolvedDir.startsWith(ROOT_PATH)) {
+    if (!validatePath(resolvedDir)) {
       return { success: false, error: 'Access denied: path outside root directory' }
     }
 
+    if (fileName !== path.basename(fileName) || fileName === '.' || fileName === '..') {
+      return { success: false, error: 'Invalid file name' }
+    }
+
     const filePath = path.join(resolvedDir, fileName.endsWith('.md') ? fileName : `${fileName}.md`)
+    if (!validatePath(filePath)) {
+      return { success: false, error: 'Access denied: path outside root directory' }
+    }
 
     // Check if file exists
     try {
@@ -107,7 +114,7 @@ export async function createFile(fileName: string, dirPath?: string): Promise<Fi
       // File doesn't exist, we can create it
     }
 
-    await fs.writeFile(filePath, `# ${fileName.replace('.md', '')}\n\n`, 'utf-8')
+    await fs.writeFile(filePath, `# ${fileName.replace(/\.md$/i, '')}\n\n`, 'utf-8')
     return { success: true, content: filePath }
   } catch (error) {
     return { success: false, error: (error as Error).message }
@@ -116,9 +123,13 @@ export async function createFile(fileName: string, dirPath?: string): Promise<Fi
 
 export async function createFolder(folderName: string, parentPath?: string): Promise<FileResult> {
   try {
+    if (folderName !== path.basename(folderName) || folderName === '.' || folderName === '..') {
+      return { success: false, error: 'Invalid folder name' }
+    }
+
     const targetDir = parentPath || ROOT_PATH
     const resolvedPath = path.resolve(targetDir, folderName)
-    if (!resolvedPath.startsWith(ROOT_PATH)) {
+    if (!validatePath(resolvedPath) || resolvedPath === ROOT_PATH) {
       return { success: false, error: 'Access denied: path outside root directory' }
     }
 
@@ -140,7 +151,7 @@ export async function createFolder(folderName: string, parentPath?: string): Pro
 export async function deleteFile(filePath: string): Promise<FileResult> {
   try {
     const resolvedPath = path.resolve(filePath)
-    if (!resolvedPath.startsWith(ROOT_PATH)) {
+    if (!validatePath(resolvedPath) || resolvedPath === ROOT_PATH) {
       return { success: false, error: 'Access denied: path outside root directory' }
     }
 
@@ -169,11 +180,30 @@ export async function deleteFile(filePath: string): Promise<FileResult> {
 export async function renameFile(oldPath: string, newName: string): Promise<FileResult> {
   try {
     const resolvedOldPath = path.resolve(oldPath)
-    if (!resolvedOldPath.startsWith(ROOT_PATH)) {
+    if (!validatePath(resolvedOldPath) || resolvedOldPath === ROOT_PATH) {
       return { success: false, error: 'Access denied: path outside root directory' }
     }
 
+    if (newName !== path.basename(newName) || newName === '.' || newName === '..') {
+      return { success: false, error: 'Invalid name' }
+    }
+
     const newPath = path.join(path.dirname(resolvedOldPath), newName)
+    if (!validatePath(newPath)) {
+      return { success: false, error: 'Access denied: path outside root directory' }
+    }
+
+    // Prevent silently overwriting an existing file
+    // (allow case-only renames, which resolve to the same file on APFS/HFS+)
+    if (resolvedOldPath.toLowerCase() !== newPath.toLowerCase()) {
+      try {
+        await fs.access(newPath)
+        return { success: false, error: 'A file or folder with the same name already exists' }
+      } catch {
+        // Target doesn't exist, we can rename
+      }
+    }
+
     await fs.rename(resolvedOldPath, newPath)
     return { success: true, content: newPath }
   } catch (error) {
@@ -195,18 +225,15 @@ export async function moveFile(sourcePath: string, targetDir: string): Promise<F
     const resolvedSource = path.resolve(sourcePath)
     const resolvedTarget = path.resolve(targetDir)
 
-    if (!resolvedSource.startsWith(ROOT_PATH)) {
+    if (!validatePath(resolvedSource) || resolvedSource === ROOT_PATH) {
       return { success: false, error: 'Access denied: source path outside root directory' }
     }
-    if (!resolvedTarget.startsWith(ROOT_PATH)) {
+    if (!validatePath(resolvedTarget)) {
       return { success: false, error: 'Access denied: target path outside root directory' }
     }
 
     // Prevent moving a folder into itself or its subfolders
-    if (
-      resolvedTarget === resolvedSource ||
-      resolvedTarget.startsWith(resolvedSource + path.sep)
-    ) {
+    if (resolvedTarget === resolvedSource || resolvedTarget.startsWith(resolvedSource + path.sep)) {
       return { success: false, error: 'A folder cannot be moved into itself or its subfolders' }
     }
 
@@ -234,7 +261,7 @@ export async function moveFile(sourcePath: string, targetDir: string): Promise<F
 export async function statFile(filePath: string): Promise<FileResult> {
   try {
     const resolvedPath = path.resolve(filePath)
-    if (!resolvedPath.startsWith(ROOT_PATH)) {
+    if (!validatePath(resolvedPath)) {
       return { success: false, error: 'Access denied: path outside root directory' }
     }
 
@@ -255,7 +282,7 @@ export async function statFile(filePath: string): Promise<FileResult> {
 export async function duplicateFile(filePath: string): Promise<FileResult> {
   try {
     const resolvedPath = path.resolve(filePath)
-    if (!resolvedPath.startsWith(ROOT_PATH)) {
+    if (!validatePath(resolvedPath)) {
       return { success: false, error: 'Access denied: path outside root directory' }
     }
 
