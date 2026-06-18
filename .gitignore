@@ -61,3 +61,4 @@ coverage
 # Uncomment if you want to ignore test note directories
 # ~/Documents/MarkNotes
 tsconfig.node.tsbuildinfo
+tsconfig.web.tsbuildinfo
