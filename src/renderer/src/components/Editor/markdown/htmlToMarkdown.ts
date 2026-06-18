@@ -42,7 +42,9 @@ turndownService.addRule('headingWithId', {
   replacement: function (content, node) {
     const level = Number(node.nodeName.charAt(1))
     const hashes = '#'.repeat(level)
-    const text = content.replace(/\n+/g, ' ').trim()
+    // Unescape ordered-list patterns (e.g. 1\. → 1.) that turndown adds
+    // unnecessarily inside headings — the leading # already prevents list parsing.
+    const text = content.replace(/\n+/g, ' ').trim().replace(/(\d+)\\\./g, '$1.')
     return '\n\n' + hashes + ' ' + text + '\n\n'
   }
 })

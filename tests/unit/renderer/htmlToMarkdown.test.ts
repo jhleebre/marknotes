@@ -42,6 +42,12 @@ describe('제목 변환', () => {
       '## My **bold** title'
     )
   })
+
+  it('제목 안의 숫자+점(1.)이 1\\. 로 이스케이프되지 않는다', () => {
+    expect(toMd('<h1>1. Introduction</h1>')).toBe('# 1. Introduction')
+    expect(toMd('<h2>2. Overview</h2>')).toBe('## 2. Overview')
+    expect(toMd('<h3>10. Advanced Topics</h3>')).toBe('### 10. Advanced Topics')
+  })
 })
 
 // ─────────────────────────────────────────────
